@@ -38,20 +38,47 @@
             background-size: 40px 40px;
             background-color: #f0f4f8;
         }
+        
+        /* ===== HERO CON IMAGEN DE FONDO ===== */
         .hero-gradient {
-            background: linear-gradient(135deg, #0a1628 0%, #1a365d 50%, #2a4a7f 100%);
             position: relative;
             overflow: hidden;
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+        /* Imagen de fondo */
+        .hero-background {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+        /* Overlay oscuro para mejorar legibilidad */
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.65);
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
         }
         .hero-pattern {
             position: absolute;
             inset: 0;
-            opacity: 0.1;
+            opacity: 0.05;
             background-image:
                 linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
             background-size: 60px 60px;
+            z-index: 1;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
@@ -189,7 +216,6 @@
         .logo-symmetrica .logo-icon {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -198,6 +224,11 @@
             font-size: 1.1rem;
             font-weight: 800;
             box-shadow: 0 4px 8px rgba(37,99,235,0.3);
+            /* ==========================================================
+               IMAGEN DEL LOGO (ICONO)
+               Cambia la URL de la imagen por la que prefieras
+               ========================================================== */
+            background: url('https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504') center/cover no-repeat;
         }
         .logo-symmetrica .logo-text {
             letter-spacing: -0.5px;
@@ -270,7 +301,7 @@
         <!-- ===== NAVBAR ===== -->
         <nav class="sticky top-0 z-50 glass-card-dark shadow-sm px-6 py-3 flex justify-between items-center border-b border-white/50">
             <a href="#" @click.prevent="goHome" class="logo-symmetrica">
-                <div class="logo-icon">S</div>
+                <div class="logo-icon"></div>
                 <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
             </a>
             <div class="flex items-center gap-3">
@@ -287,10 +318,19 @@
             </div>
         </nav>
 
-        <!-- ===== HERO ===== -->
-        <section class="hero-gradient text-white py-20 md:py-28 px-4 relative">
+        <!-- ===== HERO CON IMAGEN DE FONDO ===== -->
+        <section class="hero-gradient text-white px-4 relative">
+            <!-- ==========================================================
+                 IMAGEN DE FONDO DEL HERO
+                 Cambia la URL de la imagen por la que prefieras
+                 ========================================================== -->
+            <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/513918566_23874746335552536_1315595891752800928_n.jpg?stp=dst-jpg_tt6&cstp=mx1280x1280&ctp=s960x960&_nc_cat=105&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=2B9S0-sS150Q7kNvwHx6_6d&_nc_oc=AdoPdMblQEowsKbaEs__m5DPwsZpMwOLMuR5qhvxUAGz3JD8vngAjTChmSnCo5bCQ6U&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=Xb3Gm5jj4JrDLsPJY7Iscg&_nc_ss=7c2a8&oh=00_AQG8KK-JYobgttGJ6F0ia4GUKT1oBkjiXzlW5x2lXIPltQ&oe=6A816FE6" 
+                 alt="Symmetrica Ingeniería" 
+                 class="hero-background">
+            <div class="hero-overlay"></div>
             <div class="hero-pattern"></div>
-            <div class="max-w-6xl mx-auto relative z-10">
+            
+            <div class="hero-content max-w-6xl mx-auto py-20 md:py-28 relative z-10">
                 <div class="max-w-2xl">
                     <h1 class="hero-title text-4xl md:text-6xl font-bold leading-tight tracking-tight">
                         Ingeniería <br /><span class="text-blue-300">estructural</span> al alcance de tu mano
@@ -308,20 +348,6 @@
                         </button>
                     </div>
                 </div>
-            </div>
-            <div class="absolute right-0 bottom-0 w-64 h-64 opacity-10 md:opacity-20">
-                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="0" y1="40" x2="200" y2="40" stroke="white" stroke-width="1"/>
-                    <line x1="0" y1="80" x2="200" y2="80" stroke="white" stroke-width="1"/>
-                    <line x1="0" y1="120" x2="200" y2="120" stroke="white" stroke-width="1"/>
-                    <line x1="0" y1="160" x2="200" y2="160" stroke="white" stroke-width="1"/>
-                    <line x1="40" y1="0" x2="40" y2="200" stroke="white" stroke-width="1"/>
-                    <line x1="80" y1="0" x2="80" y2="200" stroke="white" stroke-width="1"/>
-                    <line x1="120" y1="0" x2="120" y2="200" stroke="white" stroke-width="1"/>
-                    <line x1="160" y1="0" x2="160" y2="200" stroke="white" stroke-width="1"/>
-                    <circle cx="100" cy="100" r="30" stroke="white" stroke-width="1" stroke-dasharray="4 4"/>
-                    <circle cx="100" cy="100" r="60" stroke="white" stroke-width="1" stroke-dasharray="4 4"/>
-                </svg>
             </div>
         </section>
 
@@ -384,10 +410,10 @@
                         <div class="about-grid">
                             <div>
                                 <p class="text-gray-700 leading-relaxed text-lg font-medium">
-                                    En <strong>Symmetrica</strong> combinamos la precisión de la <strong>ingeniería estructural</strong>, la visión de la <strong>arquitectura moderna</strong> y la <strong>formación de élite</strong> para transformar ideas en estructuras funcionales, resistentes y extraordinarias.[reference:0]
+                                    En <strong>Symmetrica</strong> combinamos la precisión de la <strong>ingeniería estructural</strong>, la visión de la <strong>arquitectura moderna</strong> y la <strong>formación de élite</strong> para transformar ideas en estructuras funcionales, resistentes y extraordinarias.
                                 </p>
                                 <p class="text-gray-600 mt-4 leading-relaxed">
-                                    Somos una consultora especializada en <strong>Ingeniería Civil, Estructural y Sismorresistente</strong>, con experiencia en el diseño de puentes, modelado 3D (Rendering) y proyectos de alta complejidad. Nuestro equipo está comprometido con la excelencia técnica y la innovación, brindando soluciones que superan las expectativas de nuestros clientes.[reference:1]
+                                    Somos una consultora especializada en <strong>Ingeniería Civil, Estructural y Sismorresistente</strong>, con experiencia en el diseño de puentes, modelado 3D (Rendering) y proyectos de alta complejidad. Nuestro equipo está comprometido con la excelencia técnica y la innovación, brindando soluciones que superan las expectativas de nuestros clientes.
                                 </p>
                                 <div class="mt-6 flex flex-wrap gap-3">
                                     <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">🏗️ Estructural</span>
@@ -698,7 +724,7 @@
             <div class="max-w-6xl mx-auto text-center text-sm">
                 <div class="flex items-center justify-center gap-2 mb-3">
                     <div class="logo-symmetrica !text-white">
-                        <div class="logo-icon">S</div>
+                        <div class="logo-icon"></div>
                         <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
                     </div>
                 </div>
@@ -1107,7 +1133,6 @@
                         alert('Por favor, completa todos los campos.');
                         return;
                     }
-                    // Aquí puedes implementar el envío real (ej: a Firebase, email, etc.)
                     alert(`✅ Mensaje enviado.\n\nNombre: ${contactName.value}\nCorreo: ${contactEmail.value}\nMensaje: ${contactMessage.value}\n\nNos pondremos en contacto contigo pronto.`);
                     contactName.value = '';
                     contactEmail.value = '';
