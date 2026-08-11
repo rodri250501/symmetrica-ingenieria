@@ -8,10 +8,10 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Fuente SF Pro Display (estilo Apple) -->
+    <!-- Fuente SF Pro Display -->
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
 
-    <!-- Firebase SDKs (CDN) -->
+    <!-- Firebase SDKs -->
     <script type="importmap">
         {
             "imports": {
@@ -23,21 +23,14 @@
     </script>
 
     <style>
-        /* Reset y estilos base */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* Estilos base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f0f4f8;
             min-height: 100vh;
             overflow-x: hidden;
         }
-
-        /* Fondo con patrón de líneas sutiles (efecto blueprint) */
         .bg-pattern {
             background-image:
                 linear-gradient(rgba(30, 58, 138, 0.03) 1px, transparent 1px),
@@ -45,60 +38,45 @@
             background-size: 40px 40px;
             background-color: #f0f4f8;
         }
-
-        /* Fondo del hero con degradado y patrón */
         .hero-gradient {
             background: linear-gradient(135deg, #0a1628 0%, #1a365d 50%, #2a4a7f 100%);
             position: relative;
             overflow: hidden;
         }
-
-        /* Líneas de fondo del hero (simulando planos) */
         .hero-pattern {
             position: absolute;
             inset: 0;
             opacity: 0.1;
             background-image:
-                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+                linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
             background-size: 60px 60px;
         }
-
-        /* Efecto glassmorphism */
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
-
         .glass-card-dark {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
         }
-
-        /* Tarjetas de programas */
         .tool-card {
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
             transform: translateY(30px);
         }
-
         .tool-card.visible {
             opacity: 1;
             transform: translateY(0);
         }
-
         .tool-card:hover {
             transform: translateY(-8px) scale(1.01);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2);
         }
-
-        /* Botones */
         .btn-primary {
             background: #2563eb;
             color: white;
@@ -112,11 +90,10 @@
         .btn-primary:hover {
             background: #1d4ed8;
             transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
         }
-
         .btn-outline {
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.3);
             background: transparent;
             color: white;
             padding: 0.6rem 1.8rem;
@@ -126,10 +103,9 @@
             cursor: pointer;
         }
         .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
         }
-
         .btn-danger {
             background: #ef4444;
             color: white;
@@ -144,8 +120,6 @@
             background: #dc2626;
             transform: scale(1.02);
         }
-
-        /* Editor de código */
         .code-editor {
             font-family: 'Courier New', monospace;
             background: #1e293b;
@@ -163,31 +137,24 @@
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
-
-        .program-preview {
+        .program-iframe {
+            width: 100%;
+            min-height: 500px;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
-            padding: 1rem;
             background: white;
-            min-height: 100px;
         }
-
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar {
-            width: 6px;
+        .program-preview-iframe {
+            width: 100%;
+            min-height: 300px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-
-        /* Animación de entrada para el hero */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         .hero-title {
             opacity: 0;
             transform: translateY(20px);
@@ -203,33 +170,14 @@
             transform: translateY(20px);
             animation: fadeUp 0.8s ease forwards 0.9s;
         }
-
         @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Estilos para el contenido de los programas (dentro de la vista previa) */
-        .program-content {
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-        .program-content input,
-        .program-content select,
-        .program-content button {
-            font-family: inherit;
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <!-- ============================================================ -->
-    <!-- APLICACIÓN PRINCIPAL (VUE)                                    -->
-    <!-- ============================================================ -->
     <div id="app">
-
         <!-- NAVBAR -->
         <nav class="sticky top-0 z-50 glass-card-dark shadow-sm px-6 py-3 flex justify-between items-center border-b border-white/50">
             <h1 class="text-xl font-bold text-gray-800 cursor-pointer select-none" @click="goHome">
@@ -249,9 +197,7 @@
             </div>
         </nav>
 
-        <!-- ============================================================ -->
-        <!-- HERO SECTION                                                -->
-        <!-- ============================================================ -->
+        <!-- HERO -->
         <section class="hero-gradient text-white py-20 md:py-28 px-4 relative">
             <div class="hero-pattern"></div>
             <div class="max-w-6xl mx-auto relative z-10">
@@ -273,7 +219,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Decoración: líneas de plano flotantes -->
             <div class="absolute right-0 bottom-0 w-64 h-64 opacity-10 md:opacity-20">
                 <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <line x1="0" y1="40" x2="200" y2="40" stroke="white" stroke-width="1"/>
@@ -293,7 +238,7 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="max-w-6xl mx-auto px-4 py-12 bg-pattern">
 
-            <!-- ========== RUTA: HOME ========== -->
+            <!-- HOME -->
             <div v-if="currentRoute === 'home'">
                 <div class="mb-10 text-center">
                     <h2 class="text-3xl font-bold text-gray-800 tracking-tight" id="programs-section">
@@ -303,8 +248,6 @@
                         Selecciona un programa, solicita acceso y comienza a calcular.
                     </p>
                 </div>
-
-                <!-- Grid de programas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div v-for="(prog, index) in programs" :key="prog.id"
                          class="tool-card glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col"
@@ -334,13 +277,12 @@
                         </div>
                     </div>
                 </div>
-
                 <p v-if="programs.length === 0" class="text-gray-400 text-center py-16 text-lg">
                     No hay programas disponibles aún.
                 </p>
             </div>
 
-            <!-- ========== RUTA: PROGRAMA ========== -->
+            <!-- PROGRAMA (iframe) -->
             <div v-else-if="currentRoute === 'program'">
                 <div class="mb-6 flex items-center gap-4">
                     <button @click="goHome" class="text-blue-600 hover:text-blue-800 font-medium transition flex items-center gap-1">
@@ -348,12 +290,12 @@
                     </button>
                     <h2 class="text-2xl font-bold text-gray-800">{{ currentProgram?.name }}</h2>
                 </div>
-                <div class="glass-card rounded-2xl p-6 md:p-8">
-                    <div class="program-content" v-html="currentProgram?.html || '<p class=\'text-gray-400\'>No hay contenido para este programa.</p>'"></div>
+                <div class="glass-card rounded-2xl p-6">
+                    <iframe :srcdoc="currentProgram?.html || ''" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
                 </div>
             </div>
 
-            <!-- ========== RUTA: ADMIN ========== -->
+            <!-- ADMIN -->
             <div v-else-if="currentRoute === 'admin' && isAdmin">
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">🔐 Panel de Administración</h2>
 
@@ -376,7 +318,7 @@
                     </button>
                 </div>
 
-                <!-- ====== TAB: PROGRAMAS ====== -->
+                <!-- TAB: PROGRAMAS -->
                 <div v-if="adminTab === 'programs'">
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h3 class="text-lg font-semibold text-gray-700">Gestión de Programas</h3>
@@ -386,7 +328,6 @@
                         </button>
                     </div>
 
-                    <!-- Lista de programas -->
                     <div class="space-y-2 mb-6">
                         <div v-for="p in programs" :key="p.id"
                              class="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-gray-100/50">
@@ -405,7 +346,7 @@
                         <p v-if="programs.length === 0" class="text-gray-400 text-center py-4">No hay programas.</p>
                     </div>
 
-                    <!-- Formulario de programa (modal) -->
+                    <!-- Formulario -->
                     <div v-if="showProgramForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                         <div class="glass-card rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
                             <h3 class="text-xl font-bold text-gray-800 mb-4">{{ editingProgram.id ? 'Editar' : 'Nuevo' }} Programa</h3>
@@ -435,11 +376,11 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Código HTML del programa</label>
                                     <textarea v-model="editingProgram.html" rows="8" class="code-editor"></textarea>
-                                    <p class="text-xs text-gray-400 mt-1">Pega aquí el HTML completo de la herramienta.</p>
+                                    <p class="text-xs text-gray-400 mt-1">Pega aquí el HTML completo de la herramienta (incluye scripts y estilos).</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Vista previa</label>
-                                    <div class="program-preview" v-html="editingProgram.html || '<p class=\'text-gray-400\'>Vista previa del programa...</p>'"></div>
+                                    <iframe :srcdoc="editingProgram.html || ''" class="program-preview-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
                                 </div>
                             </div>
                             <div class="flex justify-end gap-3 mt-6">
@@ -450,7 +391,7 @@
                     </div>
                 </div>
 
-                <!-- ====== TAB: USUARIOS ====== -->
+                <!-- TAB: USUARIOS -->
                 <div v-if="adminTab === 'users'">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Usuarios registrados</h3>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100/50">
@@ -474,7 +415,7 @@
                     </div>
                 </div>
 
-                <!-- ====== TAB: SOLICITUDES ====== -->
+                <!-- TAB: SOLICITUDES -->
                 <div v-if="adminTab === 'requests'">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Solicitudes de acceso pendientes</h3>
                     <div class="space-y-3">
@@ -496,7 +437,7 @@
                 </div>
             </div>
 
-            <!-- ========== RUTA: NO ADMIN ========== -->
+            <!-- NO ADMIN -->
             <div v-else-if="currentRoute === 'admin' && !isAdmin">
                 <div class="text-center py-20">
                     <span class="text-6xl block mb-4">⛔</span>
@@ -508,9 +449,7 @@
 
         </main>
 
-        <!-- ============================================================ -->
-        <!-- FOOTER                                                        -->
-        <!-- ============================================================ -->
+        <!-- FOOTER -->
         <footer class="bg-gray-900 text-gray-400 py-8 px-4 mt-8">
             <div class="max-w-6xl mx-auto text-center text-sm">
                 <p class="font-medium text-gray-300">🏗️ Symmetrica Ingeniería</p>
@@ -519,11 +458,8 @@
             </div>
         </footer>
 
-        <!-- ============================================================ -->
-        <!-- MODALES                                                       -->
-        <!-- ============================================================ -->
-
-        <!-- MODAL DE LOGIN -->
+        <!-- MODALES -->
+        <!-- Login -->
         <div v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
                 <div class="text-center mb-6">
@@ -549,7 +485,7 @@
             </div>
         </div>
 
-        <!-- MODAL DE REGISTRO -->
+        <!-- Register -->
         <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
                 <div class="text-center mb-6">
@@ -571,7 +507,7 @@
             </div>
         </div>
 
-        <!-- MODAL DE CONTRASEÑA DE ADMIN -->
+        <!-- Admin password -->
         <div v-if="showAdminPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div class="glass-card rounded-3xl max-w-sm w-full p-8 relative">
                 <div class="text-center mb-6">
@@ -594,14 +530,9 @@
 
     </div>
 
-    <!-- ============================================================ -->
-    <!-- VUE 3 + FIREBASE                                              -->
-    <!-- ============================================================ -->
+    <!-- VUE & FIREBASE -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module">
-        // ============================================================
-        // CONFIGURACIÓN DE FIREBASE
-        // ============================================================
         import { initializeApp } from "firebase/app";
         import {
             getAuth,
@@ -645,19 +576,12 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // ============================================================
-        // CONTRASEÑA FIJA PARA ADMIN
-        // ============================================================
         const ADMIN_PASSWORD = "010525Lp";
 
-        // ============================================================
-        // VUE APP
-        // ============================================================
         const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
         const App = {
             setup() {
-                // --- Estado ---
                 const user = ref(null);
                 const programs = ref([]);
                 const allUsers = ref([]);
@@ -677,14 +601,11 @@
                 const adminPassword = ref('');
                 const adminPasswordError = ref(false);
                 const isAdmin = ref(false);
-                const toolCards = ref([]);
 
-                // --- Computed ---
                 const currentProgram = computed(() => {
                     return programs.value.find(p => p.id === currentProgramId.value);
                 });
 
-                // --- Métodos ---
                 const isUnlocked = (programId) => {
                     if (!user.value) return false;
                     const userData = user.value.userData;
@@ -694,10 +615,7 @@
                 const goHome = () => {
                     currentRoute.value = 'home';
                     currentProgramId.value = null;
-                    // Al volver a home, reactivar las animaciones
-                    nextTick(() => {
-                        observeCards();
-                    });
+                    nextTick(() => observeCards());
                 };
 
                 const openProgram = (programId) => {
@@ -714,38 +632,23 @@
                     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 };
 
-                // --- Animaciones con IntersectionObserver ---
                 const observeCards = () => {
                     const cards = document.querySelectorAll('.tool-card');
                     if (!cards.length) return;
-
                     const observer = new IntersectionObserver((entries) => {
                         entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                entry.target.classList.add('visible');
-                            }
+                            if (entry.isIntersecting) entry.target.classList.add('visible');
                         });
-                    }, {
-                        threshold: 0.15,
-                        rootMargin: '0px 0px -20px 0px'
-                    });
-
+                    }, { threshold: 0.15, rootMargin: '0px 0px -20px 0px' });
                     cards.forEach(card => observer.observe(card));
                 };
 
                 // --- Autenticación ---
-
-                // Función para manejar el resultado del redirect de Google
                 const handleRedirectResult = async () => {
                     try {
-                        const result = await getRedirectResult(auth);
-                        if (result) {
-                            // El usuario ya está autenticado, el onAuthStateChanged se encargará del resto
-                            console.log('Google sign-in exitoso');
-                        }
+                        await getRedirectResult(auth);
                     } catch (error) {
                         console.error('Error en redirect de Google:', error);
-                        alert('Error al iniciar sesión con Google: ' + error.message);
                     }
                 };
 
@@ -762,10 +665,7 @@
 
                 const loginWithGoogle = async () => {
                     try {
-                        // Usamos signInWithRedirect en lugar de popup para evitar bloqueos
                         await signInWithRedirect(auth, provider);
-                        // La página se redirige a Google y luego vuelve
-                        // El resultado se maneja en handleRedirectResult
                     } catch (e) {
                         alert('Error al iniciar con Google: ' + e.message);
                     }
@@ -801,7 +701,7 @@
                     showLogin.value = true;
                 };
 
-                // --- Administración con contraseña ---
+                // --- Admin password ---
                 const verifyAdminPassword = () => {
                     if (adminPassword.value === ADMIN_PASSWORD) {
                         isAdmin.value = true;
@@ -814,7 +714,7 @@
                     }
                 };
 
-                // --- Gestión de programas (CRUD) ---
+                // --- CRUD Programas ---
                 const loadPrograms = () => {
                     const q = query(collection(db, "programs"), orderBy("createdAt", "desc"));
                     onSnapshot(q, (snapshot) => {
@@ -822,21 +722,19 @@
                         snapshot.forEach(doc => {
                             programs.value.push({ id: doc.id, ...doc.data() });
                         });
-                        // Reactivar animaciones cuando se cargan los programas
-                        nextTick(() => {
-                            observeCards();
-                        });
+                        nextTick(() => observeCards());
                     });
                 };
 
                 const saveProgram = async () => {
                     const p = editingProgram.value;
                     if (!p.name || !p.html) {
-                        alert('Nombre y HTML son obligatorios.');
+                        alert('❌ El nombre y el HTML son obligatorios.');
                         return;
                     }
                     try {
                         if (p.id) {
+                            // Editar
                             await updateDoc(doc(db, "programs", p.id), {
                                 name: p.name,
                                 description: p.description,
@@ -844,7 +742,9 @@
                                 icon: p.icon,
                                 html: p.html
                             });
+                            alert('✅ Programa actualizado correctamente.');
                         } else {
+                            // Nuevo
                             await addDoc(collection(db, "programs"), {
                                 name: p.name,
                                 description: p.description,
@@ -853,11 +753,12 @@
                                 html: p.html,
                                 createdAt: serverTimestamp()
                             });
+                            alert('✅ Programa creado exitosamente.');
                         }
                         showProgramForm.value = false;
                         editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' };
                     } catch (e) {
-                        alert('Error al guardar: ' + e.message);
+                        alert('❌ Error al guardar: ' + e.message);
                     }
                 };
 
@@ -870,12 +771,13 @@
                     if (!confirm('¿Eliminar este programa permanentemente?')) return;
                     try {
                         await deleteDoc(doc(db, "programs", id));
+                        alert('✅ Programa eliminado.');
                     } catch (e) {
-                        alert('Error al eliminar: ' + e.message);
+                        alert('❌ Error al eliminar: ' + e.message);
                     }
                 };
 
-                // --- Gestión de usuarios ---
+                // --- Usuarios ---
                 const loadUsers = () => {
                     onSnapshot(collection(db, "users"), (snapshot) => {
                         allUsers.value = [];
@@ -885,7 +787,7 @@
                     });
                 };
 
-                // --- Gestión de solicitudes ---
+                // --- Solicitudes ---
                 const loadRequests = () => {
                     const q = query(collection(db, "requests"), where("status", "==", "pending"));
                     onSnapshot(q, (snapshot) => {
@@ -937,7 +839,7 @@
                     }
                 };
 
-                // --- Observador de autenticación ---
+                // --- Auth observer ---
                 onAuthStateChanged(auth, async (authUser) => {
                     if (authUser) {
                         const userDoc = await getDoc(doc(db, "users", authUser.uid));
@@ -964,22 +866,15 @@
                     }
                 });
 
-                // --- Inicialización ---
+                // --- Init ---
                 onMounted(() => {
-                    // Manejar el resultado del redirect de Google
                     handleRedirectResult();
-
                     loadPrograms();
                     loadUsers();
                     loadRequests();
-
-                    // Observar las tarjetas iniciales
-                    setTimeout(() => {
-                        observeCards();
-                    }, 300);
+                    setTimeout(() => observeCards(), 300);
                 });
 
-                // --- Exponer ---
                 return {
                     user,
                     programs,
@@ -1001,7 +896,6 @@
                     showAdminPasswordModal,
                     adminPassword,
                     adminPasswordError,
-                    toolCards,
                     isUnlocked,
                     goHome,
                     openProgram,
