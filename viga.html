@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diseño de Vigas SMF - Symmetrica</title>
+    <!-- Tu código completo de la herramienta de vigas (el que me diste) -->
+    <!-- ... (todo el contenido que ya tienes) ... -->
+</head>
+<body>
+    <!-- Aquí va el código de la herramienta -->
+    <script type="module">
+        // ============================================================
+        // VERIFICACIÓN DE ACCESO - REDIRIGIR SI NO TIENE PERMISO
+        // ============================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCt_Nas76jJSMjqhsNj1V9MXKxwcIDB2lQ",
+            authDomain: "symmetrica-ingenieria.firebaseapp.com",
+            projectId: "symmetrica-ingenieria",
+            storageBucket: "symmetrica-ingenieria.firebasestorage.app",
+            messagingSenderId: "761818327436",
+            appId: "1:761818327436:web:d907fb1a8012706a250ea9",
+            measurementId: "G-VJMSWR95CC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const TOOL_ID = 'diseno_vigas_smf'; // ID del programa
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                // No logueado -> ir a index
+                window.location.href = 'index.html';
+                return;
+            }
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (!userDoc.exists()) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const purchased = userDoc.data().purchasedTools || [];
+            if (!purchased.includes(TOOL_ID)) {
+                alert('⛔ No tienes acceso a esta herramienta. Solicita acceso desde la página principal.');
+                window.location.href = 'index.html';
+            }
+            // Si tiene acceso, el resto del script de la herramienta se ejecuta normalmente
+            // (el código de la herramienta va aquí, fuera del módulo o dentro de un callback)
+        });
+    </script>
+    <!-- ========== AQUÍ VA TODO EL CÓDIGO DE LA HERRAMIENTA (EL QUE ME DISTE) ========== -->
+    <!-- Copia todo el contenido del <body> que me diste (desde <div class="max-w-6xl mx-auto"> hasta el final) -->
+</body>
+</html>
