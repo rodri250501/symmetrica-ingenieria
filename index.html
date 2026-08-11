@@ -6,9 +6,9 @@
     <title>Symmetrica Ingeniería</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente SF Pro Display (estilo Apple) -->
+    <!-- Fuente SF Pro Display -->
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (CDN) -->
     <script type="importmap">
         {
             "imports": {
@@ -64,7 +64,6 @@
             transform: translateY(-6px);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
         }
-        /* Estilos para el editor de código */
         .code-editor {
             font-family: 'Courier New', monospace;
             background: #1e293b;
@@ -77,7 +76,6 @@
             resize: vertical;
         }
         .code-editor:focus { outline: 2px solid #4f46e5; }
-        /* Estilos para la vista previa del programa */
         .program-preview {
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
@@ -98,7 +96,7 @@
             <h1 class="text-xl font-bold text-gray-800 cursor-pointer" @click="goHome">🏗️ Symmetrica</h1>
             <div class="flex items-center gap-4">
                 <span v-if="user" class="text-sm text-gray-600">{{ user.email }}</span>
-                <button v-if="user && user.email === 'admin@civilsoft.com'" @click="goAdmin" class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition">
+                <button @click="showAdminPasswordModal = true" class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition">
                     🔐 Admin
                 </button>
                 <button v-if="user" @click="logout" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition">Salir</button>
@@ -270,12 +268,12 @@
                 </div>
             </div>
 
-            <!-- ========== RUTA: NO ADMIN ========== -->
+            <!-- ========== RUTA: NO ADMIN (contraseña incorrecta) ========== -->
             <div v-else-if="currentRoute === 'admin' && !isAdmin">
                 <div class="text-center py-16">
                     <span class="text-5xl block mb-4">⛔</span>
                     <h2 class="text-2xl font-bold text-red-600">Acceso Restringido</h2>
-                    <p class="text-gray-500 mt-2">No tienes permisos para ver esta página.</p>
+                    <p class="text-gray-500 mt-2">Contraseña de administrador incorrecta.</p>
                     <button @click="goHome" class="mt-4 btn-primary">Volver al inicio</button>
                 </div>
             </div>
@@ -285,7 +283,7 @@
         <!-- MODAL DE LOGIN                                               -->
         <!-- ============================================================ -->
         <div v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="glass-card rounded-3xl max-w-md w-full p-8">
+            <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Iniciar sesión</h2>
                 </div>
@@ -307,7 +305,7 @@
         <!-- MODAL DE REGISTRO                                            -->
         <!-- ============================================================ -->
         <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="glass-card rounded-3xl max-w-md w-full p-8">
+            <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Crear cuenta</h2>
                 </div>
@@ -320,15 +318,33 @@
                 <button @click="showRegister = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
         </div>
+
+        <!-- ============================================================ -->
+        <!-- MODAL DE CONTRASEÑA DE ADMIN                                 -->
+        <!-- ============================================================ -->
+        <div v-if="showAdminPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-sm w-full p-8 relative">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">🔐 Acceso Administrador</h2>
+                    <p class="text-sm text-gray-500 mt-1">Ingresa la contraseña para acceder al panel.</p>
+                </div>
+                <div class="space-y-4">
+                    <input v-model="adminPassword" type="password" placeholder="Contraseña" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" @keyup.enter="verifyAdminPassword" />
+                    <button @click="verifyAdminPassword" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">Ingresar</button>
+                    <p v-if="adminPasswordError" class="text-red-500 text-sm text-center">Contraseña incorrecta. Intenta de nuevo.</p>
+                </div>
+                <button @click="showAdminPasswordModal = false; adminPassword = ''; adminPasswordError = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- VUE 3 (CDN)                                                    -->
+    <!-- VUE 3 + FIREBASE                                              -->
     <!-- ============================================================ -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module">
         // ============================================================
-        // FIREBASE CONFIG
+        // CONFIGURACIÓN DE FIREBASE (TUYA)
         // ============================================================
         import { initializeApp } from "firebase/app";
         import {
@@ -350,7 +366,6 @@
             updateDoc,
             deleteDoc,
             arrayUnion,
-            arrayRemove,
             addDoc,
             serverTimestamp,
             query,
@@ -375,9 +390,14 @@
         const provider = new GoogleAuthProvider();
 
         // ============================================================
+        // CONTRASEÑA FIJA PARA ADMIN
+        // ============================================================
+        const ADMIN_PASSWORD = "010525Lp";
+
+        // ============================================================
         // VUE APP
         // ============================================================
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         const App = {
             setup() {
@@ -397,12 +417,13 @@
                 const adminTab = ref('programs');
                 const showProgramForm = ref(false);
                 const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '' });
+                // Admin password modal
+                const showAdminPasswordModal = ref(false);
+                const adminPassword = ref('');
+                const adminPasswordError = ref(false);
+                const isAdmin = ref(false);
 
                 // --- Computed ---
-                const isAdmin = computed(() => {
-                    return user.value && user.value.email === 'admin@civilsoft.com';
-                });
-
                 const currentProgram = computed(() => {
                     return programs.value.find(p => p.id === currentProgramId.value);
                 });
@@ -417,14 +438,6 @@
                 const goHome = () => {
                     currentRoute.value = 'home';
                     currentProgramId.value = null;
-                };
-
-                const goAdmin = () => {
-                    if (isAdmin.value) {
-                        currentRoute.value = 'admin';
-                    } else {
-                        alert('No tienes permisos de administrador.');
-                    }
                 };
 
                 const openProgram = (programId) => {
@@ -487,6 +500,19 @@
                     showLogin.value = true;
                 };
 
+                // --- Administración con contraseña ---
+                const verifyAdminPassword = () => {
+                    if (adminPassword.value === ADMIN_PASSWORD) {
+                        isAdmin.value = true;
+                        currentRoute.value = 'admin';
+                        showAdminPasswordModal.value = false;
+                        adminPassword.value = '';
+                        adminPasswordError.value = false;
+                    } else {
+                        adminPasswordError.value = true;
+                    }
+                };
+
                 // --- Gestión de programas (CRUD) ---
                 const loadPrograms = () => {
                     const q = query(collection(db, "programs"), orderBy("createdAt", "desc"));
@@ -506,7 +532,6 @@
                     }
                     try {
                         if (p.id) {
-                            // Editar
                             await updateDoc(doc(db, "programs", p.id), {
                                 name: p.name,
                                 description: p.description,
@@ -515,7 +540,6 @@
                                 html: p.html
                             });
                         } else {
-                            // Nuevo
                             await addDoc(collection(db, "programs"), {
                                 name: p.name,
                                 description: p.description,
@@ -594,12 +618,10 @@
                 const approveRequest = async (requestId, userId, toolId) => {
                     if (!confirm('¿Confirmas que recibiste el pago y quieres desbloquear este programa?')) return;
                     try {
-                        // Actualizar solicitud
                         await updateDoc(doc(db, "requests", requestId), {
                             status: 'approved',
                             approvedAt: serverTimestamp()
                         });
-                        // Agregar programa al usuario
                         const userRef = doc(db, "users", userId);
                         await updateDoc(userRef, {
                             purchasedTools: arrayUnion(toolId)
@@ -613,11 +635,9 @@
                 // --- Observador de autenticación ---
                 onAuthStateChanged(auth, async (authUser) => {
                     if (authUser) {
-                        // Obtener datos del usuario desde Firestore
                         const userDoc = await getDoc(doc(db, "users", authUser.uid));
                         let userData = {};
                         if (!userDoc.exists()) {
-                            // Crear documento si no existe
                             await setDoc(doc(db, "users", authUser.uid), {
                                 email: authUser.email,
                                 purchasedTools: [],
@@ -647,7 +667,7 @@
                     loadRequests();
                 });
 
-                // --- Exponer para el template ---
+                // --- Exponer ---
                 return {
                     user,
                     programs,
@@ -666,9 +686,11 @@
                     showProgramForm,
                     editingProgram,
                     isAdmin,
+                    showAdminPasswordModal,
+                    adminPassword,
+                    adminPasswordError,
                     isUnlocked,
                     goHome,
-                    goAdmin,
                     openProgram,
                     loginWithEmail,
                     loginWithGoogle,
@@ -676,6 +698,7 @@
                     logout,
                     switchToRegister,
                     switchToLogin,
+                    verifyAdminPassword,
                     saveProgram,
                     editProgram,
                     deleteProgram,
