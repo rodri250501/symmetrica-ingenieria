@@ -4,25 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Symmetrica Ingeniería</title>
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente SF Pro Display (estilo Apple) -->
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
+    <!-- Firebase SDKs -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(145deg, #f5f7fa 0%, #e9edf5 100%);
+            background: #f5f7fa;
             min-height: 100vh;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        .tool-card {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .tool-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
         }
         .btn-primary {
             background: #4f46e5;
@@ -33,6 +38,15 @@
             transition: background 0.2s;
         }
         .btn-primary:hover { background: #4338ca; }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-danger:hover { background: #dc2626; }
         .btn-outline {
             border: 1px solid #d1d5db;
             background: transparent;
@@ -43,76 +57,280 @@
             transition: all 0.2s;
         }
         .btn-outline:hover { background: #f3f4f6; }
+        .tool-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tool-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2);
+        }
+        /* Estilos para el editor de código */
+        .code-editor {
+            font-family: 'Courier New', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-height: 200px;
+            width: 100%;
+            border: none;
+            resize: vertical;
+        }
+        .code-editor:focus { outline: 2px solid #4f46e5; }
+        /* Estilos para la vista previa del programa */
+        .program-preview {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background: white;
+            min-height: 100px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ======== LOGIN SCREEN ======== -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass-card rounded-3xl shadow-2xl max-w-md w-full p-8">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent">Symmetrica</h1>
-                <p class="text-gray-500 text-sm mt-1">Ingeniería Estructural</p>
-            </div>
-            <button onclick="loginGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-2xl hover:bg-gray-50 transition shadow-sm">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">...</svg>
-                Continuar con Google
-            </button>
-            <div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div><div class="relative flex justify-center text-sm"><span class="px-3 bg-white text-gray-400">o usa tu correo</span></div></div>
-            <div class="space-y-4">
-                <input id="loginEmail" type="email" placeholder="Correo" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
-                <input id="loginPassword" type="password" placeholder="Contraseña" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
-                <button onclick="loginEmailPass()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">Iniciar Sesión</button>
-            </div>
-            <hr class="my-6" />
-            <div>
-                <p class="text-sm font-medium text-gray-600 mb-3">¿Nuevo? Crea tu cuenta</p>
-                <input id="registerEmail" type="email" placeholder="Correo" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-2 focus:ring-2 focus:ring-blue-400" />
-                <input id="registerPassword" type="password" placeholder="Contraseña (6+ caracteres)" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-2 focus:ring-2 focus:ring-blue-400" />
-                <button onclick="registerEmailPass()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-xl transition">Crear cuenta</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======== MAIN SCREEN ======== -->
-    <div id="mainScreen" class="hidden min-h-screen">
+    <!-- ============================================================ -->
+    <!-- APLICACIÓN PRINCIPAL (VUE)                                    -->
+    <!-- ============================================================ -->
+    <div id="app">
+        <!-- NAVBAR -->
         <nav class="sticky top-0 z-20 glass-card shadow-sm px-6 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-gray-800">🏗️ Symmetrica</h1>
-            <div id="userInfo" class="flex items-center gap-3"></div>
-        </nav>
-        <main class="max-w-6xl mx-auto px-4 py-10">
-            <div class="mb-10">
-                <h2 class="text-3xl font-bold text-gray-800">Herramientas de Cálculo</h2>
-                <p class="text-gray-500 text-sm mt-1">Selecciona un programa y solicita acceso para usarlo.</p>
+            <h1 class="text-xl font-bold text-gray-800 cursor-pointer" @click="goHome">🏗️ Symmetrica</h1>
+            <div class="flex items-center gap-4">
+                <span v-if="user" class="text-sm text-gray-600">{{ user.email }}</span>
+                <button v-if="user && user.email === 'admin@civilsoft.com'" @click="goAdmin" class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition">
+                    🔐 Admin
+                </button>
+                <button v-if="user" @click="logout" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition">Salir</button>
+                <button v-else @click="showLogin = true" class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition">Iniciar sesión</button>
             </div>
-            <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-        </main>
-    </div>
+        </nav>
 
-    <!-- ======== MODAL SOLICITAR ACCESO ======== -->
-    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-        <div class="glass-card rounded-3xl max-w-md w-full p-8 shadow-2xl">
-            <div class="text-center">
-                <div class="text-5xl mb-4">📱</div>
-                <h3 class="text-2xl font-bold text-gray-800">Solicitar Acceso</h3>
-                <p class="text-gray-500 text-sm mt-1">Para desbloquear <strong id="modalToolName" class="text-gray-800">Programa</strong></p>
-                <div class="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-5 my-6 text-left">
-                    <p class="text-sm text-gray-700 flex items-start gap-2"><span class="text-amber-500">1.</span> Realiza el pago de <strong>20 Bs</strong> (transferencia o QR).</p>
-                    <p class="text-sm text-gray-700 flex items-start gap-2 mt-2"><span class="text-amber-500">2.</span> Escríbenos al <strong class="text-blue-600">+591 69737901</strong> con el comprobante.</p>
-                    <p class="text-sm text-gray-700 flex items-start gap-2 mt-2"><span class="text-amber-500">3.</span> Haz clic en <strong>"Solicitar Acceso"</strong> para registrar tu pedido.</p>
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="max-w-6xl mx-auto px-4 py-8">
+            <!-- ========== RUTA: HOME ========== -->
+            <div v-if="currentRoute === 'home'">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800">Herramientas de Cálculo</h2>
+                    <p class="text-gray-500 text-sm mt-1">Selecciona un programa y solicita acceso para usarlo.</p>
                 </div>
-                <button onclick="requestAccess()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-2xl transition">✅ Solicitar Acceso</button>
-                <button onclick="closeModal()" class="w-full mt-3 text-sm text-gray-400 hover:text-gray-600">Cancelar</button>
-                <p class="text-xs text-gray-400 mt-4">Recibirás la confirmación manualmente.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="prog in programs" :key="prog.id" class="tool-card glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                        <div class="p-6 flex-grow">
+                            <div class="flex items-start justify-between mb-3">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <span class="text-xs font-medium px-3 py-1 rounded-full" :class="isUnlocked(prog.id) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
+                                    {{ isUnlocked(prog.id) ? '✓ Desbloqueado' : '🔒 Bloqueado' }}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">{{ prog.name }}</h3>
+                            <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                            <p class="text-xs text-gray-400 mt-2">Costo: {{ prog.price }} Bs</p>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                            <button v-if="isUnlocked(prog.id)" @click="openProgram(prog.id)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                Abrir programa
+                            </button>
+                            <button v-else @click="requestAccess(prog.id)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                💰 Desbloquear por {{ prog.price }} Bs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p v-if="programs.length === 0" class="text-gray-400 text-center py-10">No hay programas disponibles aún.</p>
+            </div>
+
+            <!-- ========== RUTA: PROGRAMA ========== -->
+            <div v-else-if="currentRoute === 'program'">
+                <div class="mb-4 flex items-center gap-4">
+                    <button @click="goHome" class="text-blue-600 hover:underline">← Volver</button>
+                    <h2 class="text-2xl font-bold text-gray-800">{{ currentProgram?.name }}</h2>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <div v-html="currentProgram?.html || '<p class=\'text-gray-400\'>No hay contenido para este programa.</p>'"></div>
+                </div>
+            </div>
+
+            <!-- ========== RUTA: ADMIN ========== -->
+            <div v-else-if="currentRoute === 'admin' && isAdmin">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">🔐 Panel de Administración</h2>
+
+                <!-- Tabs -->
+                <div class="flex gap-2 mb-6 border-b border-gray-200">
+                    <button @click="adminTab = 'programs'" class="px-4 py-2 font-medium text-sm" :class="adminTab === 'programs' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">Programas</button>
+                    <button @click="adminTab = 'users'" class="px-4 py-2 font-medium text-sm" :class="adminTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">Usuarios</button>
+                    <button @click="adminTab = 'requests'" class="px-4 py-2 font-medium text-sm" :class="adminTab === 'requests' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">Solicitudes</button>
+                </div>
+
+                <!-- ====== TAB: PROGRAMAS ====== -->
+                <div v-if="adminTab === 'programs'">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-700">Gestión de Programas</h3>
+                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' }; showProgramForm = true" class="btn-primary text-sm">+ Nuevo Programa</button>
+                    </div>
+
+                    <!-- Lista de programas -->
+                    <div class="space-y-2 mb-6">
+                        <div v-for="p in programs" :key="p.id" class="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm">
+                            <div>
+                                <span class="text-2xl mr-2">{{ p.icon }}</span>
+                                <span class="font-medium">{{ p.name }}</span>
+                                <span class="text-sm text-gray-500 ml-2">{{ p.price }} Bs</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="editProgram(p)" class="text-blue-600 hover:text-blue-800 text-sm">Editar</button>
+                                <button @click="deleteProgram(p.id)" class="text-red-500 hover:text-red-700 text-sm">Eliminar</button>
+                            </div>
+                        </div>
+                        <p v-if="programs.length === 0" class="text-gray-400 text-center py-4">No hay programas.</p>
+                    </div>
+
+                    <!-- Formulario de programa (modal) -->
+                    <div v-if="showProgramForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                        <div class="glass-card rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{{ editingProgram.id ? 'Editar' : 'Nuevo' }} Programa</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                                    <input v-model="editingProgram.name" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                                    <input v-model="editingProgram.description" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Precio (Bs)</label>
+                                        <input v-model.number="editingProgram.price" type="number" class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Ícono (emoji)</label>
+                                        <input v-model="editingProgram.icon" type="text" maxlength="2" class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Código HTML del programa</label>
+                                    <textarea v-model="editingProgram.html" rows="8" class="code-editor"></textarea>
+                                    <p class="text-xs text-gray-400 mt-1">Pega aquí el HTML completo de la herramienta.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Vista previa</label>
+                                    <div class="program-preview" v-html="editingProgram.html || '<p class=\'text-gray-400\'>Vista previa del programa...</p>'"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-3 mt-6">
+                                <button @click="showProgramForm = false" class="btn-outline">Cancelar</button>
+                                <button @click="saveProgram" class="btn-primary">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== TAB: USUARIOS ====== -->
+                <div v-if="adminTab === 'users'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Usuarios registrados</h3>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">Email</th>
+                                    <th class="px-4 py-2 text-left">Fecha de registro</th>
+                                    <th class="px-4 py-2 text-left">Programas comprados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="u in allUsers" :key="u.id" class="border-t border-gray-100">
+                                    <td class="px-4 py-2">{{ u.email }}</td>
+                                    <td class="px-4 py-2">{{ u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString() : 'N/A' }}</td>
+                                    <td class="px-4 py-2">{{ (u.purchasedTools || []).length }}</td>
+                                </tr>
+                                <tr v-if="allUsers.length === 0"><td colspan="3" class="text-center py-4 text-gray-400">No hay usuarios registrados.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ====== TAB: SOLICITUDES ====== -->
+                <div v-if="adminTab === 'requests'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Solicitudes de acceso pendientes</h3>
+                    <div class="space-y-3">
+                        <div v-for="req in pendingRequests" :key="req.id" class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <p class="font-medium">{{ req.toolName }}</p>
+                                <p class="text-sm text-gray-600">👤 {{ req.userName || req.userEmail }}</p>
+                                <p class="text-sm text-gray-500">{{ req.userEmail }}</p>
+                                <p class="text-xs text-gray-400">Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}</p>
+                            </div>
+                            <button @click="approveRequest(req.id, req.userId, req.toolId)" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
+                                ✅ Aprobar Pago
+                            </button>
+                        </div>
+                        <p v-if="pendingRequests.length === 0" class="text-gray-400 text-center py-8">🎉 No hay solicitudes pendientes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== RUTA: NO ADMIN ========== -->
+            <div v-else-if="currentRoute === 'admin' && !isAdmin">
+                <div class="text-center py-16">
+                    <span class="text-5xl block mb-4">⛔</span>
+                    <h2 class="text-2xl font-bold text-red-600">Acceso Restringido</h2>
+                    <p class="text-gray-500 mt-2">No tienes permisos para ver esta página.</p>
+                    <button @click="goHome" class="mt-4 btn-primary">Volver al inicio</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- ============================================================ -->
+        <!-- MODAL DE LOGIN                                               -->
+        <!-- ============================================================ -->
+        <div v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Iniciar sesión</h2>
+                </div>
+                <div class="space-y-4">
+                    <input v-model="loginEmail" type="email" placeholder="Correo electrónico" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
+                    <input v-model="loginPassword" type="password" placeholder="Contraseña" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
+                    <button @click="loginWithEmail" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">Iniciar Sesión</button>
+                    <button @click="loginWithGoogle" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continuar con Google
+                    </button>
+                    <p class="text-center text-sm text-gray-500">¿No tienes cuenta? <a href="#" @click.prevent="switchToRegister" class="text-blue-600 hover:underline">Regístrate</a></p>
+                </div>
+                <button @click="showLogin = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- MODAL DE REGISTRO                                            -->
+        <!-- ============================================================ -->
+        <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Crear cuenta</h2>
+                </div>
+                <div class="space-y-4">
+                    <input v-model="registerEmail" type="email" placeholder="Correo electrónico" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
+                    <input v-model="registerPassword" type="password" placeholder="Contraseña (6+ caracteres)" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400" />
+                    <button @click="registerWithEmail" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-xl transition">Crear cuenta</button>
+                    <p class="text-center text-sm text-gray-500">¿Ya tienes cuenta? <a href="#" @click.prevent="switchToLogin" class="text-blue-600 hover:underline">Inicia sesión</a></p>
+                </div>
+                <button @click="showRegister = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- VUE 3 (CDN)                                                    -->
+    <!-- ============================================================ -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="module">
         // ============================================================
-        // FIREBASE CONFIG (TUYA)
+        // FIREBASE CONFIG
         // ============================================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { initializeApp } from "firebase/app";
         import {
             getAuth,
             signInWithPopup,
@@ -121,18 +339,25 @@
             signInWithEmailAndPassword,
             onAuthStateChanged,
             signOut
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        } from "firebase/auth";
         import {
             getFirestore,
+            collection,
             doc,
             getDoc,
+            getDocs,
             setDoc,
             updateDoc,
+            deleteDoc,
             arrayUnion,
-            collection,
+            arrayRemove,
             addDoc,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+            serverTimestamp,
+            query,
+            where,
+            onSnapshot,
+            orderBy
+        } from "firebase/firestore";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCt_Nas76jJSMjqhsNj1V9MXKxwcIDB2lQ",
@@ -150,161 +375,317 @@
         const provider = new GoogleAuthProvider();
 
         // ============================================================
-        // LISTA DE PROGRAMAS (con enlaces a sus páginas)
+        // VUE APP
         // ============================================================
-        const PROGRAMS = [
-            {
-                id: 'diseno_vigas_smf',
-                name: 'Diseño de Vigas SMF',
-                description: 'Cálculo de acero requerido para vigas sísmicas (pórtico especial).',
-                price: 20,
-                page: 'viga.html',
-                icon: '📐'
-            },
-            {
-                id: 'calculadora_areas_acero',
-                name: 'Calculadora de Áreas de Acero',
-                description: 'Calcula el área total de acero a partir de grupos de barras.',
-                price: 20,
-                page: 'acero.html',
-                icon: '🔩'
-            }
-        ];
+        const { createApp, ref, computed, onMounted, watch } = Vue;
 
-        // ============================================================
-        // ELEMENTOS DOM
-        // ============================================================
-        const loginScreen = document.getElementById('loginScreen');
-        const mainScreen = document.getElementById('mainScreen');
-        const toolsGrid = document.getElementById('toolsGrid');
-        const userInfo = document.getElementById('userInfo');
-        const modal = document.getElementById('modal');
-        const modalToolName = document.getElementById('modalToolName');
+        const App = {
+            setup() {
+                // --- Estado ---
+                const user = ref(null);
+                const programs = ref([]);
+                const allUsers = ref([]);
+                const pendingRequests = ref([]);
+                const currentRoute = ref('home');
+                const currentProgramId = ref(null);
+                const showLogin = ref(false);
+                const showRegister = ref(false);
+                const loginEmail = ref('');
+                const loginPassword = ref('');
+                const registerEmail = ref('');
+                const registerPassword = ref('');
+                const adminTab = ref('programs');
+                const showProgramForm = ref(false);
+                const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '' });
 
-        let currentUser = null;
-        let currentToolRequest = null;
-
-        // Funciones de login (globales para onclick)
-        window.loginGoogle = async () => { try { await signInWithPopup(auth, provider); } catch (e) { alert(e.message); } };
-        window.loginEmailPass = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
-            if (!email || !pass) return alert('Completa todos los campos');
-            try { await signInWithEmailAndPassword(auth, email, pass); } catch (e) { alert(e.message); }
-        };
-        window.registerEmailPass = async () => {
-            const email = document.getElementById('registerEmail').value;
-            const pass = document.getElementById('registerPassword').value;
-            if (!email || !pass) return alert('Completa todos los campos');
-            if (pass.length < 6) return alert('La contraseña debe tener al menos 6 caracteres');
-            try {
-                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-                await setDoc(doc(db, "users", userCred.user.uid), {
-                    email,
-                    purchasedTools: [],
-                    createdAt: serverTimestamp()
+                // --- Computed ---
+                const isAdmin = computed(() => {
+                    return user.value && user.value.email === 'admin@civilsoft.com';
                 });
-            } catch (e) { alert(e.message); }
-        };
-        window.logout = async () => { await signOut(auth); };
 
-        // Modal
-        function showModal(toolId, toolName) {
-            currentToolRequest = toolId;
-            modalToolName.textContent = toolName;
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        window.closeModal = () => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        };
-        window.requestAccess = async () => {
-            if (!currentUser) return alert('Debes iniciar sesión primero.');
-            if (!currentToolRequest) return;
-            try {
-                await addDoc(collection(db, "requests"), {
-                    userId: currentUser.uid,
-                    userEmail: currentUser.email,
-                    userName: currentUser.displayName || currentUser.email,
-                    toolId: currentToolRequest,
-                    toolName: PROGRAMS.find(p => p.id === currentToolRequest)?.name || 'Desconocido',
-                    status: 'pending',
-                    requestedAt: serverTimestamp(),
-                    phone: '+591 69737901'
+                const currentProgram = computed(() => {
+                    return programs.value.find(p => p.id === currentProgramId.value);
                 });
-                alert('✅ Solicitud enviada. Te contactaremos para confirmar el acceso.');
-                closeModal();
-            } catch (e) { alert(e.message); }
-        };
 
-        // ============================================================
-        // RENDERIZAR TARJETAS
-        // ============================================================
-        function renderTools(userData) {
-            toolsGrid.innerHTML = '';
-            const purchased = userData?.purchasedTools || [];
+                // --- Métodos ---
+                const isUnlocked = (programId) => {
+                    if (!user.value) return false;
+                    const userData = user.value.userData;
+                    return userData && userData.purchasedTools && userData.purchasedTools.includes(programId);
+                };
 
-            PROGRAMS.forEach(prog => {
-                const unlocked = purchased.includes(prog.id);
-                const card = document.createElement('div');
-                card.className = 'tool-card glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col';
+                const goHome = () => {
+                    currentRoute.value = 'home';
+                    currentProgramId.value = null;
+                };
 
-                card.innerHTML = `
-                    <div class="p-6 flex-grow">
-                        <div class="flex items-start justify-between mb-3">
-                            <span class="text-3xl">${prog.icon}</span>
-                            <span class="text-xs font-medium px-3 py-1 rounded-full ${unlocked ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                                ${unlocked ? '✓ Desbloqueado' : '🔒 Bloqueado'}
-                            </span>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800">${prog.name}</h3>
-                        <p class="text-gray-500 text-sm mt-1">${prog.description}</p>
-                        <p class="text-xs text-gray-400 mt-2">Costo: ${prog.price} Bs</p>
-                    </div>
-                    <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
-                        ${unlocked
-                            ? `<a href="${prog.page}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">Abrir programa</a>`
-                            : `<button onclick="showModal('${prog.id}', '${prog.name}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">💰 Desbloquear por ${prog.price} Bs</button>`
-                        }
-                    </div>
-                `;
-                toolsGrid.appendChild(card);
-            });
-        }
+                const goAdmin = () => {
+                    if (isAdmin.value) {
+                        currentRoute.value = 'admin';
+                    } else {
+                        alert('No tienes permisos de administrador.');
+                    }
+                };
 
-        // ============================================================
-        // OBSERVADOR DE AUTENTICACIÓN
-        // ============================================================
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                loginScreen.classList.add('hidden');
-                mainScreen.classList.remove('hidden');
+                const openProgram = (programId) => {
+                    if (isUnlocked(programId)) {
+                        currentProgramId.value = programId;
+                        currentRoute.value = 'program';
+                    } else {
+                        alert('No tienes acceso a este programa. Solicita acceso primero.');
+                    }
+                };
 
-                userInfo.innerHTML = `
-                    <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email}" class="w-8 h-8 rounded-full border border-gray-200" />
-                    <span class="font-medium text-gray-700 text-sm hidden sm:inline">${user.displayName || user.email}</span>
-                    <button onclick="logout()" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition">Salir</button>
-                `;
+                // --- Autenticación ---
+                const loginWithEmail = async () => {
+                    try {
+                        await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+                        showLogin.value = false;
+                        loginEmail.value = '';
+                        loginPassword.value = '';
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
 
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (!userDoc.exists()) {
-                    await setDoc(userDocRef, {
-                        email: user.email,
-                        purchasedTools: [],
-                        createdAt: serverTimestamp()
+                const loginWithGoogle = async () => {
+                    try {
+                        await signInWithPopup(auth, provider);
+                        showLogin.value = false;
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
+
+                const registerWithEmail = async () => {
+                    try {
+                        const cred = await createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value);
+                        await setDoc(doc(db, "users", cred.user.uid), {
+                            email: registerEmail.value,
+                            purchasedTools: [],
+                            createdAt: serverTimestamp()
+                        });
+                        showRegister.value = false;
+                        registerEmail.value = '';
+                        registerPassword.value = '';
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
+
+                const logout = async () => {
+                    await signOut(auth);
+                };
+
+                const switchToRegister = () => {
+                    showLogin.value = false;
+                    showRegister.value = true;
+                };
+
+                const switchToLogin = () => {
+                    showRegister.value = false;
+                    showLogin.value = true;
+                };
+
+                // --- Gestión de programas (CRUD) ---
+                const loadPrograms = () => {
+                    const q = query(collection(db, "programs"), orderBy("createdAt", "desc"));
+                    onSnapshot(q, (snapshot) => {
+                        programs.value = [];
+                        snapshot.forEach(doc => {
+                            programs.value.push({ id: doc.id, ...doc.data() });
+                        });
                     });
-                }
-                const userData = userDoc.exists() ? userDoc.data() : { purchasedTools: [] };
-                renderTools(userData);
-            } else {
-                currentUser = null;
-                loginScreen.classList.remove('hidden');
-                mainScreen.classList.add('hidden');
+                };
+
+                const saveProgram = async () => {
+                    const p = editingProgram.value;
+                    if (!p.name || !p.html) {
+                        alert('Nombre y HTML son obligatorios.');
+                        return;
+                    }
+                    try {
+                        if (p.id) {
+                            // Editar
+                            await updateDoc(doc(db, "programs", p.id), {
+                                name: p.name,
+                                description: p.description,
+                                price: p.price,
+                                icon: p.icon,
+                                html: p.html
+                            });
+                        } else {
+                            // Nuevo
+                            await addDoc(collection(db, "programs"), {
+                                name: p.name,
+                                description: p.description,
+                                price: p.price,
+                                icon: p.icon,
+                                html: p.html,
+                                createdAt: serverTimestamp()
+                            });
+                        }
+                        showProgramForm.value = false;
+                        editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' };
+                    } catch (e) {
+                        alert('Error al guardar: ' + e.message);
+                    }
+                };
+
+                const editProgram = (program) => {
+                    editingProgram.value = { ...program };
+                    showProgramForm.value = true;
+                };
+
+                const deleteProgram = async (id) => {
+                    if (!confirm('¿Eliminar este programa permanentemente?')) return;
+                    try {
+                        await deleteDoc(doc(db, "programs", id));
+                    } catch (e) {
+                        alert('Error al eliminar: ' + e.message);
+                    }
+                };
+
+                // --- Gestión de usuarios ---
+                const loadUsers = () => {
+                    onSnapshot(collection(db, "users"), (snapshot) => {
+                        allUsers.value = [];
+                        snapshot.forEach(doc => {
+                            allUsers.value.push({ id: doc.id, ...doc.data() });
+                        });
+                    });
+                };
+
+                // --- Gestión de solicitudes ---
+                const loadRequests = () => {
+                    const q = query(collection(db, "requests"), where("status", "==", "pending"));
+                    onSnapshot(q, (snapshot) => {
+                        pendingRequests.value = [];
+                        snapshot.forEach(doc => {
+                            pendingRequests.value.push({ id: doc.id, ...doc.data() });
+                        });
+                    });
+                };
+
+                const requestAccess = async (programId) => {
+                    if (!user.value) {
+                        showLogin.value = true;
+                        return;
+                    }
+                    const prog = programs.value.find(p => p.id === programId);
+                    if (!prog) return;
+                    try {
+                        await addDoc(collection(db, "requests"), {
+                            userId: user.value.uid,
+                            userEmail: user.value.email,
+                            userName: user.value.displayName || user.value.email,
+                            toolId: programId,
+                            toolName: prog.name,
+                            status: 'pending',
+                            requestedAt: serverTimestamp(),
+                            phone: '+591 69737901'
+                        });
+                        alert('✅ Solicitud enviada. Te contactaremos para confirmar el acceso.');
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
+
+                const approveRequest = async (requestId, userId, toolId) => {
+                    if (!confirm('¿Confirmas que recibiste el pago y quieres desbloquear este programa?')) return;
+                    try {
+                        // Actualizar solicitud
+                        await updateDoc(doc(db, "requests", requestId), {
+                            status: 'approved',
+                            approvedAt: serverTimestamp()
+                        });
+                        // Agregar programa al usuario
+                        const userRef = doc(db, "users", userId);
+                        await updateDoc(userRef, {
+                            purchasedTools: arrayUnion(toolId)
+                        });
+                        alert('✅ Acceso concedido.');
+                    } catch (e) {
+                        alert('Error: ' + e.message);
+                    }
+                };
+
+                // --- Observador de autenticación ---
+                onAuthStateChanged(auth, async (authUser) => {
+                    if (authUser) {
+                        // Obtener datos del usuario desde Firestore
+                        const userDoc = await getDoc(doc(db, "users", authUser.uid));
+                        let userData = {};
+                        if (!userDoc.exists()) {
+                            // Crear documento si no existe
+                            await setDoc(doc(db, "users", authUser.uid), {
+                                email: authUser.email,
+                                purchasedTools: [],
+                                createdAt: serverTimestamp()
+                            });
+                            userData = { purchasedTools: [] };
+                        } else {
+                            userData = userDoc.data();
+                        }
+                        user.value = {
+                            ...authUser,
+                            userData: userData
+                        };
+                    } else {
+                        user.value = null;
+                        // Si estaba en admin o programa, redirigir a home
+                        if (currentRoute.value === 'admin' || currentRoute.value === 'program') {
+                            goHome();
+                        }
+                    }
+                });
+
+                // --- Inicialización ---
+                onMounted(() => {
+                    loadPrograms();
+                    loadUsers();
+                    loadRequests();
+                });
+
+                // --- Exponer para el template ---
+                return {
+                    user,
+                    programs,
+                    allUsers,
+                    pendingRequests,
+                    currentRoute,
+                    currentProgramId,
+                    currentProgram,
+                    showLogin,
+                    showRegister,
+                    loginEmail,
+                    loginPassword,
+                    registerEmail,
+                    registerPassword,
+                    adminTab,
+                    showProgramForm,
+                    editingProgram,
+                    isAdmin,
+                    isUnlocked,
+                    goHome,
+                    goAdmin,
+                    openProgram,
+                    loginWithEmail,
+                    loginWithGoogle,
+                    registerWithEmail,
+                    logout,
+                    switchToRegister,
+                    switchToLogin,
+                    saveProgram,
+                    editProgram,
+                    deleteProgram,
+                    requestAccess,
+                    approveRequest
+                };
             }
-        });
+        };
+
+        createApp(App).mount('#app');
     </script>
 </body>
 </html>
