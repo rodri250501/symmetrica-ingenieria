@@ -38,7 +38,7 @@
             background-size: 40px 40px;
             background-color: #f0f4f8;
         }
-        
+
         /* ===== HERO CON IMAGEN DE FONDO ===== */
         .hero-gradient {
             position: relative;
@@ -47,7 +47,6 @@
             display: flex;
             align-items: center;
         }
-        /* Imagen de fondo */
         .hero-background {
             position: absolute;
             inset: 0;
@@ -56,7 +55,6 @@
             object-fit: cover;
             z-index: 0;
         }
-        /* Overlay oscuro para mejorar legibilidad */
         .hero-overlay {
             position: absolute;
             inset: 0;
@@ -224,10 +222,6 @@
             font-size: 1.1rem;
             font-weight: 800;
             box-shadow: 0 4px 8px rgba(37,99,235,0.3);
-            /* ==========================================================
-               IMAGEN DEL LOGO (ICONO)
-               Cambia la URL de la imagen por la que prefieras
-               ========================================================== */
             background: url('https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504') center/cover no-repeat;
         }
         .logo-symmetrica .logo-text {
@@ -251,15 +245,17 @@
             }
         }
         .about-image {
-            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
             border-radius: 1rem;
             height: 250px;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
-            color: #94a3b8;
-            border: 2px dashed #94a3b8;
+        }
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* ===== CONTACTO ===== */
@@ -320,10 +316,7 @@
 
         <!-- ===== HERO CON IMAGEN DE FONDO ===== -->
         <section class="hero-gradient text-white px-4 relative">
-            <!-- ==========================================================
-                 IMAGEN DE FONDO DEL HERO
-                 Cambia la URL de la imagen por la que prefieras
-                 ========================================================== -->
+            <!-- Imagen de fondo -->
             <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/513918566_23874746335552536_1315595891752800928_n.jpg?stp=dst-jpg_tt6&cstp=mx1280x1280&ctp=s960x960&_nc_cat=105&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=2B9S0-sS150Q7kNvwHx6_6d&_nc_oc=AdoPdMblQEowsKbaEs__m5DPwsZpMwOLMuR5qhvxUAGz3JD8vngAjTChmSnCo5bCQ6U&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=Xb3Gm5jj4JrDLsPJY7Iscg&_nc_ss=7c2a8&oh=00_AQG8KK-JYobgttGJ6F0ia4GUKT1oBkjiXzlW5x2lXIPltQ&oe=6A816FE6" 
                  alt="Symmetrica Ingeniería" 
                  class="hero-background">
@@ -423,10 +416,9 @@
                                 </div>
                             </div>
                             <div class="about-image">
-    <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504" 
-         alt="Symmetrica Ingeniería" 
-         class="w-full h-full object-cover rounded-lg" />
-</div>
+                                <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504" 
+                                     alt="Symmetrica Ingeniería" />
+                            </div>
                         </div>
                     </div>
                 </section>
