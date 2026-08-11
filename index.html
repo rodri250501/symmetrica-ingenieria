@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symmetrica Ingeniería</title>
+
+    <!-- Fuente SF Pro Display (estilo Apple) -->
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // ----------------------------------------------
+        // 1. CONFIGURACIÓN DE FIREBASE (YA INCLUIDA)
+        // ----------------------------------------------
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import {
+            getAuth,
+            signInWithPopup,
+            GoogleAuthProvider,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            setDoc,
+            updateDoc,
+            arrayUnion,
+            collection,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCt_Nas76jJSMjqhsNj1V9MXKxwcIDB2lQ",
+            authDomain: "symmetrica-ingenieria.firebaseapp.com",
+            projectId: "symmetrica-ingenieria",
+            storageBucket: "symmetrica-ingenieria.firebasestorage.app",
+            messagingSenderId: "761818327436",
+            appId: "1:761818327436:web:d907fb1a8012706a250ea9",
+            measurementId: "G-VJMSWR95CC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // ----------------------------------------------
+        // 2. LISTA DE PROGRAMAS (CON SU CÓDIGO HTML)
+        // ----------------------------------------------
+        const PROGRAMS = [{
+            id: 'diseno_vigas_smf',
+            name: 'Diseño de Vigas SMF',
+            description: 'Cálculo de acero requerido para vigas sísmicas.',
+            price: 20,
+            html: `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Mu (kgf·m)</label>
+                            <input type="number" id="mu" value="15000" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">b (cm)</label>
+                            <input type="number" id="b" value="25" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">h (cm)</label>
+                            <input type="number" id="h" value="50" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">f'c (kgf/cm²)</label>
+                            <input type="number" id="fc" value="280" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">fy (kgf/cm²)</label>
+                            <input type="number" id="fy" value="4200" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">rec (cm)</label>
+                            <input type="number" id="rec" value="4" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+                        </div>
+                    </div>
+                    <button onclick="calcularVigaSMF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition text-sm">
+                        Calcular Acero
+                    </button>
+                    <div id="resultadoViga" class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-700 hidden">
+                        <p class="font-semibold">📐 Resultado:</p>
+                        <div id="resultadoVigaContent"></div>
+                    </div>
+                </div>
+            `
+        }, {
+            id: 'calculadora_areas_acero',
+            name: 'Calculadora de Áreas de Acero',
+            description: 'Calcula el área total de acero a partir de grupos de barras.',
+            price: 20,
+            html: `
+                <div class="space-y-4">
+                    <div id="gruposAcero">
+                        <div class="flex gap-2 items-center grupo-acero">
+                            <input type="number" placeholder="Cant." class="w-1/3 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            <select class="w-2/3 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                <option value="0.32">6 mm</option>
+                                <option value="0.50">8 mm</option>
+                                <option value="0.79">10 mm</option>
+                                <option value="1.13">12 mm</option>
+                                <option value="1.54">14 mm</option>
+                                <option value="2.01">16 mm</option>
+                                <option value="2.54">18 mm</option>
+                                <option value="3.14">20 mm</option>
+                                <option value="3.80">22 mm</option>
+                                <option value="4.91">25 mm</option>
+                                <option value="6.16">28 mm</option>
+                                <option value="7.07">30 mm</option>
+                                <option value="8.04">32 mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="agregarGrupoAcero()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-3 py-1 rounded-lg transition text-sm">
+                            + Agregar Grupo
+                        </button>
+                        <button onclick="calcularAreaAcero()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-1 rounded-lg transition text-sm">
+                            Calcular Área Total
+                        </button>
+                    </div>
+                    <div id="resultadoAcero" class="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-gray-700 hidden">
+                        <p class="font-semibold">📐 Área Total:</p>
+                        <div id="resultadoAceroContent"></div>
+                    </div>
+                </div>
+            `
+        }];
+
+        // ----------------------------------------------
+        // 3. LÓGICA DE LOS PROGRAMAS (FUNCIONES GLOBALES)
+        // ----------------------------------------------
+
+        // 3.1 Diseño de Vigas SMF
+        window.calcularVigaSMF = function() {
+            const Mu = parseFloat(document.getElementById('mu').value);
+            const b = parseFloat(document.getElementById('b').value);
+            const h = parseFloat(document.getElementById('h').value);
+            const fc = parseFloat(document.getElementById('fc').value);
+            const fy = parseFloat(document.getElementById('fy').value);
+            const rec = parseFloat(document.getElementById('rec').value);
+
+            if (!Mu || !b || !h || !fc || !fy || !rec) {
+                alert('Por favor, completa todos los campos.');
+                return;
+            }
+
+            const d = h - rec;
+            const phi = 0.9;
+            const beta1 = fc <= 280 ? 0.85 : 0.85 - 0.05 * ((fc - 280) / 70);
+            const Mu_kgcm = Mu * 100;
+
+            // Cálculo de acero (aproximado)
+            const Rn = Mu_kgcm / (phi * b * d * d);
+            const rho = (0.85 * fc / fy) * (1 - Math.sqrt(1 - (2 * Rn) / (0.85 * fc)));
+            const rho_min = 0.00333;
+            const rho_max = 0.75 * (0.85 * beta1 * fc / fy) * (6000 / (6000 + fy));
+            const rho_final = Math.max(rho, rho_min);
+            const As = rho_final * b * d;
+
+            const resultadoDiv = document.getElementById('resultadoViga');
+            const contentDiv = document.getElementById('resultadoVigaContent');
+            resultadoDiv.classList.remove('hidden');
+            contentDiv.innerHTML = `
+                <p>📏 <strong>d</strong> = ${d.toFixed(2)} cm</p>
+                <p>📊 <strong>ρ</strong> = ${rho_final.toFixed(5)}</p>
+                <p>🔩 <strong>As requerido</strong> = ${As.toFixed(2)} cm²</p>
+                <p class="text-xs text-gray-500 mt-1">ρ_min = ${rho_min.toFixed(5)} | ρ_max = ${rho_max.toFixed(5)}</p>
+            `;
+        };
+
+        // 3.2 Calculadora de Áreas de Acero
+        window.agregarGrupoAcero = function() {
+            const container = document.getElementById('gruposAcero');
+            const newGroup = document.createElement('div');
+            newGroup.className = 'flex gap-2 items-center grupo-acero mt-2';
+            newGroup.innerHTML = `
+                <input type="number" placeholder="Cant." class="w-1/3 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                <select class="w-2/3 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <option value="0.32">6 mm</option>
+                    <option value="0.50">8 mm</option>
+                    <option value="0.79">10 mm</option>
+                    <option value="1.13">12 mm</option>
+                    <option value="1.54">14 mm</option>
+                    <option value="2.01">16 mm</option>
+                    <option value="2.54">18 mm</option>
+                    <option value="3.14">20 mm</option>
+                    <option value="3.80">22 mm</option>
+                    <option value="4.91">25 mm</option>
+                    <option value="6.16">28 mm</option>
+                    <option value="7.07">30 mm</option>
+                    <option value="8.04">32 mm</option>
+                </select>
+            `;
+            container.appendChild(newGroup);
+        };
+
+        window.calcularAreaAcero = function() {
+            const grupos = document.querySelectorAll('.grupo-acero');
+            let total = 0;
+            let detalles = [];
+
+            grupos.forEach(g => {
+                const cantidad = parseFloat(g.querySelector('input').value) || 0;
+                const areaIndividual = parseFloat(g.querySelector('select').value);
+                const subtotal = cantidad * areaIndividual;
+                total += subtotal;
+                if (cantidad > 0) {
+                    const diametro = g.querySelector('select').selectedOptions[0].text;
+                    detalles.push(`${cantidad} Ø${diametro} (${subtotal.toFixed(2)} cm²)`);
+                }
+            });
+
+            const resultadoDiv = document.getElementById('resultadoAcero');
+            const contentDiv = document.getElementById('resultadoAceroContent');
+            resultadoDiv.classList.remove('hidden');
+            contentDiv.innerHTML = `
+                <p>🔩 <strong>Área total</strong> = ${total.toFixed(2)} cm²</p>
+                ${detalles.length > 0 ? `<p class="text-xs text-gray-500 mt-1">${detalles.join(' | ')}</p>` : ''}
+            `;
+        };
+
+        // ----------------------------------------------
+        // 4. UI: LOGIN, RENDER, MODAL, ETC.
+        // ----------------------------------------------
+
+        const appContainer = document.getElementById('app');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainScreen = document.getElementById('mainScreen');
+        const toolsGrid = document.getElementById('toolsGrid');
+        const userInfo = document.getElementById('userInfo');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const registerEmail = document.getElementById('registerEmail');
+        const registerPassword = document.getElementById('registerPassword');
+        const modal = document.getElementById('modal');
+        const modalToolName = document.getElementById('modalToolName');
+        const requestAccessBtn = document.getElementById('requestAccessBtn');
+
+        let currentUser = null;
+        let currentToolRequest = null;
+
+        // Cerrar sesión
+        window.logout = async () => {
+            await signOut(auth);
+        };
+
+        // Mostrar / ocultar modal
+        function showModal(toolId, toolName) {
+            currentToolRequest = toolId;
+            modalToolName.textContent = toolName;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        window.closeModal = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        // Renderizar programas
+        function renderTools(userData) {
+            toolsGrid.innerHTML = '';
+            const purchasedTools = userData?.purchasedTools || [];
+
+            PROGRAMS.forEach(program => {
+                const isUnlocked = purchasedTools.includes(program.id);
+
+                const card = document.createElement('div');
+                card.className =
+                    'group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-white/50 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] flex flex-col';
+
+                // Header
+                const header = document.createElement('div');
+                header.className =
+                    'px-5 py-4 bg-gradient-to-r from-gray-50/80 to-white/80 border-b border-gray-100/50 flex justify-between items-center';
+                header.innerHTML = `
+                    <h3 class="font-semibold text-gray-800">${program.name}</h3>
+                    <span class="text-xs font-medium px-3 py-1 rounded-full ${isUnlocked ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                        ${isUnlocked ? '✓ Desbloqueado' : '🔒 Bloqueado'}
+                    </span>
+                `;
+                card.appendChild(header);
+
+                // Body
+                const body = document.createElement('div');
+                body.className = 'p-5 flex-grow';
+                if (isUnlocked) {
+                    body.innerHTML = program.html;
+                } else {
+                    body.innerHTML = `
+                        <div class="text-gray-500 text-sm mb-3">${program.description}</div>
+                        <div class="bg-gray-100/80 rounded-xl p-6 text-center text-gray-400 text-sm border border-dashed border-gray-300">
+                            <span class="text-3xl block mb-2">⛔</span>
+                            Programa bloqueado
+                        </div>
+                    `;
+                }
+                card.appendChild(body);
+
+                // Footer
+                const footer = document.createElement('div');
+                footer.className = 'px-5 py-4 bg-gray-50/80 border-t border-gray-100/50';
+                if (isUnlocked) {
+                    footer.innerHTML =
+                    `<span class="text-green-600 text-sm font-medium flex items-center gap-1">✅ Acceso activo</span>`;
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className =
+                        'w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm shadow-sm hover:shadow';
+                    btn.innerHTML = `💰 Desbloquear por ${program.price} Bs`;
+                    btn.onclick = () => showModal(program.id, program.name);
+                    footer.appendChild(btn);
+                }
+                card.appendChild(footer);
+                toolsGrid.appendChild(card);
+            });
+        }
+
+        // --- LOGIN ---
+        window.loginGoogle = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.loginEmailPass = async () => {
+            const email = loginEmail.value;
+            const pass = loginPassword.value;
+            if (!email || !pass) return alert('Completa todos los campos');
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.registerEmailPass = async () => {
+            const email = registerEmail.value;
+            const pass = registerPassword.value;
+            if (!email || !pass) return alert('Completa todos los campos');
+            if (pass.length < 6) return alert('La contraseña debe tener al menos 6 caracteres');
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", userCred.user.uid), {
+                    email: email,
+                    purchasedTools: [],
+                    createdAt: serverTimestamp()
+                });
+            } catch (error) {
+                alert('Error en registro: ' + error.message);
+            }
+        };
+
+        // --- SOLICITAR ACCESO ---
+        window.requestAccess = async () => {
+            if (!currentUser) {
+                alert('Debes iniciar sesión primero.');
+                return;
+            }
+            if (!currentToolRequest) return;
+
+            try {
+                await addDoc(collection(db, "requests"), {
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    userName: currentUser.displayName || currentUser.email,
+                    toolId: currentToolRequest,
+                    toolName: PROGRAMS.find(p => p.id === currentToolRequest)?.name || 'Desconocido',
+                    status: 'pending',
+                    requestedAt: serverTimestamp(),
+                    phone: '+591 69737901'
+                });
+                alert('✅ Solicitud enviada. Te contactaremos para confirmar el acceso.');
+                closeModal();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        // --- OBSERVADOR DE AUTENTICACIÓN ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                loginScreen.classList.add('hidden');
+                mainScreen.classList.remove('hidden');
+
+                userInfo.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email}" class="w-8 h-8 rounded-full border border-gray-200" />
+                        <span class="font-medium text-gray-700 text-sm hidden sm:inline">${user.displayName || user.email}</span>
+                        <button onclick="logout()" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition">Salir</button>
+                    </div>
+                `;
+
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        purchasedTools: [],
+                        createdAt: serverTimestamp()
+                    });
+                }
+                const userData = userDoc.exists() ? userDoc.data() : { purchasedTools: [] };
+                renderTools(userData);
+            } else {
+                currentUser = null;
+                loginScreen.classList.remove('hidden');
+                mainScreen.classList.add('hidden');
+            }
+        });
+
+        // --- ANIMACIÓN DE ENTRADA (OPCIONAL) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.animate-on-load').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 100);
+            });
+        });
+    </script>
+
+    <style>
+        /* Estilo global minimalista */
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #f5f7fa 0%, #e9edf5 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .glass-card-dark {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        /* Efecto hover en tarjetas */
+        .tool-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+        }
+        /* Scroll suave */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c7cd;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0a8b0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================ -->
+    <!-- PANTALLA DE LOGIN (estilo Apple) -->
+    <!-- ============================================ -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-card rounded-3xl shadow-2xl max-w-md w-full p-8 animate-on-load">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent tracking-tight">
+                    Symmetrica
+                </h1>
+                <p class="text-gray-500 text-sm mt-1 font-medium">Ingeniería Estructural</p>
+            </div>
+
+            <!-- Botón Google -->
+            <button onclick="loginGoogle()"
+            class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-2xl hover:bg-gray-50 transition shadow-sm hover:shadow">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Continuar con Google
+        </button>
+
+        <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+            <div class="relative flex justify-center text-sm"><span class="px-3 bg-white text-gray-400">o usa tu correo</span></div>
+        </div>
+
+        <!-- Login Email -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Correo electrónico</label>
+                <input id="loginEmail" type="email" placeholder="tucorreo@mail.com"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white/80" />
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Contraseña</label>
+                <input id="loginPassword" type="password" placeholder="••••••"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white/80" />
+            </div>
+            <button onclick="loginEmailPass()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition shadow-sm hover:shadow">
+            Iniciar Sesión
+        </button>
+    </div>
+
+    <hr class="my-6 border-gray-200" />
+
+    <!-- Registro -->
+    <div>
+        <p class="text-sm font-medium text-gray-600 mb-3">¿Nuevo? Crea tu cuenta</p>
+        <div class="space-y-3">
+            <input id="registerEmail" type="email" placeholder="Correo electrónico"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white/80" />
+            <input id="registerPassword" type="password" placeholder="Contraseña (6+ caracteres)"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white/80" />
+            <button onclick="registerEmailPass()"
+            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-xl transition shadow-sm hover:shadow">
+            Crear cuenta
+        </button>
+    </div>
+</div>
+</div>
+</div>
+
+<!-- ============================================ -->
+<!-- PANTALLA PRINCIPAL -->
+<!-- ============================================ -->
+<div id="mainScreen" class="hidden min-h-screen">
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-20 glass-card-dark shadow-sm px-6 py-3 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-gray-800 tracking-tight">🏗️ Symmetrica</h1>
+        <div id="userInfo"></div>
+    </nav>
+
+    <!-- Contenido -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <div class="mb-10 animate-on-load">
+            <h2 class="text-3xl font-bold text-gray-800 tracking-tight">Herramientas de Cálculo</h2>
+            <p class="text-gray-500 text-sm mt-1">Selecciona un programa y solicita acceso para usarlo.</p>
+        </div>
+
+        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Renderizado por JavaScript -->
+        </div>
+    </main>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL DE SOLICITUD (estilo Apple) -->
+<!-- ============================================ -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="glass-card rounded-3xl max-w-md w-full p-8 shadow-2xl transform transition-all duration-300 scale-100 animate-on-load">
+        <div class="text-center">
+            <div class="text-5xl mb-4">📱</div>
+            <h3 class="text-2xl font-bold text-gray-800">Solicitar Acceso</h3>
+            <p class="text-gray-500 text-sm mt-1">Para desbloquear <strong id="modalToolName" class="text-gray-800">Programa</strong></p>
+
+            <div class="bg-amber-50/80 border border-amber-200/60 rounded-2xl p-5 my-6 text-left">
+                <p class="text-sm text-gray-700 flex items-start gap-2">
+                    <span class="text-amber-500">1.</span>
+                    <span>Realiza el pago de <strong class="text-gray-900">20 Bs</strong> (transferencia o QR).</span>
+                </p>
+                <p class="text-sm text-gray-700 flex items-start gap-2 mt-2">
+                    <span class="text-amber-500">2.</span>
+                    <span>Escríbenos al <strong class="text-blue-600">+591 69737901</strong> con el comprobante.</span>
+                </p>
+                <p class="text-sm text-gray-700 flex items-start gap-2 mt-2">
+                    <span class="text-amber-500">3.</span>
+                    <span>Haz clic en <strong>"Solicitar Acceso"</strong> para registrar tu pedido.</span>
+                </p>
+            </div>
+
+            <button onclick="requestAccess()"
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-2xl transition shadow-sm hover:shadow text-lg">
+            ✅ Solicitar Acceso
+        </button>
+        <button onclick="closeModal()"
+        class="w-full mt-3 text-sm text-gray-400 hover:text-gray-600 transition">
+        Cancelar
+    </button>
+    <p class="text-xs text-gray-400 mt-4">Recibirás la confirmación manualmente.</p>
+</div>
+</div>
+</div>
+
+</body>
+</html>
