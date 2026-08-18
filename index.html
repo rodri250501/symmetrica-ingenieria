@@ -302,7 +302,7 @@
             </a>
             <div class="flex items-center gap-3">
                 <span v-if="user" class="text-sm text-gray-600 hidden sm:inline">{{ user.email }}</span>
-                <button @click="showAdminPasswordModal = true" class="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium">
+                <button v-if="isAdmin" @click="currentRoute = 'admin'" class="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium">
                     🔐 Admin
                 </button>
                 <button v-if="user" @click="logout" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition font-medium">
@@ -706,7 +706,7 @@
                 <div class="text-center py-20">
                     <span class="text-6xl block mb-4">⛔</span>
                     <h2 class="text-2xl font-bold text-red-600">Acceso Restringido</h2>
-                    <p class="text-gray-500 mt-2">Contraseña de administrador incorrecta.</p>
+                    <p class="text-gray-500 mt-2">Tu cuenta no tiene permisos de administrador.</p>
                     <button @click="goHome" class="mt-6 btn-primary">Volver al inicio</button>
                 </div>
             </div>
@@ -783,27 +783,6 @@
             </div>
         </div>
 
-        <!-- Admin password -->
-        <div v-if="showAdminPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="glass-card rounded-3xl max-w-sm w-full p-8 relative">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">🔐 Acceso Administrador</h2>
-                    <p class="text-sm text-gray-500 mt-1">Ingresa la contraseña para acceder al panel.</p>
-                </div>
-                <div class="space-y-4">
-                    <input v-model="adminPassword" type="password" placeholder="Contraseña"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                           @keyup.enter="verifyAdminPassword" />
-                    <button @click="verifyAdminPassword" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">
-                        Ingresar
-                    </button>
-                    <p v-if="adminPasswordError" class="text-red-500 text-sm text-center">Contraseña incorrecta. Intenta de nuevo.</p>
-                </div>
-                <button @click="showAdminPasswordModal = false; adminPassword = ''; adminPasswordError = false"
-                        class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-            </div>
-        </div>
-
     </div>
 
     <!-- ===== VUE 3 + FIREBASE ===== -->
@@ -852,8 +831,6 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        const ADMIN_PASSWORD = "010525Lp";
-
         const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
         const App = {
@@ -874,11 +851,6 @@
                 const adminTab = ref('programs');
                 const showProgramForm = ref(false);
                 const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '' });
-                const showAdminPasswordModal = ref(false);
-                const adminPassword = ref('');
-                const adminPasswordError = ref(false);
-                const isAdmin = ref(false);
-
                 // Contacto
                 const contactName = ref('');
                 const contactEmail = ref('');
@@ -887,6 +859,17 @@
                 // ===== COMPUTED =====
                 const currentProgram = computed(() => {
                     return programs.value.find(p => p.id === currentProgramId.value);
+                });
+
+                // isAdmin ya NO depende de una contraseña en el cliente.
+                // Depende del campo "role" guardado en el documento Firestore del usuario
+                // (users/{uid}.role === 'admin'), que solo el dueño del proyecto puede
+                // configurar manualmente desde la consola de Firebase. Además, las
+                // Firestore Security Rules verifican este mismo campo del lado del
+                // servidor, así que aunque alguien manipule el cliente no puede escribir
+                // en /programs, /requests ni leer /users sin ese rol real.
+                const isAdmin = computed(() => {
+                    return !!(user.value && user.value.userData && user.value.userData.role === 'admin');
                 });
 
                 // ===== MÉTODOS =====
@@ -961,6 +944,7 @@
                         await setDoc(doc(db, "users", cred.user.uid), {
                             email: registerEmail.value,
                             purchasedTools: [],
+                            role: 'user',
                             createdAt: serverTimestamp()
                         });
                         showRegister.value = false;
@@ -983,19 +967,6 @@
                 const switchToLogin = () => {
                     showRegister.value = false;
                     showLogin.value = true;
-                };
-
-                // ===== ADMIN PASSWORD =====
-                const verifyAdminPassword = () => {
-                    if (adminPassword.value === ADMIN_PASSWORD) {
-                        isAdmin.value = true;
-                        currentRoute.value = 'admin';
-                        showAdminPasswordModal.value = false;
-                        adminPassword.value = '';
-                        adminPasswordError.value = false;
-                    } else {
-                        adminPasswordError.value = true;
-                    }
                 };
 
                 // ===== CRUD PROGRAMAS =====
@@ -1142,9 +1113,10 @@
                             await setDoc(doc(db, "users", authUser.uid), {
                                 email: authUser.email,
                                 purchasedTools: [],
+                                role: 'user',
                                 createdAt: serverTimestamp()
                             });
-                            userData = { purchasedTools: [] };
+                            userData = { purchasedTools: [], role: 'user' };
                         } else {
                             userData = userDoc.data();
                         }
@@ -1188,9 +1160,6 @@
                     showProgramForm,
                     editingProgram,
                     isAdmin,
-                    showAdminPasswordModal,
-                    adminPassword,
-                    adminPasswordError,
                     contactName,
                     contactEmail,
                     contactMessage,
@@ -1204,7 +1173,6 @@
                     logout,
                     switchToRegister,
                     switchToLogin,
-                    verifyAdminPassword,
                     saveProgram,
                     editProgram,
                     deleteProgram,
