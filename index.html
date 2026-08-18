@@ -791,8 +791,7 @@
         import { initializeApp } from "firebase/app";
         import {
             getAuth,
-            signInWithRedirect,
-            getRedirectResult,
+            signInWithPopup,
             GoogleAuthProvider,
             createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
@@ -911,14 +910,6 @@
                 };
 
                 // ===== AUTENTICACIÓN =====
-                const handleRedirectResult = async () => {
-                    try {
-                        await getRedirectResult(auth);
-                    } catch (error) {
-                        console.error('Error en redirect de Google:', error);
-                    }
-                };
-
                 const loginWithEmail = async () => {
                     try {
                         await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
@@ -930,11 +921,29 @@
                     }
                 };
 
+                // Antes usaba signInWithRedirect + getRedirectResult. Ese flujo
+                // depende de leer el resultado de vuelta en una navegación de
+                // página completa entre tu dominio (vercel.app) y el authDomain
+                // de Firebase (firebaseapp.com) — y los navegadores modernos
+                // (Safari ITP, Chrome sin cookies de terceros, Brave, Firefox
+                // en modo estricto) suelen bloquear ese acceso a storage entre
+                // dominios distintos. Resultado típico: el usuario completa el
+                // login de Google, vuelve al sitio, pero la app nunca se entera.
+                // signInWithPopup evita ese problema porque el intercambio pasa
+                // por la ventana emergente (postMessage), no por una redirección
+                // de página completa.
                 const loginWithGoogle = async () => {
                     try {
-                        await signInWithRedirect(auth, provider);
+                        await signInWithPopup(auth, provider);
+                        showLogin.value = false;
                     } catch (e) {
-                        alert('Error al iniciar con Google: ' + e.message);
+                        if (e.code === 'auth/popup-blocked') {
+                            alert('Tu navegador bloqueó la ventana emergente de Google. Habilita los pop-ups para este sitio e inténtalo de nuevo.');
+                        } else if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+                            // El usuario cerró la ventana, no hace falta mostrar error.
+                        } else {
+                            alert('Error al iniciar con Google: ' + e.message);
+                        }
                     }
                 };
 
@@ -1134,7 +1143,6 @@
 
                 // ===== INIT =====
                 onMounted(() => {
-                    handleRedirectResult();
                     loadPrograms();
                     loadUsers();
                     loadRequests();
