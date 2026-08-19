@@ -91,5 +91,20 @@ export function useRequests(userRef, programsRef, showLoginRef) {
         }
     };
 
-    return { pendingRequests, loadRequests, requestAccess, approveRequest, myRequests, loadMyRequests, isRequestPending };
+    const rejectRequest = async (requestId) => {
+        const reason = prompt('Motivo del rechazo (opcional, el usuario lo verá en su historial):', '');
+        if (reason === null) return; // canceló el prompt
+        try {
+            await updateDoc(doc(db, "requests", requestId), {
+                status: 'rejected',
+                rejectedAt: serverTimestamp(),
+                rejectionReason: reason || ''
+            });
+            alert('Solicitud rechazada.');
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+    };
+
+    return { pendingRequests, loadRequests, requestAccess, approveRequest, rejectRequest, myRequests, loadMyRequests, isRequestPending };
 }
