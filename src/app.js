@@ -27,16 +27,17 @@ const App = {
         const contactApi = useContact();
 
         // Si el usuario cierra sesión mientras está en una ruta protegida
-        // (admin o un programa abierto), lo mandamos de vuelta al home.
-        // Esta regla vive AQUÍ y no dentro de useAuth ni de usePrograms
-        // porque involucra a los dos — así ninguno de los dos composables
-        // necesita conocer al otro.
+        // (admin, cuenta, o un programa abierto), lo mandamos de vuelta al
+        // home. También recargamos "mis solicitudes" cada vez que cambia
+        // el usuario (login/logout), porque esa consulta depende del uid.
         watch(authApi.user, (newUser) => {
             const protectedRoute = programsApi.currentRoute.value === 'admin' ||
+                                    programsApi.currentRoute.value === 'account' ||
                                     programsApi.currentRoute.value === 'program';
             if (!newUser && protectedRoute) {
                 programsApi.goHome();
             }
+            requestsApi.loadMyRequests();
         });
 
         onMounted(() => {
