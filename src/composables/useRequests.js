@@ -16,6 +16,8 @@ const { ref } = Vue;
 
 export function useRequests(userRef, programsRef, showLoginRef) {
     const pendingRequests = ref([]);
+    const myRequests = ref([]);
+    let unsubscribeMyRequests = null;
 
     const loadRequests = () => {
         const q = query(collection(db, "requests"), where("status", "==", "pending"));
@@ -23,6 +25,30 @@ export function useRequests(userRef, programsRef, showLoginRef) {
             pendingRequests.value = [];
             snapshot.forEach(d => pendingRequests.value.push({ id: d.id, ...d.data() }));
         });
+    };
+
+    // Solicitudes del usuario actual (cualquier estado), para que pueda ver
+    // en "Mi cuenta" si ya pidió un programa y sigue pendiente de aprobación,
+    // en vez de que el botón "Solicitar acceso" aparezca de nuevo sin más.
+    // Se vuelve a suscribir cada vez que cambia el usuario (login/logout).
+    const loadMyRequests = () => {
+        if (unsubscribeMyRequests) {
+            unsubscribeMyRequests();
+            unsubscribeMyRequests = null;
+        }
+        if (!userRef.value) {
+            myRequests.value = [];
+            return;
+        }
+        const q = query(collection(db, "requests"), where("userId", "==", userRef.value.uid));
+        unsubscribeMyRequests = onSnapshot(q, (snapshot) => {
+            myRequests.value = [];
+            snapshot.forEach(d => myRequests.value.push({ id: d.id, ...d.data() }));
+        });
+    };
+
+    const isRequestPending = (programId) => {
+        return myRequests.value.some(r => r.toolId === programId && r.status === 'pending');
     };
 
     const requestAccess = async (programId) => {
@@ -65,5 +91,5 @@ export function useRequests(userRef, programsRef, showLoginRef) {
         }
     };
 
-    return { pendingRequests, loadRequests, requestAccess, approveRequest };
+    return { pendingRequests, loadRequests, requestAccess, approveRequest, myRequests, loadMyRequests, isRequestPending };
 }
