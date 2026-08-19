@@ -302,6 +302,9 @@
             </a>
             <div class="flex items-center gap-3">
                 <span v-if="user" class="text-sm text-gray-600 hidden sm:inline">{{ user.email }}</span>
+                <button v-if="user" @click="currentRoute = 'account'" class="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-200 transition font-medium">
+                    👤 Mi cuenta
+                </button>
                 <button v-if="isAdmin" @click="currentRoute = 'admin'" class="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium">
                     🔐 Admin
                 </button>
@@ -556,6 +559,69 @@
                 </div>
                 <div class="glass-card rounded-2xl p-6">
                     <iframe :srcdoc="currentProgram?.html || ''" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                </div>
+            </div>
+
+            <!-- ===== MI CUENTA ===== -->
+            <div v-else-if="currentRoute === 'account'">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">👤 Mi cuenta</h2>
+                    <p class="text-gray-500 text-sm mt-1">{{ user?.email }}</p>
+                </div>
+
+                <!-- Programas desbloqueados -->
+                <div class="mb-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Mis programas</h3>
+                    <div v-if="programs.filter(p => isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no tienes programas desbloqueados. Explora el catálogo y solicita acceso al que necesites.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                                <button @click="openProgram(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Abrir programa →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catálogo / pendientes -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Más programas disponibles</h3>
+                    <div v-if="programs.filter(p => !isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Ya tienes acceso a todos los programas del catálogo.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => !isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                                <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                                <button v-if="isRequestPending(prog.id)" disabled
+                                        class="w-full bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
+                                    ⏳ Solicitud pendiente
+                                </button>
+                                <button v-else @click="requestAccess(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    💰 Solicitar por {{ prog.price }} Bs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
