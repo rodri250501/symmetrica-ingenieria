@@ -47,6 +47,18 @@ const App = {
             setTimeout(() => observeCards(), 300);
         });
 
+        // El botón "Desbloquear ahora" que aparece DENTRO del iframe en modo
+        // demo (ver demo-lock.js) no puede llamar directamente a requestAccess
+        // porque vive en otro documento — manda un postMessage y acá lo
+        // escuchamos para disparar el mismo flujo de "solicitar acceso" que
+        // usa el catálogo normal.
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'symmetrica-unlock-request') {
+                const programId = programsApi.currentProgramId.value;
+                if (programId) requestsApi.requestAccess(programId);
+            }
+        });
+
         return {
             ...authApi,
             ...programsApi,
