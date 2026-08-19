@@ -380,15 +380,21 @@
                                 <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
                                 <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
                             </div>
-                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
                                 <button v-if="isUnlocked(prog.id)" @click="openProgram(prog.id)"
                                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
                                     Abrir programa →
                                 </button>
-                                <button v-else @click="requestAccess(prog.id)"
-                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    💰 Desbloquear por {{ prog.price }} Bs
-                                </button>
+                                <template v-else>
+                                    <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                            class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                        ▶ Probar gratis
+                                    </button>
+                                    <button @click="requestAccess(prog.id)"
+                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                        💰 Desbloquear por {{ prog.price }} Bs
+                                    </button>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -551,14 +557,18 @@
 
             <!-- ===== PROGRAMA (iframe) ===== -->
             <div v-else-if="currentRoute === 'program'">
-                <div class="mb-6 flex items-center gap-4">
+                <div class="mb-6 flex items-center gap-4 flex-wrap">
                     <button @click="goHome" class="text-blue-600 hover:text-blue-800 font-medium transition flex items-center gap-1">
                         ← Volver
                     </button>
                     <h2 class="text-2xl font-bold text-gray-800">{{ currentProgram?.name }}</h2>
+                    <span v-if="isDemoView && !isUnlocked(currentProgramId)"
+                          class="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+                        🔒 Modo demo
+                    </span>
                 </div>
                 <div class="glass-card rounded-2xl p-6">
-                    <iframe :srcdoc="currentProgram?.html || ''" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                    <iframe :srcdoc="programIframeSrcdoc" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
                 </div>
             </div>
 
@@ -610,7 +620,11 @@
                                 <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
                                 <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
                             </div>
-                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
+                                <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                        class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                    ▶ Probar gratis
+                                </button>
                                 <button v-if="isRequestPending(prog.id)" disabled
                                         class="w-full bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
                                     ⏳ Solicitud pendiente
@@ -652,7 +666,7 @@
                 <div v-if="adminTab === 'programs'">
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h3 class="text-lg font-semibold text-gray-700">Gestión de Programas</h3>
-                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' }; showProgramForm = true"
+                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false }; showProgramForm = true"
                                 class="btn-primary text-sm">
                             + Nuevo Programa
                         </button>
@@ -702,6 +716,17 @@
                                         <input v-model="editingProgram.icon" type="text" maxlength="2"
                                                class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                        <input v-model="editingProgram.demo" type="checkbox" class="w-4 h-4 rounded border-gray-300" />
+                                        Permitir "Probar gratis" (modo demo)
+                                    </label>
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        En modo demo, cualquiera puede abrir el programa sin comprar. Los campos quedan
+                                        bloqueados con los valores de ejemplo que ya trae el HTML — no necesitas
+                                        configurar nada más.
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Código HTML del programa</label>
