@@ -637,6 +637,37 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Historial de solicitudes -->
+                <div class="mt-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Historial de solicitudes</h3>
+                    <div v-if="myRequests.length === 0" class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no has hecho ninguna solicitud.
+                    </div>
+                    <div v-else class="space-y-2">
+                        <div v-for="req in [...myRequests].sort((a, b) => (b.requestedAt?.seconds || 0) - (a.requestedAt?.seconds || 0))"
+                             :key="req.id"
+                             class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border border-gray-100/50">
+                            <div>
+                                <p class="font-medium text-gray-800">{{ req.toolName }}</p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}
+                                </p>
+                                <p v-if="req.status === 'rejected' && req.rejectionReason" class="text-xs text-red-500 mt-1">
+                                    Motivo: {{ req.rejectionReason }}
+                                </p>
+                            </div>
+                            <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap"
+                                  :class="{
+                                      'bg-amber-100 text-amber-700': req.status === 'pending',
+                                      'bg-green-100 text-green-700': req.status === 'approved',
+                                      'bg-red-100 text-red-700': req.status === 'rejected'
+                                  }">
+                                {{ req.status === 'pending' ? '⏳ Pendiente' : req.status === 'approved' ? '✅ Aprobada' : '❌ Rechazada' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ===== ADMIN ===== -->
@@ -782,10 +813,16 @@
                                 <p class="text-sm text-gray-500">{{ req.userEmail }}</p>
                                 <p class="text-xs text-gray-400 mt-1">Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}</p>
                             </div>
-                            <button @click="approveRequest(req.id, req.userId, req.toolId)"
-                                    class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
-                                ✅ Aprobar Pago
-                            </button>
+                            <div class="flex gap-2">
+                                <button @click="approveRequest(req.id, req.userId, req.toolId)"
+                                        class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
+                                    ✅ Aprobar Pago
+                                </button>
+                                <button @click="rejectRequest(req.id)"
+                                        class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 font-semibold px-6 py-2 rounded-xl transition">
+                                    ❌ Rechazar
+                                </button>
+                            </div>
                         </div>
                         <p v-if="pendingRequests.length === 0" class="text-gray-400 text-center py-12 text-lg">🎉 No hay solicitudes pendientes.</p>
                     </div>
