@@ -18,6 +18,7 @@ import {
     serverTimestamp, query, orderBy, onSnapshot
 } from "firebase/firestore";
 import { observeCards } from '../core/ui-helpers.js';
+import { buildDemoHtml } from '../core/demo-lock.js';
 
 const { ref, computed, nextTick } = Vue;
 
@@ -25,12 +26,27 @@ export function usePrograms(userRef) {
     const programs = ref([]);
     const currentRoute = ref('home');
     const currentProgramId = ref(null);
+    const isDemoView = ref(false);
     const adminTab = ref('programs');
     const showProgramForm = ref(false);
-    const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '' });
+    const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false });
 
     const currentProgram = computed(() => {
         return programs.value.find(p => p.id === currentProgramId.value);
+    });
+
+    // El iframe del visor de programa usa esto en vez del HTML crudo.
+    // Si estás en modo demo Y todavía no compraste el programa, se envuelve
+    // con el candado (ver demo-lock.js). Si ya lo desbloqueaste, se ve la
+    // versión real sin ninguna restricción, aunque hayas entrado por el
+    // botón "Probar gratis".
+    const programIframeSrcdoc = computed(() => {
+        const prog = currentProgram.value;
+        if (!prog) return '';
+        if (isDemoView.value && !isUnlocked(prog.id)) {
+            return buildDemoHtml(prog.html || '');
+        }
+        return prog.html || '';
     });
 
     const isUnlocked = (programId) => {
@@ -42,6 +58,7 @@ export function usePrograms(userRef) {
     const goHome = () => {
         currentRoute.value = 'home';
         currentProgramId.value = null;
+        isDemoView.value = false;
         nextTick(() => observeCards());
     };
 
@@ -49,9 +66,19 @@ export function usePrograms(userRef) {
         if (isUnlocked(programId)) {
             currentProgramId.value = programId;
             currentRoute.value = 'program';
+            isDemoView.value = false;
         } else {
             alert('No tienes acceso a este programa. Solicita acceso primero.');
         }
+    };
+
+    // A diferencia de openProgram(), esta NO exige haber comprado el
+    // programa ni haber iniciado sesión — es la puerta de entrada de
+    // "Probar gratis".
+    const openProgramDemo = (programId) => {
+        currentProgramId.value = programId;
+        currentRoute.value = 'program';
+        isDemoView.value = true;
     };
 
     const loadPrograms = () => {
@@ -76,7 +103,8 @@ export function usePrograms(userRef) {
                     description: p.description,
                     price: p.price,
                     icon: p.icon,
-                    html: p.html
+                    html: p.html,
+                    demo: !!p.demo
                 });
                 alert('✅ Programa actualizado correctamente.');
             } else {
@@ -86,12 +114,13 @@ export function usePrograms(userRef) {
                     price: p.price,
                     icon: p.icon,
                     html: p.html,
+                    demo: !!p.demo,
                     createdAt: serverTimestamp()
                 });
                 alert('✅ Programa creado exitosamente.');
             }
             showProgramForm.value = false;
-            editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' };
+            editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false };
         } catch (e) {
             alert('❌ Error al guardar: ' + e.message);
         }
@@ -114,8 +143,9 @@ export function usePrograms(userRef) {
 
     return {
         programs, currentRoute, currentProgramId, currentProgram,
+        isDemoView, programIframeSrcdoc,
         adminTab, showProgramForm, editingProgram,
-        isUnlocked, goHome, openProgram,
+        isUnlocked, goHome, openProgram, openProgramDemo,
         loadPrograms, saveProgram, editProgram, deleteProgram
     };
 }

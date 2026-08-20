@@ -222,7 +222,7 @@
             font-size: 1.1rem;
             font-weight: 800;
             box-shadow: 0 4px 8px rgba(37,99,235,0.3);
-            background: url('https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504') center/cover no-repeat;
+            background: url('./assets/images/about.jpg') center/cover no-repeat;
         }
         .logo-symmetrica .logo-text {
             letter-spacing: -0.5px;
@@ -295,20 +295,23 @@
 
     <div id="app">
         <!-- ===== NAVBAR ===== -->
-        <nav class="sticky top-0 z-50 glass-card-dark shadow-sm px-6 py-3 flex justify-between items-center border-b border-white/50">
-            <a href="#" @click.prevent="goHome" class="logo-symmetrica">
+        <nav class="sticky top-0 z-50 glass-card-dark shadow-sm px-3 sm:px-6 py-3 flex justify-between items-center border-b border-white/50 gap-2">
+            <a href="#" @click.prevent="goHome" class="logo-symmetrica shrink-0">
                 <div class="logo-icon"></div>
                 <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
             </a>
-            <div class="flex items-center gap-3">
-                <span v-if="user" class="text-sm text-gray-600 hidden sm:inline">{{ user.email }}</span>
-                <button v-if="isAdmin" @click="currentRoute = 'admin'" class="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium">
-                    🔐 Admin
+            <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
+                <span v-if="user" class="text-sm text-gray-600 hidden lg:inline whitespace-nowrap">{{ user.email }}</span>
+                <button v-if="user" @click="currentRoute = 'account'" class="shrink-0 text-xs sm:text-sm bg-gray-100 text-gray-700 px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-gray-200 transition font-medium whitespace-nowrap">
+                    👤 <span class="hidden sm:inline">Mi cuenta</span>
                 </button>
-                <button v-if="user" @click="logout" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded-full transition font-medium">
+                <button v-if="isAdmin" @click="currentRoute = 'admin'" class="shrink-0 text-xs sm:text-sm bg-blue-50 text-blue-700 px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium whitespace-nowrap">
+                    🔐 <span class="hidden sm:inline">Admin</span>
+                </button>
+                <button v-if="user" @click="logout" class="shrink-0 text-xs sm:text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 sm:px-4 py-1.5 rounded-full transition font-medium whitespace-nowrap">
                     Salir
                 </button>
-                <button v-else @click="showLogin = true" class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-700 transition font-medium">
+                <button v-else @click="showLogin = true" class="shrink-0 text-xs sm:text-sm bg-blue-600 text-white px-3 sm:px-4 py-1.5 rounded-full hover:bg-blue-700 transition font-medium whitespace-nowrap">
                     Iniciar sesión
                 </button>
             </div>
@@ -317,7 +320,7 @@
         <!-- ===== HERO CON IMAGEN DE FONDO ===== -->
         <section class="hero-gradient text-white px-4 relative">
             <!-- Imagen de fondo -->
-            <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/513918566_23874746335552536_1315595891752800928_n.jpg?stp=dst-jpg_tt6&cstp=mx1280x1280&ctp=s960x960&_nc_cat=105&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=2B9S0-sS150Q7kNvwHx6_6d&_nc_oc=AdoPdMblQEowsKbaEs__m5DPwsZpMwOLMuR5qhvxUAGz3JD8vngAjTChmSnCo5bCQ6U&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=Xb3Gm5jj4JrDLsPJY7Iscg&_nc_ss=7c2a8&oh=00_AQG8KK-JYobgttGJ6F0ia4GUKT1oBkjiXzlW5x2lXIPltQ&oe=6A816FE6" 
+            <img src="./assets/images/hero.jpg" 
                  alt="Symmetrica Ingeniería" 
                  class="hero-background">
             <div class="hero-overlay"></div>
@@ -377,15 +380,21 @@
                                 <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
                                 <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
                             </div>
-                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
                                 <button v-if="isUnlocked(prog.id)" @click="openProgram(prog.id)"
                                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
                                     Abrir programa →
                                 </button>
-                                <button v-else @click="requestAccess(prog.id)"
-                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    💰 Desbloquear por {{ prog.price }} Bs
-                                </button>
+                                <template v-else>
+                                    <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                            class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                        ▶ Probar gratis
+                                    </button>
+                                    <button @click="requestAccess(prog.id)"
+                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                        💰 Desbloquear por {{ prog.price }} Bs
+                                    </button>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -416,7 +425,7 @@
                                 </div>
                             </div>
                             <div class="about-image">
-                                <img src="https://scontent.flpb2-2.fna.fbcdn.net/v/t39.30808-6/488908548_9496172770503132_4446224399350148478_n.jpg?stp=dst-jpg_tt6&cstp=mx500x500&ctp=s500x500&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OZUvI5rulAQQ7kNvwEpGRrq&_nc_oc=AdpQDe0Yd9XPWkBZq9JzoViuVb-sVJfksqRKtw7wbUmJqumhSSB_mtCanvma0WYj1vQ&_nc_zt=23&_nc_ht=scontent.flpb2-2.fna&_nc_gid=BoCoSMS87BMADtVhzaOtFw&_nc_ss=7c2a8&oh=00_AQG2EmDlsHPBNP5ERftqwqZ5dF6SYy4TcRfwdv1D8XYA2Q&oe=6A815504" 
+                                <img src="./assets/images/about.jpg" 
                                      alt="Symmetrica Ingeniería" />
                             </div>
                         </div>
@@ -548,14 +557,116 @@
 
             <!-- ===== PROGRAMA (iframe) ===== -->
             <div v-else-if="currentRoute === 'program'">
-                <div class="mb-6 flex items-center gap-4">
+                <div class="mb-6 flex items-center gap-4 flex-wrap">
                     <button @click="goHome" class="text-blue-600 hover:text-blue-800 font-medium transition flex items-center gap-1">
                         ← Volver
                     </button>
                     <h2 class="text-2xl font-bold text-gray-800">{{ currentProgram?.name }}</h2>
+                    <span v-if="isDemoView && !isUnlocked(currentProgramId)"
+                          class="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+                        🔒 Modo demo
+                    </span>
                 </div>
                 <div class="glass-card rounded-2xl p-6">
-                    <iframe :srcdoc="currentProgram?.html || ''" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                    <iframe :srcdoc="programIframeSrcdoc" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                </div>
+            </div>
+
+            <!-- ===== MI CUENTA ===== -->
+            <div v-else-if="currentRoute === 'account'">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">👤 Mi cuenta</h2>
+                    <p class="text-gray-500 text-sm mt-1">{{ user?.email }}</p>
+                </div>
+
+                <!-- Programas desbloqueados -->
+                <div class="mb-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Mis programas</h3>
+                    <div v-if="programs.filter(p => isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no tienes programas desbloqueados. Explora el catálogo y solicita acceso al que necesites.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                                <button @click="openProgram(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Abrir programa →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catálogo / pendientes -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Más programas disponibles</h3>
+                    <div v-if="programs.filter(p => !isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Ya tienes acceso a todos los programas del catálogo.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => !isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                                <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
+                                <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                        class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                    ▶ Probar gratis
+                                </button>
+                                <button v-if="isRequestPending(prog.id)" disabled
+                                        class="w-full bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
+                                    ⏳ Solicitud pendiente
+                                </button>
+                                <button v-else @click="requestAccess(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    💰 Solicitar por {{ prog.price }} Bs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de solicitudes -->
+                <div class="mt-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Historial de solicitudes</h3>
+                    <div v-if="myRequests.length === 0" class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no has hecho ninguna solicitud.
+                    </div>
+                    <div v-else class="space-y-2">
+                        <div v-for="req in [...myRequests].sort((a, b) => (b.requestedAt?.seconds || 0) - (a.requestedAt?.seconds || 0))"
+                             :key="req.id"
+                             class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border border-gray-100/50">
+                            <div>
+                                <p class="font-medium text-gray-800">{{ req.toolName }}</p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}
+                                </p>
+                                <p v-if="req.status === 'rejected' && req.rejectionReason" class="text-xs text-red-500 mt-1">
+                                    Motivo: {{ req.rejectionReason }}
+                                </p>
+                            </div>
+                            <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap"
+                                  :class="{
+                                      'bg-amber-100 text-amber-700': req.status === 'pending',
+                                      'bg-green-100 text-green-700': req.status === 'approved',
+                                      'bg-red-100 text-red-700': req.status === 'rejected'
+                                  }">
+                                {{ req.status === 'pending' ? '⏳ Pendiente' : req.status === 'approved' ? '✅ Aprobada' : '❌ Rechazada' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -586,7 +697,7 @@
                 <div v-if="adminTab === 'programs'">
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h3 class="text-lg font-semibold text-gray-700">Gestión de Programas</h3>
-                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '' }; showProgramForm = true"
+                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false }; showProgramForm = true"
                                 class="btn-primary text-sm">
                             + Nuevo Programa
                         </button>
@@ -594,15 +705,15 @@
 
                     <div class="space-y-2 mb-6">
                         <div v-for="p in programs" :key="p.id"
-                             class="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-gray-100/50">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">{{ p.icon }}</span>
-                                <div>
-                                    <span class="font-medium text-gray-800">{{ p.name }}</span>
-                                    <span class="text-sm text-gray-500 ml-2">{{ p.price }} Bs</span>
+                             class="flex items-center justify-between flex-wrap gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100/50">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="text-2xl shrink-0">{{ p.icon }}</span>
+                                <div class="min-w-0">
+                                    <span class="font-medium text-gray-800 break-words">{{ p.name }}</span>
+                                    <span class="text-sm text-gray-500 ml-2 whitespace-nowrap">{{ p.price }} Bs</span>
                                 </div>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 shrink-0">
                                 <button @click="editProgram(p)" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</button>
                                 <button @click="deleteProgram(p.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">Eliminar</button>
                             </div>
@@ -638,6 +749,17 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                        <input v-model="editingProgram.demo" type="checkbox" class="w-4 h-4 rounded border-gray-300" />
+                                        Permitir "Probar gratis" (modo demo)
+                                    </label>
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        En modo demo, cualquiera puede abrir el programa sin comprar. Los campos quedan
+                                        bloqueados con los valores de ejemplo que ya trae el HTML — no necesitas
+                                        configurar nada más.
+                                    </p>
+                                </div>
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700">Código HTML del programa</label>
                                     <textarea v-model="editingProgram.html" rows="8" class="code-editor"></textarea>
                                     <p class="text-xs text-gray-400 mt-1">Pega aquí el HTML completo de la herramienta (incluye scripts y estilos).</p>
@@ -658,8 +780,8 @@
                 <!-- TAB: USUARIOS -->
                 <div v-if="adminTab === 'users'">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">Usuarios registrados</h3>
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100/50">
-                        <table class="w-full text-sm">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 overflow-x-auto">
+                        <table class="w-full text-sm min-w-[480px]">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
@@ -691,10 +813,16 @@
                                 <p class="text-sm text-gray-500">{{ req.userEmail }}</p>
                                 <p class="text-xs text-gray-400 mt-1">Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}</p>
                             </div>
-                            <button @click="approveRequest(req.id, req.userId, req.toolId)"
-                                    class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
-                                ✅ Aprobar Pago
-                            </button>
+                            <div class="flex gap-2">
+                                <button @click="approveRequest(req.id, req.userId, req.toolId)"
+                                        class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
+                                    ✅ Aprobar Pago
+                                </button>
+                                <button @click="rejectRequest(req.id)"
+                                        class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 font-semibold px-6 py-2 rounded-xl transition">
+                                    ❌ Rechazar
+                                </button>
+                            </div>
                         </div>
                         <p v-if="pendingRequests.length === 0" class="text-gray-400 text-center py-12 text-lg">🎉 No hay solicitudes pendientes.</p>
                     </div>
@@ -737,7 +865,7 @@
 
         <!-- Login -->
         <div v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Iniciar sesión</h2>
                 </div>
@@ -763,7 +891,7 @@
 
         <!-- Register -->
         <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div class="glass-card rounded-3xl max-w-md w-full p-8 relative">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Crear cuenta</h2>
                 </div>
@@ -780,6 +908,32 @@
                     </p>
                 </div>
                 <button @click="showRegister = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago por WhatsApp -->
+        <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">💳</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Falta un paso para desbloquear</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de <strong>{{ paymentModalProgram?.name }}</strong>
+                        ({{ paymentModalProgram?.price }} Bs). Para activarlo, contáctanos por WhatsApp,
+                        realiza el pago y en cuanto lo confirmemos te damos acceso.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closePaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closePaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
         </div>
 
