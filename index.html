@@ -164,10 +164,26 @@
         }
         .program-iframe {
             width: 100%;
-            min-height: 500px;
+            min-height: 85vh;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
             background: white;
+            display: block;
+        }
+        /* Rompe el max-w-6xl del <main> para que el visor de la
+           calculadora ocupe TODO el ancho de la pantalla, sin importar
+           qué tan angosto sea el contenedor centrado del resto del sitio. */
+        .program-view-fullwidth {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            padding: 0 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .program-view-fullwidth { padding: 0 1rem; }
         }
         .program-preview-iframe {
             width: 100%;
@@ -567,7 +583,7 @@
                         🔒 Modo demo
                     </span>
                 </div>
-                <div class="glass-card rounded-2xl p-6">
+                <div class="glass-card rounded-2xl p-2 sm:p-4 program-view-fullwidth">
                     <iframe :srcdoc="programIframeSrcdoc" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
                 </div>
             </div>
