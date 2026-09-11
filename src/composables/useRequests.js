@@ -115,8 +115,16 @@ export function useRequests(userRef, programsRef, showLoginRef, buildSubscriptio
             });
 
             if (req.type === 'program') {
+                // Programa individual: agregar a purchasedTools
                 await updateDoc(doc(db, "users", req.userId), {
                     purchasedTools: arrayUnion(req.toolId)
+                });
+            } else if (req.type === 'pack') {
+                // Pack: agregar TODOS los programas actuales a purchasedTools
+                // programsRef viene del parámetro, necesita estar en scope
+                const allProgramIds = programsRef.value.map(p => p.id);
+                await updateDoc(doc(db, "users", req.userId), {
+                    purchasedTools: arrayUnion(...allProgramIds)
                 });
             } else {
                 // subscription_annual | subscription_lifetime

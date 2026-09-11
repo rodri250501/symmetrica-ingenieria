@@ -316,6 +316,11 @@
                 <div class="logo-icon"></div>
                 <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
             </a>
+            <div class="hidden md:flex items-center gap-1 text-sm">
+                <button @click="currentRoute = 'home'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Inicio</button>
+                <button @click="scrollToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
+                <button @click="currentRoute = 'plans'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Planes</button>
+            </div>
             <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
                 <span v-if="user" class="text-sm text-gray-600 hidden lg:inline whitespace-nowrap">{{ user.email }}</span>
                 <button v-if="user" @click="currentRoute = 'account'" class="shrink-0 text-xs sm:text-sm bg-gray-100 text-gray-700 px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-gray-200 transition font-medium whitespace-nowrap">
@@ -594,6 +599,147 @@
                 </section>
             </div>
 
+            <!-- ===== PLANES ===== -->
+            <div v-else-if="currentRoute === 'plans'">
+                <div class="mb-12">
+                    <div class="text-center mb-12">
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Planes y precios</h1>
+                        <p class="text-gray-500 text-lg max-w-2xl mx-auto">
+                            Elige la modalidad que mejor se adapte a tus necesidades y accede a las herramientas de ingeniería de Symmetrica.
+                        </p>
+                    </div>
+
+                    <!-- Tarjetas de planes -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                        
+                        <!-- Opción 1: Programa individual -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Programa individual</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">Compra únicamente el programa que necesitas.</p>
+                            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                <p class="text-xs text-gray-500 mb-2">Precios disponibles:</p>
+                                <div class="space-y-1">
+                                    <p v-for="prog in programs" :key="prog.id" class="text-sm font-medium text-gray-700">
+                                        • {{ prog.name }}: Bs {{ prog.price }}
+                                    </p>
+                                    <p v-if="programs.length === 0" class="text-xs text-gray-400">Cargando programas...</p>
+                                </div>
+                            </div>
+                            <button @click="scrollToPrograms; currentRoute = 'home'" class="btn-primary w-full">Ver programas</button>
+                        </div>
+
+                        <!-- Opción 2: Pack completo -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Todos los programas actuales</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Accede a todos los programas y actualizaciones disponibles actualmente en Symmetrica por un precio especial.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-400 line-through">Bs {{ totalIndividualPrice }}</p>
+                                <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.packPrice }}</p>
+                                <p v-if="packDiscount > 0" class="text-sm text-green-600 font-semibold mt-1">
+                                    💚 Ahorras Bs {{ packDiscount }} ({{ packDiscountPercent }}%)
+                                </p>
+                            </div>
+                            <button @click="requestPackFlow" class="btn-primary w-full">Comprar pack</button>
+                        </div>
+
+                        <!-- Opción 3: Suscripción anual (RECOMENDADO) -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col ring-2 ring-blue-500 lg:col-span-1 md:col-span-1 transform hover:shadow-2xl transition">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xl font-bold text-gray-800">Symmetrica Pro</h3>
+                                <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-700">⭐ RECOMENDADO</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Accede a todos los programas actuales y disfruta de los nuevos programas que se incorporen durante tu período de suscripción.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.annualPrice }} <span class="text-lg text-gray-500">/año</span></p>
+                            </div>
+                            <button @click="showSubModal = true" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Suscribirme</button>
+                        </div>
+
+                        <!-- Opción 4: Licencia perpetua -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Licencia perpetua</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Realiza un único pago y obtén acceso permanente a todos los programas actuales incluidos en la licencia y actualizaciones.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-gray-800">Bs {{ allPricing.licensePrice }}</p>
+                                <p class="text-sm text-gray-500 mt-1 font-medium">Pago único</p>
+                            </div>
+                            <button @click="requestLicenseFlow" class="btn-primary w-full">Comprar licencia</button>
+                            <p class="text-xs text-gray-400 mt-4 leading-relaxed">
+                                La licencia proporciona acceso permanente a los programas incluidos en el momento de la compra y a sus respectivas actualizaciones, además a los nuevos programas sin embargo puede que algunas herramientas o módulos importantes podrán formar parte de futuros planes o productos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tabla comparativa -->
+                    <div class="glass-card rounded-2xl p-6 md:p-8 mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Comparación de planes</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm min-w-[640px]">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 font-semibold text-gray-700">Característica</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Individual</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Pack</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700 bg-blue-50">Anual</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Perpetua</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Programa seleccionado</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Todos los programas actuales</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Nuevos programas durante la suscripción</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Acceso mientras el plan esté vigente</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Pago único</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">—</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Mejor para uso frecuente</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ===== PROGRAMA (iframe) ===== -->
             <div v-else-if="currentRoute === 'program'">
                 <div class="mb-6 flex items-center gap-4 flex-wrap">
@@ -762,22 +908,50 @@
 
                 <!-- TAB: PRECIOS -->
                 <div v-if="adminTab === 'pricing'">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Precios de suscripción</h3>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-6 max-w-md space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Suscripción anual (Bs)</label>
-                            <input v-model.number="pricingForm.annualPrice" type="number"
+                    <h3 class="text-lg font-semibold text-gray-700 mb-6">Gestión de precios</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Suscripción anual -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Suscripción anual (Bs/año)</label>
+                            <input type="number"
+                                   :value="pricingForm.annualPrice" 
+                                   @input="pricingForm.annualPrice = Number($event.target.value)"
                                    class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updateSubscriptionPricing(pricingForm.annualPrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.annualPrice }} Bs</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Suscripción perpetua (Bs)</label>
-                            <input v-model.number="pricingForm.lifetimePrice" type="number"
+
+                        <!-- Pack completo -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Pack completo (Bs)</label>
+                            <input type="number"
+                                   :value="pricingForm.packPrice" 
+                                   @input="pricingForm.packPrice = Number($event.target.value)"
                                    class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updatePackPricing(pricingForm.packPrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.packPrice }} Bs</p>
+                            <p class="text-xs text-gray-500 text-center">Total individual: {{ totalIndividualPrice }} Bs</p>
                         </div>
-                        <button @click="updatePricing(pricingForm.annualPrice, pricingForm.lifetimePrice)" class="btn-primary w-full">
-                            Guardar precios
-                        </button>
-                        <p class="text-xs text-gray-400">Precios actuales publicados: {{ pricing.annualPrice }} Bs / año · {{ pricing.lifetimePrice }} Bs perpetua.</p>
+
+                        <!-- Licencia perpetua -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Licencia perpetua (Bs)</label>
+                            <input type="number"
+                                   :value="pricingForm.licensePrice" 
+                                   @input="pricingForm.licensePrice = Number($event.target.value)"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updateLicensePricing(pricingForm.licensePrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.licensePrice }} Bs</p>
+                        </div>
+
+                        <!-- Info de precios -->
+                        <div class="bg-blue-50 rounded-xl border border-blue-200 p-4 text-sm text-gray-600 space-y-2">
+                            <p class="font-semibold text-gray-700">Resumen actual:</p>
+                            <p><strong>Individual:</strong> Según cada programa</p>
+                            <p><strong>Pack:</strong> {{ allPricing.packPrice }} Bs</p>
+                            <p><strong>Anual:</strong> {{ allPricing.annualPrice }} Bs</p>
+                            <p><strong>Perpetua:</strong> {{ allPricing.licensePrice }} Bs</p>
+                        </div>
                     </div>
                 </div>
 
@@ -1077,6 +1251,56 @@
                     </button>
                 </div>
                 <button @click="closeSubPaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de pack por WhatsApp -->
+        <div v-if="showPackPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">📦</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Solicitud de pack registrada</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud del pack con todos los programas actuales ({{ allPricing.packPrice }} Bs).
+                        Para completar tu compra, contáctanos por WhatsApp, realiza el pago y te damos acceso inmediato.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappPackLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closePackPaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closePackPaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de licencia perpetua por WhatsApp -->
+        <div v-if="showLicensePaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">♾️</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Solicitud de licencia perpetua registrada</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de licencia perpetua ({{ allPricing.licensePrice }} Bs).
+                        Para completar tu compra, contáctanos por WhatsApp, realiza el pago y obtendrás acceso permanente.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappLicenseLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closeLicensePaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closeLicensePaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
         </div>
 
