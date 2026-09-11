@@ -26,10 +26,33 @@ const App = {
         const usersApi = useAdminUsers();
         const contactApi = useContact();
 
+        // Las colecciones "users" (completa) y "requests" (pendientes, sin
+        // filtrar por uid) solo pueden leerse si el usuario es admin —así
+        // lo exigen las Firestore Security Rules. Por eso NO se cargan
+        // incondicionalmente: se activan/desactivan cada vez que cambia
+        // isAdmin, para no disparar queries que Firestore va a rechazar
+        // con permission-denied para cualquier usuario no-admin.
+        let adminDataLoaded = false;
+        const syncAdminData = () => {
+            if (authApi.isAdmin.value && !adminDataLoaded) {
+                usersApi.loadUsers();
+                requestsApi.loadRequests();
+                adminDataLoaded = true;
+            } else if (!authApi.isAdmin.value && adminDataLoaded) {
+                // El usuario dejó de ser admin (logout u otro cambio de
+                // sesión): reseteamos para que, si vuelve a loguearse
+                // como admin más adelante, se vuelva a suscribir.
+                usersApi.allUsers.value = [];
+                requestsApi.pendingRequests.value = [];
+                adminDataLoaded = false;
+            }
+        };
+
         // Si el usuario cierra sesión mientras está en una ruta protegida
         // (admin, cuenta, o un programa abierto), lo mandamos de vuelta al
         // home. También recargamos "mis solicitudes" cada vez que cambia
-        // el usuario (login/logout), porque esa consulta depende del uid.
+        // el usuario (login/logout), porque esa consulta depende del uid,
+        // y re-evaluamos si corresponde cargar datos de admin.
         watch(authApi.user, (newUser) => {
             const protectedRoute = programsApi.currentRoute.value === 'admin' ||
                                     programsApi.currentRoute.value === 'account' ||
@@ -38,12 +61,12 @@ const App = {
                 programsApi.goHome();
             }
             requestsApi.loadMyRequests();
+            syncAdminData();
         });
 
         onMounted(() => {
             programsApi.loadPrograms();
-            usersApi.loadUsers();
-            requestsApi.loadRequests();
+            syncAdminData();
             setTimeout(() => observeCards(), 300);
         });
 
@@ -71,3 +94,4 @@ const App = {
 };
 
 createApp(App).mount('#app');
+
