@@ -1,9 +1,18 @@
 // ============================================================
 // useRequests — Solicitudes de acceso a programas
 // ============================================================
-// Recibe userRef y showLoginRef (de useAuth) y programsRef (de
-// usePrograms) como dependencias externas — el mismo patrón que
-// usePrograms.js, así ningún composable necesita importar a otro.
+// Recibe userRef, showLoginRef (de useAuth), programsRef (de
+// usePrograms) y buildSubscriptionPayload (de useSubscriptions)
+// como dependencias externas — mismo patrón de siempre: ningún
+// composable importa a otro directamente.
+//
+// pendingRequests ahora mezcla dos tipos de solicitud:
+//   - type === 'program'               -> requiere toolId/toolName
+//   - type === 'subscription_annual'   -> suscripción de 1 año
+//   - type === 'subscription_lifetime' -> suscripción perpetua
+// approveRequest() revisa `type` para saber qué actualizar en
+// users/{userId}: purchasedTools (programa) o subscription
+// (suscripción, usando buildSubscriptionPayload).
 // ============================================================
 
 import { db } from '../core/firebase-config.js';
@@ -14,18 +23,15 @@ import {
 
 const { ref, computed } = Vue;
 
-// Formato wa.me: solo dígitos, sin "+" ni espacios. Bolivia (591) + número.
 const WHATSAPP_NUMBER = '59169737901';
 
-export function useRequests(userRef, programsRef, showLoginRef) {
+export function useRequests(userRef, programsRef, showLoginRef, buildSubscriptionPayload) {
     const pendingRequests = ref([]);
     const myRequests = ref([]);
     const showPaymentModal = ref(false);
-    const paymentModalProgram = ref(null); // { name, price }
+    const paymentModalProgram = ref(null);
     let unsubscribeMyRequests = null;
 
-    // Link listo para abrir WhatsApp con un mensaje pre-armado, para que
-    // el cliente no tenga que escribir nada — solo tocar "enviar".
     const whatsappLink = computed(() => {
         const prog = paymentModalProgram.value;
         const text = prog
@@ -47,10 +53,6 @@ export function useRequests(userRef, programsRef, showLoginRef) {
         });
     };
 
-    // Solicitudes del usuario actual (cualquier estado), para que pueda ver
-    // en "Mi cuenta" si ya pidió un programa y sigue pendiente de aprobación,
-    // en vez de que el botón "Solicitar acceso" aparezca de nuevo sin más.
-    // Se vuelve a suscribir cada vez que cambia el usuario (login/logout).
     const loadMyRequests = () => {
         if (unsubscribeMyRequests) {
             unsubscribeMyRequests();
@@ -68,7 +70,13 @@ export function useRequests(userRef, programsRef, showLoginRef) {
     };
 
     const isRequestPending = (programId) => {
-        return myRequests.value.some(r => r.toolId === programId && r.status === 'pending');
+        return myRequests.value.some(r => r.type === 'program' && r.toolId === programId && r.status === 'pending');
+    };
+
+    // true si hay una solicitud de suscripción (del tipo dado) pendiente
+    const isSubRequestPending = (subType) => {
+        const wanted = subType === 'annual' ? 'subscription_annual' : 'subscription_lifetime';
+        return myRequests.value.some(r => r.type === wanted && r.status === 'pending');
     };
 
     const requestAccess = async (programId) => {
@@ -83,14 +91,13 @@ export function useRequests(userRef, programsRef, showLoginRef) {
                 userId: userRef.value.uid,
                 userEmail: userRef.value.email,
                 userName: userRef.value.displayName || userRef.value.email,
+                type: 'program',
                 toolId: programId,
                 toolName: prog.name,
                 status: 'pending',
                 requestedAt: serverTimestamp(),
                 phone: '+591 69737901'
             });
-            // En vez del alert de antes, mostramos el modal con las
-            // instrucciones de pago y el botón directo a WhatsApp.
             paymentModalProgram.value = { name: prog.name, price: prog.price };
             showPaymentModal.value = true;
         } catch (e) {
@@ -98,16 +105,24 @@ export function useRequests(userRef, programsRef, showLoginRef) {
         }
     };
 
-    const approveRequest = async (requestId, userId, toolId) => {
-        if (!confirm('¿Confirmas que recibiste el pago y quieres desbloquear este programa?')) return;
+    // req: el documento completo de la solicitud (incluye `type`)
+    const approveRequest = async (req) => {
+        if (!confirm('¿Confirmas que recibiste el pago y quieres aprobar esta solicitud?')) return;
         try {
-            await updateDoc(doc(db, "requests", requestId), {
+            await updateDoc(doc(db, "requests", req.id), {
                 status: 'approved',
                 approvedAt: serverTimestamp()
             });
-            await updateDoc(doc(db, "users", userId), {
-                purchasedTools: arrayUnion(toolId)
-            });
+
+            if (req.type === 'program') {
+                await updateDoc(doc(db, "users", req.userId), {
+                    purchasedTools: arrayUnion(req.toolId)
+                });
+            } else {
+                // subscription_annual | subscription_lifetime
+                const subscription = buildSubscriptionPayload(req.type);
+                await updateDoc(doc(db, "users", req.userId), { subscription });
+            }
             alert('✅ Acceso concedido.');
         } catch (e) {
             alert('Error: ' + e.message);
@@ -116,7 +131,7 @@ export function useRequests(userRef, programsRef, showLoginRef) {
 
     const rejectRequest = async (requestId) => {
         const reason = prompt('Motivo del rechazo (opcional, el usuario lo verá en su historial):', '');
-        if (reason === null) return; // canceló el prompt
+        if (reason === null) return;
         try {
             await updateDoc(doc(db, "requests", requestId), {
                 status: 'rejected',
@@ -131,7 +146,7 @@ export function useRequests(userRef, programsRef, showLoginRef) {
 
     return {
         pendingRequests, loadRequests, requestAccess, approveRequest, rejectRequest,
-        myRequests, loadMyRequests, isRequestPending,
+        myRequests, loadMyRequests, isRequestPending, isSubRequestPending,
         showPaymentModal, paymentModalProgram, whatsappLink, closePaymentModal
     };
 }
