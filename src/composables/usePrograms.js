@@ -1,15 +1,13 @@
 // ============================================================
 // usePrograms — Catálogo, navegación y CRUD admin de programas
 // ============================================================
-// Recibe `userRef` (el ref de useAuth) para poder resolver si el
-// usuario actual tiene acceso a un programa. Así este archivo no
-// necesita saber CÓMO funciona el login, solo lee el mismo ref
-// reactivo que ya existe — no crea su propia copia del usuario.
-//
-// Los "programas" siguen viviendo como documentos en Firestore
-// (colección `programs`, campo `html` con el código completo de
-// la herramienta). Añadir el programa #20 sigue sin tocar este
-// archivo: se hace desde el panel admin en producción.
+// Recibe `userRef` (el ref de useAuth) y `isSubscribedRef` (computed
+// de useSubscriptions) para resolver si el usuario actual tiene
+// acceso a un programa: o lo compró suelto, o tiene una suscripción
+// activa (anual vigente o perpetua) — en cuyo caso tiene acceso a
+// TODOS los programas, incluidos los que se agreguen después, sin
+// que este archivo necesite saber nada más sobre cómo funcionan las
+// suscripciones.
 // ============================================================
 
 import { db } from '../core/firebase-config.js';
@@ -22,7 +20,7 @@ import { buildDemoHtml } from '../core/demo-lock.js';
 
 const { ref, computed, nextTick } = Vue;
 
-export function usePrograms(userRef) {
+export function usePrograms(userRef, isSubscribedRef) {
     const programs = ref([]);
     const currentRoute = ref('home');
     const currentProgramId = ref(null);
@@ -35,11 +33,6 @@ export function usePrograms(userRef) {
         return programs.value.find(p => p.id === currentProgramId.value);
     });
 
-    // El iframe del visor de programa usa esto en vez del HTML crudo.
-    // Si estás en modo demo Y todavía no compraste el programa, se envuelve
-    // con el candado (ver demo-lock.js). Si ya lo desbloqueaste, se ve la
-    // versión real sin ninguna restricción, aunque hayas entrado por el
-    // botón "Probar gratis".
     const programIframeSrcdoc = computed(() => {
         const prog = currentProgram.value;
         if (!prog) return '';
@@ -49,7 +42,11 @@ export function usePrograms(userRef) {
         return prog.html || '';
     });
 
+    // Acceso si: (a) el programa está en purchasedTools, o (b) el
+    // usuario tiene una suscripción activa (anual vigente o perpetua),
+    // que da acceso a todo el catálogo automáticamente.
     const isUnlocked = (programId) => {
+        if (isSubscribedRef && isSubscribedRef.value) return true;
         if (!userRef.value) return false;
         const userData = userRef.value.userData;
         return userData && userData.purchasedTools && userData.purchasedTools.includes(programId);
@@ -68,13 +65,10 @@ export function usePrograms(userRef) {
             currentRoute.value = 'program';
             isDemoView.value = false;
         } else {
-            alert('No tienes acceso a este programa. Solicita acceso primero.');
+            alert('No tienes acceso a este programa. Solicita acceso o suscríbete.');
         }
     };
 
-    // A diferencia de openProgram(), esta NO exige haber comprado el
-    // programa ni haber iniciado sesión — es la puerta de entrada de
-    // "Probar gratis".
     const openProgramDemo = (programId) => {
         currentProgramId.value = programId;
         currentRoute.value = 'program';
