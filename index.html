@@ -419,6 +419,58 @@
                     </p>
                 </div>
 
+                <!-- ===== SUSCRIPCIONES ===== -->
+                <section class="mb-16" id="subscriptions">
+                    <div class="glass-card rounded-2xl p-8 md:p-10">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-bold text-gray-800">¿Usas varias herramientas? Suscríbete</h2>
+                            <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
+                                Acceso ilimitado a todo el catálogo, incluidos los programas nuevos que vayamos lanzando.
+                            </p>
+                        </div>
+                        <div v-if="isSubscribed" class="text-center">
+                            <span class="inline-block bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full">
+                                ✓ Ya tienes acceso completo por suscripción
+                            </span>
+                        </div>
+                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100/50 text-center flex flex-col">
+                                <span class="text-3xl mb-2">📅</span>
+                                <h3 class="text-lg font-bold text-gray-800">Suscripción anual</h3>
+                                <p class="text-gray-500 text-sm mt-1 flex-grow">
+                                    Todos los programas por 1 año, incluidos los nuevos que salgan en ese período.
+                                </p>
+                                <p class="text-2xl font-bold text-blue-600 mt-4">{{ pricing.annualPrice }} Bs<span class="text-sm text-gray-400 font-normal"> / año</span></p>
+                                <button v-if="isSubRequestPending('annual')" disabled
+                                        class="w-full mt-4 bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
+                                    ⏳ Solicitud pendiente
+                                </button>
+                                <button v-else @click="requestSubscription('annual')"
+                                        class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Suscribirme por 1 año
+                                </button>
+                            </div>
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-blue-600 text-center flex flex-col relative">
+                                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Mejor precio a largo plazo</span>
+                                <span class="text-3xl mb-2">♾️</span>
+                                <h3 class="text-lg font-bold text-gray-800">Suscripción perpetua</h3>
+                                <p class="text-gray-500 text-sm mt-1 flex-grow">
+                                    Pago único, acceso de por vida a todo el catálogo, presente y futuro.
+                                </p>
+                                <p class="text-2xl font-bold text-blue-600 mt-4">{{ pricing.lifetimePrice }} Bs<span class="text-sm text-gray-400 font-normal"> único pago</span></p>
+                                <button v-if="isSubRequestPending('lifetime')" disabled
+                                        class="w-full mt-4 bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
+                                    ⏳ Solicitud pendiente
+                                </button>
+                                <button v-else @click="requestSubscription('lifetime')"
+                                        class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Obtener acceso perpetuo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- ===== QUIÉNES SOMOS ===== -->
                 <section class="mb-16" id="about">
                     <div class="glass-card rounded-2xl p-8 md:p-10">
