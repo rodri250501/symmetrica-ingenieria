@@ -24,13 +24,24 @@ const MS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
 
 export function useSubscriptions(userRef, showLoginRef) {
     const pricing = ref({ annualPrice: 0, lifetimePrice: 0 });
+    // Copia editable para el formulario de admin: se inicializa con el
+    // primer valor que llegue de Firestore, pero después NO se vuelve a
+    // pisar sola con cada snapshot — así el admin puede escribir sin que
+    // el input le salte el valor mientras tipea. Se resincroniza a mano
+    // solo si el admin todavía no cargó (sigue en 0/0).
+    const pricingForm = ref({ annualPrice: 0, lifetimePrice: 0 });
     const showSubModal = ref(false); // modal de "elegí tu plan"
     const showSubPaymentModal = ref(false); // modal de instrucciones de pago
     const subPaymentInfo = ref(null); // { type, price }
 
     const loadPricing = () => {
         onSnapshot(doc(db, "config", "pricing"), (snap) => {
-            if (snap.exists()) pricing.value = snap.data();
+            if (snap.exists()) {
+                pricing.value = snap.data();
+                if (pricingForm.value.annualPrice === 0 && pricingForm.value.lifetimePrice === 0) {
+                    pricingForm.value = { ...pricing.value };
+                }
+            }
         });
     };
 
@@ -118,7 +129,7 @@ export function useSubscriptions(userRef, showLoginRef) {
     };
 
     return {
-        pricing, loadPricing, updatePricing, isSubscribed,
+        pricing, pricingForm, loadPricing, updatePricing, isSubscribed,
         showSubModal, showSubPaymentModal, subPaymentInfo,
         whatsappSubLink, closeSubPaymentModal, requestSubscription,
         buildSubscriptionPayload

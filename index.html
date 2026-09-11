@@ -369,6 +369,29 @@
             <!-- ===== HOME ===== -->
             <div v-if="currentRoute === 'home'">
 
+                <!-- SUSCRIPCIONES -->
+                <div class="mb-16" v-if="!isSubscribed">
+                    <div class="glass-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">✨ ¿Vas a usar varias herramientas?</h3>
+                            <p class="text-gray-500 text-sm mt-1 max-w-lg">
+                                Suscríbete y accede a <strong>todo el catálogo</strong>, incluidos los programas
+                                nuevos que vayamos publicando, sin pagar cada uno por separado.
+                            </p>
+                        </div>
+                        <button @click="showSubModal = true" class="btn-primary shrink-0 whitespace-nowrap">
+                            Ver planes de suscripción
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-16" v-else>
+                    <div class="glass-card rounded-2xl p-6 md:p-8 text-center">
+                        <span class="text-3xl block mb-2">🌟</span>
+                        <h3 class="text-lg font-bold text-gray-800">Tienes una suscripción activa</h3>
+                        <p class="text-gray-500 text-sm mt-1">Acceso a todo el catálogo, incluidos los programas nuevos.</p>
+                    </div>
+                </div>
+
                 <!-- HERRAMIENTAS -->
                 <div class="mb-16">
                     <div class="mb-10 text-center">
@@ -376,7 +399,7 @@
                             <span class="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">Nuestras herramientas</span>
                         </h2>
                         <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
-                            Selecciona un programa, solicita acceso y comienza a calcular.
+                            Selecciona un programa, solicita acceso y comienza a calcular — o suscríbete y accede a todas.
                         </p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -418,58 +441,6 @@
                         No hay programas disponibles aún.
                     </p>
                 </div>
-
-                <!-- ===== SUSCRIPCIONES ===== -->
-                <section class="mb-16" id="subscriptions">
-                    <div class="glass-card rounded-2xl p-8 md:p-10">
-                        <div class="text-center mb-8">
-                            <h2 class="text-3xl font-bold text-gray-800">¿Usas varias herramientas? Suscríbete</h2>
-                            <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
-                                Acceso ilimitado a todo el catálogo, incluidos los programas nuevos que vayamos lanzando.
-                            </p>
-                        </div>
-                        <div v-if="isSubscribed" class="text-center">
-                            <span class="inline-block bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full">
-                                ✓ Ya tienes acceso completo por suscripción
-                            </span>
-                        </div>
-                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100/50 text-center flex flex-col">
-                                <span class="text-3xl mb-2">📅</span>
-                                <h3 class="text-lg font-bold text-gray-800">Suscripción anual</h3>
-                                <p class="text-gray-500 text-sm mt-1 flex-grow">
-                                    Todos los programas por 1 año, incluidos los nuevos que salgan en ese período.
-                                </p>
-                                <p class="text-2xl font-bold text-blue-600 mt-4">{{ pricing.annualPrice }} Bs<span class="text-sm text-gray-400 font-normal"> / año</span></p>
-                                <button v-if="isSubRequestPending('annual')" disabled
-                                        class="w-full mt-4 bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
-                                    ⏳ Solicitud pendiente
-                                </button>
-                                <button v-else @click="requestSubscription('annual')"
-                                        class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    Suscribirme por 1 año
-                                </button>
-                            </div>
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-blue-600 text-center flex flex-col relative">
-                                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Mejor precio a largo plazo</span>
-                                <span class="text-3xl mb-2">♾️</span>
-                                <h3 class="text-lg font-bold text-gray-800">Suscripción perpetua</h3>
-                                <p class="text-gray-500 text-sm mt-1 flex-grow">
-                                    Pago único, acceso de por vida a todo el catálogo, presente y futuro.
-                                </p>
-                                <p class="text-2xl font-bold text-blue-600 mt-4">{{ pricing.lifetimePrice }} Bs<span class="text-sm text-gray-400 font-normal"> único pago</span></p>
-                                <button v-if="isSubRequestPending('lifetime')" disabled
-                                        class="w-full mt-4 bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
-                                    ⏳ Solicitud pendiente
-                                </button>
-                                <button v-else @click="requestSubscription('lifetime')"
-                                        class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    Obtener acceso perpetuo
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- ===== QUIÉNES SOMOS ===== -->
                 <section class="mb-16" id="about">
@@ -647,6 +618,27 @@
                     <p class="text-gray-500 text-sm mt-1">{{ user?.email }}</p>
                 </div>
 
+                <!-- Suscripción -->
+                <div class="mb-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Mi suscripción</h3>
+                    <div v-if="isSubscribed" class="glass-card rounded-2xl p-6 flex items-center gap-4">
+                        <span class="text-3xl">🌟</span>
+                        <div>
+                            <p class="font-semibold text-gray-800">
+                                Suscripción {{ user.userData.subscription.type === 'lifetime' ? 'perpetua' : 'anual' }} activa
+                            </p>
+                            <p v-if="user.userData.subscription.type === 'annual'" class="text-sm text-gray-500">
+                                Vence: {{ new Date(user.userData.subscription.expiresAt.seconds * 1000).toLocaleDateString() }}
+                            </p>
+                            <p v-else class="text-sm text-gray-500">Sin fecha de vencimiento.</p>
+                        </div>
+                    </div>
+                    <div v-else class="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <p class="text-gray-500 text-sm">No tienes una suscripción activa — accede a todo el catálogo suscribiéndote.</p>
+                        <button @click="showSubModal = true" class="btn-primary shrink-0 whitespace-nowrap">Ver planes</button>
+                    </div>
+                </div>
+
                 <!-- Programas desbloqueados -->
                 <div class="mb-12">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Mis programas</h3>
@@ -717,7 +709,9 @@
                              :key="req.id"
                              class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border border-gray-100/50">
                             <div>
-                                <p class="font-medium text-gray-800">{{ req.toolName }}</p>
+                                <p class="font-medium text-gray-800">
+                                    {{ req.type === 'subscription_annual' ? '📅 Suscripción anual' : req.type === 'subscription_lifetime' ? '♾️ Suscripción perpetua' : req.toolName }}
+                                </p>
                                 <p class="text-xs text-gray-400 mt-1">
                                     Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}
                                 </p>
@@ -759,6 +753,32 @@
                             :class="adminTab === 'requests' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
                         Solicitudes
                     </button>
+                    <button @click="adminTab = 'pricing'"
+                            class="px-4 py-2 font-medium text-sm transition"
+                            :class="adminTab === 'pricing' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        Precios
+                    </button>
+                </div>
+
+                <!-- TAB: PRECIOS -->
+                <div v-if="adminTab === 'pricing'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Precios de suscripción</h3>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-6 max-w-md space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Suscripción anual (Bs)</label>
+                            <input v-model.number="pricingForm.annualPrice" type="number"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Suscripción perpetua (Bs)</label>
+                            <input v-model.number="pricingForm.lifetimePrice" type="number"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                        </div>
+                        <button @click="updatePricing(pricingForm.annualPrice, pricingForm.lifetimePrice)" class="btn-primary w-full">
+                            Guardar precios
+                        </button>
+                        <p class="text-xs text-gray-400">Precios actuales publicados: {{ pricing.annualPrice }} Bs / año · {{ pricing.lifetimePrice }} Bs perpetua.</p>
+                    </div>
                 </div>
 
                 <!-- TAB: PROGRAMAS -->
@@ -876,13 +896,15 @@
                         <div v-for="req in pendingRequests" :key="req.id"
                              class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-gray-100/50">
                             <div>
-                                <p class="font-medium text-gray-800">{{ req.toolName }}</p>
+                                <p class="font-medium text-gray-800">
+                                    {{ req.type === 'subscription_annual' ? '📅 Suscripción anual' : req.type === 'subscription_lifetime' ? '♾️ Suscripción perpetua' : req.toolName }}
+                                </p>
                                 <p class="text-sm text-gray-600">👤 {{ req.userName || req.userEmail }}</p>
                                 <p class="text-sm text-gray-500">{{ req.userEmail }}</p>
                                 <p class="text-xs text-gray-400 mt-1">Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button @click="approveRequest(req.id, req.userId, req.toolId)"
+                                <button @click="approveRequest(req)"
                                         class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
                                     ✅ Aprobar Pago
                                 </button>
@@ -1002,6 +1024,59 @@
                     </button>
                 </div>
                 <button @click="closePaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Elegir plan de suscripción -->
+        <div v-if="showSubModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">✨</span>
+                    <h2 class="text-2xl font-bold text-gray-800">Elige tu suscripción</h2>
+                    <p class="text-gray-500 text-sm mt-2">Acceso a todo el catálogo, incluidos los programas nuevos.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col">
+                        <h3 class="font-bold text-gray-800 text-lg">📅 Anual</h3>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">{{ pricing.annualPrice }} Bs</p>
+                        <p class="text-sm text-gray-500 mt-1 flex-grow">Acceso por 1 año a todo el catálogo, incluidos los programas nuevos que salgan durante ese tiempo.</p>
+                        <button @click="requestSubscription('annual')" class="btn-primary w-full mt-4">Suscribirme</button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-blue-200 p-6 flex flex-col ring-2 ring-blue-100">
+                        <h3 class="font-bold text-gray-800 text-lg">♾️ Perpetua</h3>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">{{ pricing.lifetimePrice }} Bs</p>
+                        <p class="text-sm text-gray-500 mt-1 flex-grow">Pago único, acceso de por vida a todo el catálogo presente y futuro.</p>
+                        <button @click="requestSubscription('lifetime')" class="btn-primary w-full mt-4">Suscribirme</button>
+                    </div>
+                </div>
+                <button @click="showSubModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de suscripción por WhatsApp -->
+        <div v-if="showSubPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">💳</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Falta un paso para activar tu suscripción</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de suscripción
+                        <strong>{{ subPaymentInfo?.type === 'lifetime' ? 'perpetua' : 'anual' }}</strong>
+                        ({{ subPaymentInfo?.price }} Bs). Para activarla, contáctanos por WhatsApp,
+                        realiza el pago y en cuanto lo confirmemos te damos acceso a todo el catálogo.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappSubLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closeSubPaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closeSubPaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
         </div>
 
