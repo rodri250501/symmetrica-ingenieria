@@ -318,7 +318,7 @@
             </a>
             <div class="hidden md:flex items-center gap-1 text-sm">
                 <button @click="currentRoute = 'home'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Inicio</button>
-                <button @click="scrollToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
+                <button @click="goToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
                 <button @click="currentRoute = 'plans'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Planes</button>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
@@ -625,7 +625,7 @@
                                     <p v-if="programs.length === 0" class="text-xs text-gray-400">Cargando programas...</p>
                                 </div>
                             </div>
-                            <button @click="scrollToPrograms; currentRoute = 'home'" class="btn-primary w-full">Ver programas</button>
+                            <button @click="goToPrograms" class="btn-primary w-full">Ver programas</button>
                         </div>
 
                         <!-- Opción 2: Pack completo -->
