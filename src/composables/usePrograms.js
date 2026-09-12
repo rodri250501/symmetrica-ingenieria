@@ -29,6 +29,9 @@ export function usePrograms(userRef, isSubscribedRef) {
     const showProgramForm = ref(false);
     const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false });
 
+    // 🔧 FIX: Guardar el unsubscribe para poder pausar/reanudar el listener
+    let unsubscribePrograms = null;
+
     const currentProgram = computed(() => {
         return programs.value.find(p => p.id === currentProgramId.value);
     });
@@ -75,13 +78,28 @@ export function usePrograms(userRef, isSubscribedRef) {
         isDemoView.value = true;
     };
 
+    // 🔧 FIX: Mejorado para manejar el listener correctamente
     const loadPrograms = () => {
+        // Si ya hay un listener activo, no crear uno nuevo
+        if (unsubscribePrograms) return;
+
         const q = query(collection(db, "programs"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
+        unsubscribePrograms = onSnapshot(q, (snapshot) => {
             programs.value = [];
             snapshot.forEach(d => programs.value.push({ id: d.id, ...d.data() }));
             nextTick(() => observeCards());
         });
+    };
+
+    // 🔧 FIX: Nuevo método para hacer refetch manual cuando se cambia de ruta
+    const refetchPrograms = () => {
+        // Pausar el listener anterior
+        if (unsubscribePrograms) {
+            unsubscribePrograms();
+            unsubscribePrograms = null;
+        }
+        // Recargar
+        loadPrograms();
     };
 
     const saveProgram = async () => {
@@ -140,6 +158,6 @@ export function usePrograms(userRef, isSubscribedRef) {
         isDemoView, programIframeSrcdoc,
         adminTab, showProgramForm, editingProgram,
         isUnlocked, goHome, openProgram, openProgramDemo,
-        loadPrograms, saveProgram, editProgram, deleteProgram
+        loadPrograms, refetchPrograms, saveProgram, editProgram, deleteProgram
     };
 }
