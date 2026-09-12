@@ -319,7 +319,7 @@
             <div class="hidden md:flex items-center gap-1 text-sm">
                 <button @click="currentRoute = 'home'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Inicio</button>
                 <button @click="goToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
-                <a href="/blog/calculadora-smf-aci318.html" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">📚 Recursos</a>
+                <a href="/blog/index.html" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">📚 Recursos</a>
                 <button @click="currentRoute = 'plans'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Planes</button>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
@@ -493,19 +493,31 @@
                                         </div>
                                     </a>
 
-                                    <!-- Artículo 2: Próximamente -->
-                                    <div class="glass-card rounded-2xl p-6 md:p-8 opacity-60">
-                                        <div class="text-4xl mb-3">📖</div>
-                                        <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                            Más artículos
-                                        </h3>
-                                        <p class="text-gray-600 text-sm leading-relaxed">
-                                            Próximamente: errores comunes en diseño SMF, diferencias entre normas, y guías de implementación en ETABS/SAP2000.
-                                        </p>
-                                        <div class="mt-6 text-gray-500 font-semibold text-sm">
-                                            🚀 Próximamente
+                                    <!-- Artículo 2: Optimización de secciones -->
+                                    <a href="/blog/optimizacion-smf.html"
+                                       class="group glass-card rounded-2xl p-6 md:p-8 hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+                                        <div>
+                                            <div class="text-4xl mb-3">📐</div>
+                                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition mb-2">
+                                                Optimización Inteligente de Secciones SMF
+                                            </h3>
+                                            <p class="text-gray-600 text-sm leading-relaxed">
+                                                Algoritmos, filtrado de Pareto y criterios múltiples (costo, robustez) para encontrar la sección más eficiente en lugar de sobredimensionar por costumbre.
+                                            </p>
                                         </div>
-                                    </div>
+                                        <div class="flex items-center gap-2 mt-6 text-blue-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                                            Leer artículo
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <div class="text-center mt-8">
+                                    <a href="/blog/index.html" class="text-blue-600 font-semibold text-sm hover:underline">
+                                        Ver todos los artículos →
+                                    </a>
                                 </div>
                             </div>
                         </div>
