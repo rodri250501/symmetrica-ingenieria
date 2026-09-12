@@ -48,6 +48,7 @@ const App = {
         });
 
         // 🔧 FIX: Refetch programas cuando se cambia de ruta a 'home'
+        // Esto asegura que cuando vuelves de Planes a Programas, los datos se actualizan
         watch(() => programsApi.currentRoute.value, (newRoute) => {
             if (newRoute === 'home') {
                 programsApi.refetchPrograms();
