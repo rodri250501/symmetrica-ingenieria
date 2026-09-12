@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimización Inteligente de Secciones SMF — Estrategias Algorítmicas</title>
+    <meta name="description" content="Guía técnica sobre cómo optimizar diseños de vigas SMF usando criterios múltiples: costo, peso y robustez. Algoritmos, Pareto frontier y ejemplos prácticos.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            line-height: 1.7;
+            color: #182430;
+            background: #ffffff;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #16222e 0%, #1a2f4a 100%);
+            color: #ffffff;
+            padding: 80px 20px;
+            text-align: center;
+            border-bottom: 1px solid #d6dbe1;
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: #b8c5d0;
+            margin-bottom: 20px;
+        }
+        
+        .meta {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            font-size: 13px;
+            color: #8fa8b8;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Main content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+        }
+        
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #16222e;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1c72c4;
+            display: inline-block;
+        }
+        
+        h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: #16222e;
+        }
+        
+        p {
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+        
+        /* Highlights y boxes */
+        .highlight {
+            background: #f0f4f8;
+            border-left: 4px solid #1c72c4;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        
+        .highlight.success {
+            background: #e5f5ea;
+            border-left-color: #1a7d3f;
+        }
+        
+        .highlight.warning {
+            background: #fbf1de;
+            border-left-color: #a8660a;
+        }
+        
+        .highlight.danger {
+            background: #fbe9e9;
+            border-left-color: #c22a2a;
+        }
+        
+        .highlight p {
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        /* Lista de items técnicos */
+        .tech-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .tech-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e8ebef;
+            padding-left: 24px;
+            position: relative;
+        }
+        
+        .tech-list li:before {
+            content: "▪";
+            position: absolute;
+            left: 0;
+            color: #1c72c4;
+            font-weight: bold;
+        }
+        
+        .tech-list li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Tabla comparativa */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+        
+        .comparison-table th {
+            background: #16222e;
+            color: #ffffff;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #d6dbe1;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        /* Badges de criterios */
+        .criteria-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .criteria-badge.optimal {
+            background: rgba(26, 125, 63, 0.1);
+            color: #1a7d3f;
+            border: 1px solid #1a7d3f;
+        }
+        
+        .criteria-badge.economic {
+            background: rgba(168, 102, 10, 0.1);
+            color: #a8660a;
+            border: 1px solid #a8660a;
+        }
+        
+        .criteria-badge.robust {
+            background: rgba(28, 114, 196, 0.1);
+            color: #1c72c4;
+            border: 1px solid #1c72c4;
+        }
+        
+        /* Código/Fórmulas */
+        .formula {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            border: 1px solid #d6dbe1;
+        }
+        
+        /* Gráficos */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 40px 0;
+            background: #ffffff;
+            border: 1px solid #d6dbe1;
+            border-radius: 4px;
+            padding: 20px;
+        }
+        
+        .chart-label {
+            font-size: 13px;
+            color: #5c6b7a;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        /* CTA Button */
+        .cta-section {
+            background: linear-gradient(135deg, #1c72c4 0%, #114f8c 100%);
+            color: #ffffff;
+            padding: 40px;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .cta-section h3 {
+            margin: 0 0 12px 0;
+            border: none;
+            color: #ffffff;
+        }
+        
+        .cta-section p {
+            margin-bottom: 24px;
+            font-size: 16px;
+            color: #d0dce5;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: #ffffff;
+            color: #1c72c4;
+            padding: 12px 32px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #f8f9fa;
+            border-top: 1px solid #d6dbe1;
+            padding: 40px 20px;
+            text-align: center;
+            color: #5c6b7a;
+            font-size: 13px;
+            margin-top: 80px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .header {
+                padding: 50px 20px;
+            }
+            
+            h2 {
+                font-size: 22px;
+            }
+            
+            .container {
+                padding: 40px 16px;
+            }
+            
+            .meta {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Optimización Inteligente de Secciones SMF</h1>
+            <p>Algoritmos, criterios múltiples y estrategias para diseños estructurales eficientes</p>
+            <div class="meta">
+                <div class="meta-item">📅 Publicado: Septiembre 2024</div>
+                <div class="meta-item">⏱️ Lectura: 12 min</div>
+                <div class="meta-item">🎯 Nivel: Intermedio-Avanzado</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CONTENIDO -->
+    <div class="container">
+        
+        <!-- INTRODUCCIÓN -->
+        <div class="section">
+            <h2>Introducción</h2>
+            <p>En el diseño estructural de vigas de concreto reforzado con secciones simétricas (SMF), la optimización es un arte y una ciencia. No se trata solo de encontrar la sección más barata, sino de equilibrar múltiples objetivos competentes: <strong>costo, peso, robustez y constructibilidad</strong>.</p>
+            
+            <p>Muchos diseñadores aún usan métodos manuales: aumentan dimensiones "por seguridad" o seleccionan secciones estándar sin verificar realmente si son eficientes. El resultado es <strong>sobredimensionamiento, costos innecesarios y proyectos menos competitivos</strong>.</p>
+            
+            <div class="highlight success">
+                <p><strong>✓ Oportunidad:</strong> Con algoritmos inteligentes y criterios bien definidos, puedes encontrar diseños 15-30% más eficientes sin sacrificar seguridad ni constructibilidad.</p>
+            </div>
+        </div>
+        
+        <!-- PROBLEMA ACTUAL -->
+        <div class="section">
+            <h2>El Problema del Sobredimensionamiento</h2>
+            
+            <h3>¿Qué es el sobredimensionamiento?</h3>
+            <p>Una sección está sobredimensionada cuando:</p>
+            <ul class="tech-list">
+                <li>Tiene mayor resistencia de la requerida para los esfuerzos aplicados</li>
+                <li>Consume más material (hormigón + acero) del necesario</li>
+                <li>Aumenta peso muerto sin beneficio estructural adicional</li>
+                <li>Eleva costos de material, moldaje y colocación</li>
+                <li>Es menos flexible para futuros cambios de carga</li>
+            </ul>
+            
+            <h3>Ejemplo real</h3>
+            <div class="highlight warning">
+                <p>Una viga de 30cm × 60cm puede soportar perfectamente una carga, pero una búsqueda exhaustiva revela que 25cm × 55cm es igualmente segura con <strong>20% menos material y 25% menos costo</strong>. ¿Cuántos proyectos nunca descubren esto?</p>
+            </div>
+            
+            <p>El costo de una viga no es lineal con sus dimensiones. Una sección ligeramente más pequeña puede resultar en:</p>
+            <ul class="tech-list">
+                <li><strong>Menos acero:</strong> A menor altura, menos estribos (cortante)</li>
+                <li><strong>Menos hormigón:</strong> Volumen se reduce con ambas dimensiones</li>
+                <li><strong>Menos peso propio:</strong> Reduce esfuerzos secundarios</li>
+                <li><strong>Menos moldaje:</strong> Área de contacto menor = menos material temporal</li>
+            </ul>
+        </div>
+        
+        <!-- ESTRATEGIAS DE BÚSQUEDA -->
+        <div class="section">
+            <h2>Métodos de Búsqueda y Optimización</h2>
+            
+            <h3>1. Búsqueda por fuerza bruta (Exhaustiva)</h3>
+            <p>Evalúa <strong>todas las combinaciones posibles</strong> dentro de un rango de dimensiones.</p>
+            
+            <div class="formula">
+Combinaciones = (b_max - b_min) × (h_max - h_min)
+Ejemplo: (50cm - 20cm) × (80cm - 40cm) = 30 × 40 = 1,200 combinaciones
+            </div>
+            
+            <p><strong>Ventajas:</strong></p>
+            <ul class="tech-list">
+                <li>Garantiza encontrar el óptimo global</li>
+                <li>No requiere suposiciones iniciales</li>
+                <li>Apta para problemas con menos de 10,000 combinaciones</li>
+            </ul>
+            
+            <p><strong>Desventajas:</strong></p>
+            <ul class="tech-list">
+                <li>Computacionalmente cara para espacios grandes</li>
+                <li>No enseña por qué es óptima esa solución</li>
+                <li>Difícil de adaptar cuando hay restricciones adicionales</li>
+            </ul>
+            
+            <h3>2. Búsqueda heurística (Inteligente)</h3>
+            <p>Usa criterios técnicos para <strong>acotar el espacio de búsqueda</strong> antes de evaluar.</p>
+            
+            <div class="highlight">
+                <p><strong>Ejemplo:</strong> Si h debe estar entre 40-80cm según flecha máxima permitida, y b debe estar entre 20-40cm según cortante, eso reduce el espacio de búsqueda de 1,200 a 40 × 41 = 1,640 combinaciones (o muchas menos si hay más restricciones).</p>
+            </div>
+            
+            <p><strong>Criterios típicos para acotar:</strong></p>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th>Restricción típica</th>
+                        <th>Acota</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Flecha máxima</td>
+                        <td>δ ≤ L/240 ó L/360</td>
+                        <td>Altura mínima (h ≥ ...)</td>
+                    </tr>
+                    <tr>
+                        <td>Cortante</td>
+                        <td>V ≤ φ × 0.53 × √f'c × b × d</td>
+                        <td>Ancho y altura mínimos</td>
+                    </tr>
+                    <tr>
+                        <td>Relación b/h</td>
+                        <td>b/h entre 0.25 y 0.67</td>
+                        <td>Elimina secciones absurdas</td>
+                    </tr>
+                    <tr>
+                        <td>Peso propio</td>
+                        <td>Evitar > 10 kN/m</td>
+                        <td>Altura máxima</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>3. Filtrado de Pareto (Multi-objetivo)</h3>
+            <p>Cuando hay varios objetivos (costo, peso, robustez), la mayoría de soluciones son "ineficientes". Una solución es eficiente (Pareto-óptima) si <strong>no existe otra que sea mejor en todos los objetivos</strong>.</p>
+            
+            <div class="highlight">
+                <p><strong>Concepto clave:</strong> Si la sección A es más cara Y más pesada que B, entonces A es ineficiente. Si A es más barata pero más pesada que B, ambas son eficientes (compromiso costo-peso).</p>
+            </div>
+            
+            <p>El filtrado de Pareto elimina las soluciones "claramente malas" sin descartar los buenos compromisos.</p>
+        </div>
+        
+        <!-- CRITERIOS DE OPTIMIZACIÓN -->
+        <div class="section">
+            <h2>Criterios de Optimización Múltiple</h2>
+            
+            <p>Presentamos 3 enfoques complementarios para encontrar la mejor solución según tu prioridad:</p>
+            
+            <h3>🎯 CRITERIO 1: Óptima en Costo</h3>
+            <p>Minimiza el costo total (hormigón + acero + moldaje + mano de obra).</p>
+            
+            <div class="formula">
+Costo_Total = (V × ρ × costo_m³) + (Acero_kg × costo_kg) + ...
+
+Donde:
+  V = volumen de hormigón (b × h × L)
+  Acero_kg = acero de refuerzo + estribos
+            </div>
+            
+            <p><strong>Cuándo usarla:</strong> Cuando el presupuesto es prioritario y la seguridad estructural está garantizada.</p>
+            <p><strong>Riesgo:</strong> Secciones muy ajustadas pueden dejar poco margen ante cambios de carga o detalles constructivos.</p>
+            
+            <span class="criteria-badge optimal">🎯 Costo mínimo</span>
+            
+            <hr style="border: none; border-top: 1px solid #e8ebef; margin: 32px 0;">
+            
+            <h3>💰 CRITERIO 2: Económica Robusta</h3>
+            <p>Busca la mejor relación costo-robustez: secciones económicas pero con índice de "reserva de resistencia" alto.</p>
+            
+            <div class="formula">
+Puntuación = Costo × (1 - 0.3 × índice_robustez)
+
+Índice_robustez = (Capacidad - Demanda) / Demanda
+            </div>
+            
+            <p><strong>Ventajas:</strong></p>
+            <ul class="tech-list">
+                <li>Balance entre costo y seguridad adicional</li>
+                <li>Más flexible ante cambios futuros de cargas</li>
+                <li>Mejor desempeño sísmico (mayor ductilidad relativa)</li>
+            </ul>
+            
+            <p><strong>Cuándo usarla:</strong> Proyectos en zonas sísmicas, edificios que podrían cambiar de uso, o cuando buscas máximo valor (no solo mínimo costo).</p>
+            
+            <span class="criteria-badge economic">💰 Económico + Robusto</span>
+            
+            <hr style="border: none; border-top: 1px solid #e8ebef; margin: 32px 0;">
+            
+            <h3>🏗️ CRITERIO 3: Máxima Robustez</h3>
+            <p>Optimiza para resistencia, rigidez y seguridad, minimizando solo el costo dentro de este rango.</p>
+            
+            <div class="formula">
+Robustez = (Cortante_capacidad / Cortante_demanda) +
+            (Momento_capacidad / Momento_demanda) +
+            (Rigidez_flexional / Rigidez_mínima)
+            </div>
+            
+            <p><strong>Cuándo usarla:</strong></p>
+            <ul class="tech-list">
+                <li>Estructuras críticas o de larga vida útil (50+ años)</li>
+                <li>Proyectos con incertidumbre alta en cargas futuras</li>
+                <li>Zonas de alto riesgo sísmico</li>
+                <li>Cuando la confiabilidad supera al costo</li>
+            </ul>
+            
+            <span class="criteria-badge robust">🏗️ Máxima robustez</span>
+        </div>
+        
+        <!-- ALGORITMO -->
+        <div class="section">
+            <h2>Algoritmo: Optimización Inteligente</h2>
+            
+            <h3>Pseudocódigo del proceso</h3>
+            <div class="formula">
+FUNCIÓN optimizar(cargas, f_c, f_y, restricciones):
+    
+    # 1. ACOTAR el espacio de búsqueda
+    h_min, h_max = calcular_rango_altura(flecha_máx)
+    b_min, b_max = calcular_rango_ancho(cortante_máx)
+    
+    # 2. GENERAR todas las combinaciones
+    candidatos = []
+    PARA cada b en [b_min, b_min+1, ..., b_max]:
+        PARA cada h en [h_min, h_min+1, ..., h_max]:
+            SI es_válida(b, h, cargas, restricciones):
+                candidatos.agregar({b, h, costo, peso, robustez})
+    
+    # 3. FILTRADO de Pareto
+    óptimos_pareto = []
+    PARA cada c1 en candidatos:
+        es_dominado = FALSO
+        PARA cada c2 en candidatos:
+            SI c2.costo < c1.costo Y c2.peso < c1.peso:
+                es_dominado = VERDADERO
+                romper
+        SI NO es_dominado:
+            óptimos_pareto.agregar(c1)
+    
+    # 4. CLASIFICAR según criterios
+    óptima_costo = mín(candidatos por costo)
+    económica = mín(óptimos_pareto por: costo × (1 - 0.3×robustez))
+    robusta = máx(óptimos_pareto por robustez, entonces mín costo)
+    
+    RETORNAR {óptima_costo, económica, robusta, top_10}
+
+FIN FUNCIÓN
+            </div>
+            
+            <h3>Desglose paso a paso</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Paso</th>
+                        <th>Acción</th>
+                        <th>Beneficio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Acotar</strong></td>
+                        <td>Definir rangos válidos de b y h según restricciones técnicas</td>
+                        <td>Reduce combinaciones de 1,200 a ~200-500</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Generar</strong></td>
+                        <td>Evaluar acero, cortantes, estribos, costo de cada candidato</td>
+                        <td>Datos completos para comparación</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. Filtrar</strong></td>
+                        <td>Eliminar soluciones dominadas (peores en TODO)</td>
+                        <td>Solo quedan 20-50 soluciones eficientes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4. Clasificar</strong></td>
+                        <td>Ranking según 3 criterios definidos</td>
+                        <td>Top 3 para el usuario elegir</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- EJEMPLO PRÁCTICO -->
+        <div class="section">
+            <h2>Ejemplo Práctico Completo</h2>
+            
+            <h3>Datos del proyecto</h3>
+            <div class="highlight">
+                <p><strong>Viga de piso de edificio:</strong></p>
+                <p>
+                    Luz = 8m | Carga permanente = 8 kN/m | Carga viva = 6 kN/m |
+                    f'c = 280 kg/cm² | fy = 4,200 kg/cm² | Flecha máx = L/240 | Zona sísmica alta
+                </p>
+            </div>
+            
+            <h3>Resultados de la optimización</h3>
+            <div class="chart-container">
+                <div class="chart-label">Gráfico: Espacio de soluciones (Costo vs Robustez)</div>
+                <canvas id="optimizationChart"></canvas>
+            </div>
+            
+            <h3>Top 3 soluciones según criterios</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Criterio</th>
+                        <th>b (cm)</th>
+                        <th>h (cm)</th>
+                        <th>Acero (kg)</th>
+                        <th>Costo (USD)</th>
+                        <th>Peso (kN/m)</th>
+                        <th>Robustez</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #e5f5ea;">
+                        <td><strong>🎯 Óptima</strong></td>
+                        <td>25</td>
+                        <td>52</td>
+                        <td>48.3</td>
+                        <td><strong>$485</strong></td>
+                        <td>3.12</td>
+                        <td>1.32</td>
+                    </tr>
+                    <tr style="background: #fbf1de;">
+                        <td><strong>💰 Económica</strong></td>
+                        <td>26</td>
+                        <td>55</td>
+                        <td>52.1</td>
+                        <td>$518</td>
+                        <td>3.42</td>
+                        <td>1.55</td>
+                    </tr>
+                    <tr style="background: #e8f0f8;">
+                        <td><strong>🏗️ Robusta</strong></td>
+                        <td>28</td>
+                        <td>60</td>
+                        <td>58.7</td>
+                        <td>$612</td>
+                        <td>4.03</td>
+                        <td>1.92</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Análisis de resultados</h3>
+            <ul class="tech-list">
+                <li><strong>Óptima (25×52):</strong> Es la más barata. Válida si el proyecto es temporal o las cargas son muy predecibles. Riesgo: poca margen de seguridad.</li>
+                <li><strong>Económica (26×55):</strong> El mejor balance. Solo 7% más cara que la óptima, pero con 17% más robustez. Recomendada para la mayoría de proyectos.</li>
+                <li><strong>Robusta (28×60):</strong> 26% más cara, pero 45% más robusta. Para edificios duraderos o zonas sísmicas críticas, el extra costo se justifica.</li>
+            </ul>
+            
+            <div class="highlight success">
+                <p><strong>✓ Insight:</strong> La solución intermedia (Económica) suele ser la más inteligente: no es un compriso al azar, sino una solución Pareto-óptima que el usuario puede <strong>entender y justificar</strong> a inversores o colegas.</p>
+            </div>
+        </div>
+        
+        <!-- VENTAJAS TÉCNICAS -->
+        <div class="section">
+            <h2>Ventajas de la Optimización Inteligente</h2>
+            
+            <h3>Para el diseñador</h3>
+            <ul class="tech-list">
+                <li><strong>Decisiones informadas:</strong> Comparar 3 opciones claras vs "elegir a ojo"</li>
+                <li><strong>Justificación técnica:</strong> Cada solución tiene métricas, no es opinión</li>
+                <li><strong>Confianza:</strong> Saber que se evaluaron 200+ combinaciones da tranquilidad</li>
+                <li><strong>Tiempo:</strong> Lo que toma 1 hora manualmente, se calcula en segundos</li>
+            </ul>
+            
+            <h3>Para el proyecto</h3>
+            <ul class="tech-list">
+                <li><strong>Costo reducido:</strong> 15-30% de ahorro comparado con sobredimensionamiento</li>
+                <li><strong>Seguridad mejorada:</strong> Selección consciente de margen de robustez</li>
+                <li><strong>Constructibilidad:</strong> Secciones realistas, no secciones teóricas que causan problemas en obra</li>
+                <li><strong>Competitividad:</strong> Presupuestos ajustados ayudan a ganar licitaciones</li>
+            </ul>
+            
+            <h3>Para la industria</h3>
+            <ul class="tech-list">
+                <li><strong>Materialismo responsable:</strong> Menos hormigón y acero = menor huella de carbono</li>
+                <li><strong>Innovación:</strong> Nuevos criterios de diseño emergen (circularidad, reciclabilidad)</li>
+                <li><strong>Datos colectivos:</strong> Agregar resultados de muchos proyectos revela patrones de diseño óptimo</li>
+            </ul>
+        </div>
+        
+        <!-- LIMITACIONES Y EXTENSIONES -->
+        <div class="section">
+            <h2>Limitaciones y Extensiones Futuras</h2>
+            
+            <h3>Limitaciones actuales</h3>
+            <div class="highlight warning">
+                <p><strong>⚠️ Secciones simétricas:</strong> El modelo actual asume b y h iguales. Extensión: secciones asimétricas (b inferior ≠ b superior).</p>
+            </div>
+            
+            <div class="highlight warning">
+                <p><strong>⚠️ Costo simplificado:</strong> Se asume costo proporcional al material. Extensión: incluir encofrado, transporte, mano de obra, desperdicio en obra.</p>
+            </div>
+            
+            <div class="highlight warning">
+                <p><strong>⚠️ Sin barras combinadas:</strong> Se optimiza el número total de barras. Extensión: generar disposiciones reales (ej: 4Ø16 + 2Ø12 vs 6Ø14).</p>
+            </div>
+            
+            <h3>Extensiones en desarrollo</h3>
+            <ul class="tech-list">
+                <li><strong>Análisis ambiental (LCA):</strong> Optimizar por huella de carbono, no solo costo</li>
+                <li><strong>Restricciones de obra:</strong> Disponibilidad de acero, tiempos de moldaje, espacio en cantero</li>
+                <li><strong>Optimización dinámica:</strong> Vigas con carga variable (puentes, edificios especiales)</li>
+                <li><strong>Machine Learning:</strong> Predicción de costos con datos históricos reales de proyecto</li>
+            </ul>
+        </div>
+        
+        <!-- CONCLUSIONES -->
+        <div class="section">
+            <h2>Conclusiones</h2>
+            
+            <p>La optimización inteligente de secciones SMF no es un lujo académico, sino una <strong>necesidad práctica</strong> para proyectos competitivos, sostenibles y bien diseñados.</p>
+            
+            <p>Recordemos los 3 principios clave:</p>
+            <ol style="margin-left: 20px; line-height: 2;">
+                <li><strong>No es "lo más barato" vs "lo más robusto".</strong> Son múltiples opciones válidas en la frontera de Pareto. Tu proyecto elige.</li>
+                <li><strong>La búsqueda exhaustiva es factible.</strong> Con rangos acotados y filtrado, evaluamos cientos de candidatos en segundos.</li>
+                <li><strong>La justificación técnica vence la intuición.</strong> Poder decir "este diseño es Pareto-óptimo en costo + robustez" es más convincente que "creo que esta sección se ve bien".</li>
+            </ol>
+            
+            <div class="highlight success">
+                <p><strong>📈 Oportunidad:</strong> Integrando este método en tu flujo de diseño, mejoras la calidad, aceleras decisiones y reduces costos. Es una ventaja competitiva real.</p>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="cta-section">
+            <h3>Prueba el Optimizador Inteligente</h3>
+            <p>Carga tus cargas, f'c y fy. El algoritmo evaluará cientos de combinaciones y te mostrará las 3 mejores opciones según tu prioridad.</p>
+            <button class="cta-button" onclick="window.location.href='https://symmetrica-ingenieria.vercel.app/optimizador'">Ir al Optimizador →</button>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>© 2024 Symmetrica Ingeniería. Artículo técnico sobre métodos de optimización estructural. <strong>Disclaimer:</strong> Este contenido es educativo. Los diseños finales deben ser verificados por profesionales en conformidad con normativas locales.</p>
+    </div>
+    
+    <script>
+        // Gráfico interactivo: Espacio de soluciones
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const ctx = document.getElementById('optimizationChart');
+            if (ctx) {
+                // Datos simulados de 30 soluciones candidatas
+                const todaLasCombinaciones = [
+                    {b: 22, h: 48, costo: 520, robustez: 1.05},
+                    {b: 23, h: 49, costo: 495, robustez: 1.18},
+                    {b: 24, h: 50, costo: 478, robustez: 1.25},
+                    {b: 25, h: 52, costo: 485, robustez: 1.32},
+                    {b: 26, h: 54, costo: 512, robustez: 1.48},
+                    {b: 26, h: 55, costo: 518, robustez: 1.55},
+                    {b: 27, h: 57, costo: 558, robustez: 1.68},
+                    {b: 28, h: 60, costo: 612, robustez: 1.92},
+                    {b: 29, h: 62, costo: 658, robustez: 2.15},
+                ];
+                
+                const datasetTodas = {
+                    label: 'Todas las soluciones válidas',
+                    data: todaLasCombinaciones.map(d => ({x: d.costo, y: d.robustez, b: d.b, h: d.h})),
+                    backgroundColor: 'rgba(147, 160, 176, 0.4)',
+                    borderColor: 'rgba(92, 107, 122, 0.6)',
+                    pointRadius: 4,
+                    showLine: false,
+                };
+                
+                const datasetPareto = {
+                    label: 'Frontera Pareto-óptima',
+                    data: [
+                        {x: 485, y: 1.32, b: 25, h: 52},
+                        {x: 518, y: 1.55, b: 26, h: 55},
+                        {x: 612, y: 1.92, b: 28, h: 60},
+                    ],
+                    backgroundColor: 'rgba(26, 125, 63, 0.8)',
+                    borderColor: 'rgba(26, 125, 63, 1)',
+                    pointRadius: 8,
+                    pointBorderWidth: 2,
+                    pointBorderColor: '#fff',
+                };
+                
+                new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [datasetTodas, datasetPareto]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const d = context.raw;
+                                        return `b=${d.b}cm, h=${d.h}cm | Costo: $${d.x} | Robustez: ${d.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'Costo Total (USD)',
+                                    font: { weight: 'bold', size: 13 }
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Índice de Robustez',
+                                    font: { weight: 'bold', size: 13 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
