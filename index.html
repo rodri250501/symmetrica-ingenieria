@@ -1,315 +1,1378 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Técnico · Symmetrica Ingeniería</title>
-    <meta name="description" content="Artículos técnicos sobre diseño estructural, optimización de secciones y herramientas de cálculo para ingeniería civil.">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symmetrica Ingeniería</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fuente SF Pro Display -->
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/sf-pro-display" />
+
+    <!-- Firebase SDKs -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+            }
+        }
+    </script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ===== ESTILOS BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'IBM Plex Sans', sans-serif;
-            line-height: 1.7;
-            color: #182430;
-            background: #e8ebef;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .bg-pattern {
+            background-image:
+                linear-gradient(rgba(30, 58, 138, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 58, 138, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-color: #f0f4f8;
         }
 
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #16222e 0%, #1a2f4a 100%);
-            color: #ffffff;
-            padding: 70px 20px 60px;
-            text-align: center;
-            border-bottom: 1px solid #d6dbe1;
-        }
-
-        .header-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .header-eyebrow {
-            font-size: 13px;
-            color: #8fa8b8;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .header h1 {
-            font-size: 38px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            line-height: 1.2;
-        }
-
-        .header p {
-            font-size: 17px;
-            color: #b8c5d0;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Container */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 48px 20px 80px;
-        }
-
-        /* Filtros de categoría */
-        .filter-bar {
+        /* ===== HERO CON IMAGEN DE FONDO ===== */
+        .hero-gradient {
+            position: relative;
+            overflow: hidden;
+            min-height: 80vh;
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 32px;
+            align-items: center;
+        }
+        .hero-background {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 22, 40, 0.65);
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        .hero-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.05;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 1;
         }
 
-        .filter-tag {
-            font-size: 13px;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+        }
+        .glass-card-dark {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        .tool-card {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .tool-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tool-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2);
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 9999px;
             font-weight: 600;
-            padding: 7px 16px;
-            border-radius: 20px;
-            border: 1px solid #d6dbe1;
-            background: #ffffff;
-            color: #5c6b7a;
+            transition: all 0.2s;
+            border: none;
             cursor: pointer;
-            transition: border-color .15s, color .15s;
         }
-
-        .filter-tag:hover {
-            border-color: #1c72c4;
-            color: #1c72c4;
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
         }
-
-        .filter-tag.active {
-            background: #1c72c4;
-            border-color: #1c72c4;
-            color: #ffffff;
+        .btn-outline {
+            border: 1px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
         }
-
-        /* Lista de artículos */
-        .article-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
         }
-
-        .article-card {
-            background: #ffffff;
-            border: 1px solid #d6dbe1;
-            border-radius: 6px;
-            padding: 28px;
-            text-decoration: none;
-            color: inherit;
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+        .code-editor {
+            font-family: 'Courier New', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-height: 200px;
+            width: 100%;
+            border: none;
+            resize: vertical;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .code-editor:focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+        .program-iframe {
+            width: 100%;
+            min-height: 85vh;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
             display: block;
-            transition: border-color .15s, transform .15s;
+        }
+        /* Rompe el max-w-6xl del <main> para que el visor de la
+           calculadora ocupe TODO el ancho de la pantalla, sin importar
+           qué tan angosto sea el contenedor centrado del resto del sitio. */
+        .program-view-fullwidth {
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            right: 50%;
+            margin-left: -50vw;
+            margin-right: -50vw;
+            padding: 0 0.5rem;
+        }
+        @media (min-width: 640px) {
+            .program-view-fullwidth { padding: 0 1rem; }
+        }
+        .program-preview-iframe {
+            width: 100%;
+            min-height: 300px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* ===== ANIMACIONES ===== */
+        .hero-title {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards 0.3s;
+        }
+        .hero-subtitle {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards 0.6s;
+        }
+        .hero-cta {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards 0.9s;
+        }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .article-card:hover {
-            border-color: #1c72c4;
+        /* ===== LOGO ===== */
+        .logo-symmetrica {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .logo-symmetrica .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            box-shadow: 0 4px 8px rgba(37,99,235,0.3);
+            background: url('./assets/images/about.jpg') center/cover no-repeat;
+        }
+        .logo-symmetrica .logo-text {
+            letter-spacing: -0.5px;
+        }
+        .logo-symmetrica .logo-text span {
+            color: #2563eb;
+        }
+
+        /* ===== SECCIÓN QUIENES SOMOS ===== */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+        .about-image {
+            border-radius: 1rem;
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ===== CONTACTO ===== */
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            background: #eef2ff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            background: #f1f5f9;
+            color: #1e293b;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .social-link:hover {
+            background: #e2e8f0;
             transform: translateY(-2px);
         }
-
-        .article-card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 10px;
-        }
-
-        .article-category {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 4px 10px;
-            border-radius: 4px;
-            background: rgba(28, 114, 196, 0.1);
-            color: #1c72c4;
-            white-space: nowrap;
-        }
-
-        .article-date {
-            font-size: 12.5px;
-            color: #8996a3;
-            white-space: nowrap;
-        }
-
-        .article-title {
-            font-size: 21px;
-            font-weight: 700;
-            color: #16222e;
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-
-        .article-excerpt {
-            font-size: 14.5px;
-            color: #5c6b7a;
-            margin-bottom: 14px;
-        }
-
-        .article-meta {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 12.5px;
-            color: #8996a3;
-        }
-
-        .article-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Card destacada (primer artículo) */
-        .article-card.featured {
-            border-left: 4px solid #1c72c4;
-            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-        }
-
-        .featured-badge {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 4px 10px;
-            border-radius: 4px;
-            background: #1a7d3f;
-            color: #ffffff;
-            margin-right: 8px;
-        }
-
-        /* Estado vacío para futuras categorías sin artículos */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8996a3;
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .footer {
-            background: #ffffff;
-            border-top: 1px solid #d6dbe1;
-            padding: 32px 20px;
-            text-align: center;
-            color: #5c6b7a;
-            font-size: 13px;
-        }
-
-        .footer a {
-            color: #1c72c4;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        @media (max-width: 640px) {
-            .header h1 { font-size: 28px; }
-            .header { padding: 50px 20px 44px; }
-            .article-card-top { flex-direction: column; }
-            .article-title { font-size: 18px; }
-        }
+        .social-link.instagram:hover { background: #fce4ec; color: #d81b60; }
+        .social-link.facebook:hover { background: #e3f2fd; color: #1565c0; }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
-    <div class="header">
-        <div class="header-content">
-            <div class="header-eyebrow">Symmetrica Ingeniería</div>
-            <h1>Blog Técnico</h1>
-            <p>Artículos sobre diseño estructural, algoritmos de optimización y herramientas de cálculo para ingeniería civil.</p>
-        </div>
-    </div>
-
-    <!-- CONTENIDO -->
-    <div class="container">
-
-        <div class="filter-bar">
-            <span class="filter-tag active" data-cat="todos">Todos</span>
-            <span class="filter-tag" data-cat="optimizacion">Optimización</span>
-            <span class="filter-tag" data-cat="diseno">Diseño estructural</span>
-            <span class="filter-tag" data-cat="herramientas">Herramientas</span>
-        </div>
-
-        <div class="article-list" id="articleList">
-
-            <!-- ARTÍCULO 1 -->
-            <a href="optimizacion-smf.html" class="article-card featured" data-cat="optimizacion">
-                <div class="article-card-top">
-                    <div>
-                        <span class="featured-badge">Más reciente</span>
-                        <span class="article-category">Optimización</span>
-                    </div>
-                    <span class="article-date">Septiembre 2024</span>
-                </div>
-                <div class="article-title">Optimización Inteligente de Secciones SMF</div>
-                <p class="article-excerpt">
-                    Cómo pasar de un optimizador de fuerza bruta a uno que filtra soluciones ineficientes,
-                    compara costo vs. robustez con la frontera de Pareto, y entrega tres criterios de diseño
-                    en vez de una sola respuesta.
-                </p>
-                <div class="article-meta">
-                    <span class="article-meta-item">⏱️ 12 min de lectura</span>
-                    <span class="article-meta-item">🎯 Nivel intermedio-avanzado</span>
-                </div>
+    <div id="app">
+        <!-- ===== NAVBAR ===== -->
+        <nav class="sticky top-0 z-50 glass-card-dark shadow-sm px-3 sm:px-6 py-3 flex justify-between items-center border-b border-white/50 gap-2">
+            <a href="#" @click.prevent="goHome" class="logo-symmetrica shrink-0">
+                <div class="logo-icon"></div>
+                <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
             </a>
+            <div class="hidden md:flex items-center gap-1 text-sm">
+                <button @click="currentRoute = 'home'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Inicio</button>
+                <button @click="goToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
+                <a href="/blog/calculadora-smf-aci318.html" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">📚 Recursos</a>
+                <button @click="currentRoute = 'plans'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Planes</button>
+            </div>
+            <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
+                <span v-if="user" class="text-sm text-gray-600 hidden lg:inline whitespace-nowrap">{{ user.email }}</span>
+                <button v-if="user" @click="currentRoute = 'account'" class="shrink-0 text-xs sm:text-sm bg-gray-100 text-gray-700 px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-gray-200 transition font-medium whitespace-nowrap">
+                    👤 <span class="hidden sm:inline">Mi cuenta</span>
+                </button>
+                <button v-if="isAdmin" @click="currentRoute = 'admin'" class="shrink-0 text-xs sm:text-sm bg-blue-50 text-blue-700 px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-blue-100 transition font-medium whitespace-nowrap">
+                    🔐 <span class="hidden sm:inline">Admin</span>
+                </button>
+                <button v-if="user" @click="logout" class="shrink-0 text-xs sm:text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 sm:px-4 py-1.5 rounded-full transition font-medium whitespace-nowrap">
+                    Salir
+                </button>
+                <button v-else @click="showLogin = true" class="shrink-0 text-xs sm:text-sm bg-blue-600 text-white px-3 sm:px-4 py-1.5 rounded-full hover:bg-blue-700 transition font-medium whitespace-nowrap">
+                    Iniciar sesión
+                </button>
+            </div>
+        </nav>
 
-            <!-- Próximos artículos se agregan aquí siguiendo la misma estructura -->
+        <!-- ===== HERO CON IMAGEN DE FONDO ===== -->
+        <section class="hero-gradient text-white px-4 relative">
+            <!-- Imagen de fondo -->
+            <img src="./assets/images/hero.jpg" 
+                 alt="Symmetrica Ingeniería" 
+                 class="hero-background">
+            <div class="hero-overlay"></div>
+            <div class="hero-pattern"></div>
+            
+            <div class="hero-content max-w-6xl mx-auto py-20 md:py-28 relative z-10">
+                <div class="max-w-2xl">
+                    <h1 class="hero-title text-4xl md:text-6xl font-bold leading-tight tracking-tight">
+                        Ingeniería <br /><span class="text-blue-300">estructural</span> al alcance de tu mano
+                    </h1>
+                    <p class="hero-subtitle text-lg md:text-xl text-blue-100/80 mt-4 max-w-lg">
+                        Herramientas de cálculo profesional para el diseño de vigas, áreas de acero y más.
+                        Accede, calcula y construye con confianza.
+                    </p>
+                    <div class="hero-cta mt-8 flex flex-wrap gap-4">
+                        <button v-if="!user" @click="showLogin = true" class="btn-primary text-base px-8 py-3">
+                            Comienza ahora
+                        </button>
+                        <button v-else @click="scrollToPrograms" class="btn-outline text-base px-8 py-3">
+                            Ver herramientas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- ===== CONTENIDO PRINCIPAL ===== -->
+        <main class="max-w-6xl mx-auto px-4 py-12 bg-pattern">
+
+            <!-- ===== HOME ===== -->
+            <div v-if="currentRoute === 'home'">
+
+                <!-- SUSCRIPCIONES -->
+                <div class="mb-16" v-if="!isSubscribed">
+                    <div class="glass-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">✨ ¿Vas a usar varias herramientas?</h3>
+                            <p class="text-gray-500 text-sm mt-1 max-w-lg">
+                                Suscríbete y accede a <strong>todo el catálogo</strong>, incluidos los programas
+                                nuevos que vayamos publicando, sin pagar cada uno por separado.
+                            </p>
+                        </div>
+                        <button @click="showSubModal = true" class="btn-primary shrink-0 whitespace-nowrap">
+                            Ver planes de suscripción
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-16" v-else>
+                    <div class="glass-card rounded-2xl p-6 md:p-8 text-center">
+                        <span class="text-3xl block mb-2">🌟</span>
+                        <h3 class="text-lg font-bold text-gray-800">Tienes una suscripción activa</h3>
+                        <p class="text-gray-500 text-sm mt-1">Acceso a todo el catálogo, incluidos los programas nuevos.</p>
+                    </div>
+                </div>
+
+                <!-- HERRAMIENTAS -->
+                <div class="mb-16">
+                    <div class="mb-10 text-center">
+                        <h2 class="text-3xl font-bold text-gray-800 tracking-tight" id="programs-section">
+                            <span class="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">Nuestras herramientas</span>
+                        </h2>
+                        <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
+                            Selecciona un programa, solicita acceso y comienza a calcular — o suscríbete y accede a todas.
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="(prog, index) in programs" :key="prog.id"
+                             class="tool-card glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col"
+                             :style="{ transitionDelay: (index * 0.1) + 's' }"
+                             ref="toolCards">
+                            <div class="p-6 flex-grow">
+                                <div class="flex items-start justify-between mb-3">
+                                    <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                    <span class="text-xs font-medium px-3 py-1 rounded-full"
+                                          :class="isUnlocked(prog.id) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
+                                        {{ isUnlocked(prog.id) ? '✓ Desbloqueado' : '🔒 Bloqueado' }}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800">{{ prog.name }}</h3>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                                <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
+                                <button v-if="isUnlocked(prog.id)" @click="openProgram(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Abrir programa →
+                                </button>
+                                <template v-else>
+                                    <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                            class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                        ▶ Probar gratis
+                                    </button>
+                                    <button @click="requestAccess(prog.id)"
+                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                        💰 Desbloquear por {{ prog.price }} Bs
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-if="programs.length === 0" class="text-gray-400 text-center py-16 text-lg">
+                        No hay programas disponibles aún.
+                    </p>
+                </div>
+
+                <!-- ===== RECURSOS TÉCNICOS / BLOG ===== -->
+                <section class="mb-16" id="resources">
+                    <div class="relative rounded-2xl overflow-hidden">
+                        <!-- Fondo degradado profesional -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50"></div>
+                        <div class="absolute inset-0 opacity-[0.03]"
+                             style="background-image: url('data:image/svg+xml,<svg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg><g fill=none fill-rule=evenodd><g fill=%231e3a8a><path d=M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z/></g></g></svg>')"></div>
+                        
+                        <div class="relative px-4 py-12 md:py-16">
+                            <div class="max-w-6xl mx-auto">
+                                <!-- Encabezado -->
+                                <div class="text-center mb-12">
+                                    <div class="inline-block bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                                        📚 Aprende con nuestros recursos
+                                    </div>
+                                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                        Guías técnicas y tutoriales
+                                    </h2>
+                                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                                        Artículos prácticos sobre diseño estructural SMF, ACI 318-19 y cómo usar nuestras herramientas para verificar cada paso de tus cálculos
+                                    </p>
+                                </div>
+
+                                <!-- Grid de artículos/recursos -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Artículo 1: Calculadora SMF -->
+                                    <a href="/blog/calculadora-smf-aci318.html"
+                                       class="group glass-card rounded-2xl p-6 md:p-8 hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+                                        <div>
+                                            <div class="text-4xl mb-3">🧮</div>
+                                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition mb-2">
+                                                Calculadora SMF — ACI 318-19
+                                            </h3>
+                                            <p class="text-gray-600 text-sm leading-relaxed">
+                                                Tutorial paso a paso: cómo usar nuestra herramienta para diseñar vigas en pórticos especiales. Desde solicitaciones de ETABS/SAP2000 hasta informe técnico listo para municipios.
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-6 text-blue-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                                            Leer artículo
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </a>
+
+                                    <!-- Artículo 2: Próximamente -->
+                                    <div class="glass-card rounded-2xl p-6 md:p-8 opacity-60">
+                                        <div class="text-4xl mb-3">📖</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                            Más artículos
+                                        </h3>
+                                        <p class="text-gray-600 text-sm leading-relaxed">
+                                            Próximamente: errores comunes en diseño SMF, diferencias entre normas, y guías de implementación en ETABS/SAP2000.
+                                        </p>
+                                        <div class="mt-6 text-gray-500 font-semibold text-sm">
+                                            🚀 Próximamente
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===== QUIÉNES SOMOS ===== -->
+                <section class="mb-16" id="about">
+                    <div class="glass-card rounded-2xl p-8 md:p-10">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Quiénes somos</h2>
+                        <p class="text-gray-500 text-sm text-center mb-8 max-w-md mx-auto">Conoce a Symmetrica Ingeniería</p>
+
+                        <div class="about-grid">
+                            <div>
+                                <p class="text-gray-700 leading-relaxed text-lg font-medium">
+                                    En <strong>Symmetrica</strong> combinamos la precisión de la <strong>ingeniería estructural</strong>, la visión de la <strong>arquitectura moderna</strong> y la <strong>formación de élite</strong> para transformar ideas en estructuras funcionales, resistentes y extraordinarias.
+                                </p>
+                                <p class="text-gray-600 mt-4 leading-relaxed">
+                                    Somos una consultora especializada en <strong>Ingeniería Civil, Estructural y Sismorresistente</strong>, con experiencia en el diseño de puentes, modelado 3D (Rendering) y proyectos de alta complejidad. Nuestro equipo está comprometido con la excelencia técnica y la innovación, brindando soluciones que superan las expectativas de nuestros clientes.
+                                </p>
+                                <div class="mt-6 flex flex-wrap gap-3">
+                                    <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">🏗️ Estructural</span>
+                                    <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">🌉 Puentes</span>
+                                    <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">📐 Sismorresistente</span>
+                                    <span class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium">🎨 Rendering</span>
+                                </div>
+                            </div>
+                            <div class="about-image">
+                                <img src="./assets/images/about.jpg" 
+                                     alt="Symmetrica Ingeniería" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===== SERVICIOS / PROYECTOS ===== -->
+                <section class="mb-16" id="projects">
+                    <div class="glass-card rounded-2xl p-8 md:p-10">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Nuestros proyectos</h2>
+                        <p class="text-gray-500 text-sm text-center mb-8 max-w-md mx-auto">Soluciones que construyen el futuro</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Proyecto 1 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">🏗️</div>
+                                <h3 class="font-bold text-gray-800">Diseño Estructural</h3>
+                                <p class="text-sm text-gray-500 mt-1">Proyectos de edificaciones con análisis sísmico avanzado y optimización de materiales.</p>
+                            </div>
+                            <!-- Proyecto 2 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">🌉</div>
+                                <h3 class="font-bold text-gray-800">Ingeniería de Puentes</h3>
+                                <p class="text-sm text-gray-500 mt-1">Diseño y supervisión de puentes vehiculares y peatonales con estándares internacionales.</p>
+                            </div>
+                            <!-- Proyecto 3 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">🎨</div>
+                                <h3 class="font-bold text-gray-800">Rendering 3D</h3>
+                                <p class="text-sm text-gray-500 mt-1">Visualización arquitectónica y estructural para presentación de proyectos a clientes.</p>
+                            </div>
+                            <!-- Proyecto 4 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">📐</div>
+                                <h3 class="font-bold text-gray-800">Asesoría Técnica</h3>
+                                <p class="text-sm text-gray-500 mt-1">Consultoría especializada en normativa sismorresistente y patología de estructuras.</p>
+                            </div>
+                            <!-- Proyecto 5 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">🧮</div>
+                                <h3 class="font-bold text-gray-800">Cálculo Estructural</h3>
+                                <p class="text-sm text-gray-500 mt-1">Modelado y análisis de estructuras con software de última generación.</p>
+                            </div>
+                            <!-- Proyecto 6 -->
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100/50 hover:shadow-md transition">
+                                <div class="text-4xl mb-3">📋</div>
+                                <h3 class="font-bold text-gray-800">Inspección y Diagnóstico</h3>
+                                <p class="text-sm text-gray-500 mt-1">Evaluación de estructuras existentes y propuestas de refuerzo y rehabilitación.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===== CONTACTO ===== -->
+                <section class="mb-8" id="contact">
+                    <div class="glass-card rounded-2xl p-8 md:p-10">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2 text-center">Contacto</h2>
+                        <p class="text-gray-500 text-sm text-center mb-8 max-w-md mx-auto">Conecta con nosotros</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Información de contacto -->
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-4">📬 Información de contacto</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="contact-icon">📍</div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Oficina</p>
+                                            <p class="text-sm text-gray-500">La Paz, Bolivia</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="contact-icon">📧</div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Correo electrónico</p>
+                                            <a href="mailto:info@symmetrica.com" class="text-sm text-blue-600 hover:underline">info@symmetrica.com</a>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div class="contact-icon">📱</div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Teléfono</p>
+                                            <a href="tel:+59169737901" class="text-sm text-blue-600 hover:underline">+591 69737901</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6">
+                                    <h4 class="font-medium text-gray-700 mb-3">Síguenos en redes</h4>
+                                    <div class="flex flex-wrap gap-3">
+                                        <a href="https://www.instagram.com/symmetrica_ingenieria" target="_blank" class="social-link instagram">
+                                            📸 Instagram
+                                        </a>
+                                        <a href="https://www.facebook.com/profile.php?id=61575207414654" target="_blank" class="social-link facebook">
+                                            👍 Facebook
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario de contacto -->
+                            <div>
+                                <h3 class="font-semibold text-gray-700 mb-4">✉️ Envíanos un mensaje</h3>
+                                <form @submit.prevent="sendContactMessage" class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                        <input type="text" v-model="contactName" required
+                                               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                                        <input type="email" v-model="contactEmail" required
+                                               class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+                                        <textarea v-model="contactMessage" rows="4" required
+                                                  class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn-primary w-full text-center">
+                                        Enviar mensaje
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ===== PLANES ===== -->
+            <div v-else-if="currentRoute === 'plans'">
+                <div class="mb-12">
+                    <div class="text-center mb-12">
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Planes y precios</h1>
+                        <p class="text-gray-500 text-lg max-w-2xl mx-auto">
+                            Elige la modalidad que mejor se adapte a tus necesidades y accede a las herramientas de ingeniería de Symmetrica.
+                        </p>
+                    </div>
+
+                    <!-- Tarjetas de planes -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                        
+                        <!-- Opción 1: Programa individual -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Programa individual</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">Compra únicamente el programa que necesitas.</p>
+                            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                <p class="text-xs text-gray-500 mb-2">Precios disponibles:</p>
+                                <div class="space-y-1">
+                                    <p v-for="prog in programs" :key="prog.id" class="text-sm font-medium text-gray-700">
+                                        • {{ prog.name }}: Bs {{ prog.price }}
+                                    </p>
+                                    <p v-if="programs.length === 0" class="text-xs text-gray-400">Cargando programas...</p>
+                                </div>
+                            </div>
+                            <button @click="goToPrograms" class="btn-primary w-full">Ver programas</button>
+                        </div>
+
+                        <!-- Opción 2: Pack completo -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Todos los programas actuales</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Accede a todos los programas y actualizaciones disponibles actualmente en Symmetrica por un precio especial.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-xs text-gray-400 line-through">Bs {{ totalIndividualPrice }}</p>
+                                <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.packPrice }}</p>
+                                <p v-if="packDiscount > 0" class="text-sm text-green-600 font-semibold mt-1">
+                                    💚 Ahorras Bs {{ packDiscount }} ({{ packDiscountPercent }}%)
+                                </p>
+                            </div>
+                            <button @click="requestPackFlow" class="btn-primary w-full">Comprar pack</button>
+                        </div>
+
+                        <!-- Opción 3: Suscripción anual (RECOMENDADO) -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col ring-2 ring-blue-500 lg:col-span-1 md:col-span-1 transform hover:shadow-2xl transition">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xl font-bold text-gray-800">Symmetrica Pro</h3>
+                                <span class="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-700">⭐ RECOMENDADO</span>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Accede a todos los programas actuales y disfruta de los nuevos programas que se incorporen durante tu período de suscripción.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.annualPrice }} <span class="text-lg text-gray-500">/año</span></p>
+                            </div>
+                            <button @click="showSubModal = true" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Suscribirme</button>
+                        </div>
+
+                        <!-- Opción 4: Licencia perpetua -->
+                        <div class="glass-card rounded-2xl p-6 shadow-lg flex flex-col border border-gray-200">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Licencia perpetua</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-grow">
+                                Realiza un único pago y obtén acceso permanente a todos los programas actuales incluidos en la licencia y actualizaciones.
+                            </p>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-gray-800">Bs {{ allPricing.licensePrice }}</p>
+                                <p class="text-sm text-gray-500 mt-1 font-medium">Pago único</p>
+                            </div>
+                            <button @click="requestLicenseFlow" class="btn-primary w-full">Comprar licencia</button>
+                            <p class="text-xs text-gray-400 mt-4 leading-relaxed">
+                                La licencia proporciona acceso permanente a los programas incluidos en el momento de la compra y a sus respectivas actualizaciones, además a los nuevos programas sin embargo puede que algunas herramientas o módulos importantes podrán formar parte de futuros planes o productos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tabla comparativa -->
+                    <div class="glass-card rounded-2xl p-6 md:p-8 mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Comparación de planes</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm min-w-[640px]">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 font-semibold text-gray-700">Característica</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Individual</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Pack</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700 bg-blue-50">Anual</th>
+                                        <th class="text-center px-4 py-3 font-semibold text-gray-700">Perpetua</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Programa seleccionado</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Todos los programas actuales</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Nuevos programas durante la suscripción</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Acceso mientras el plan esté vigente</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Pago único</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">—</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                    <tr class="border-t border-gray-100">
+                                        <td class="px-4 py-3 text-gray-700">Mejor para uso frecuente</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3">—</td>
+                                        <td class="text-center px-4 py-3 bg-blue-50">✅</td>
+                                        <td class="text-center px-4 py-3">✅</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PROGRAMA (iframe) ===== -->
+            <div v-else-if="currentRoute === 'program'">
+                <div class="mb-6 flex items-center gap-4 flex-wrap">
+                    <button @click="goHome" class="text-blue-600 hover:text-blue-800 font-medium transition flex items-center gap-1">
+                        ← Volver
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800">{{ currentProgram?.name }}</h2>
+                    <span v-if="isDemoView && !isUnlocked(currentProgramId)"
+                          class="text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+                        🔒 Modo demo
+                    </span>
+                </div>
+                <div class="glass-card rounded-2xl p-2 sm:p-4 program-view-fullwidth">
+                    <iframe :srcdoc="programIframeSrcdoc" class="program-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                </div>
+            </div>
+
+            <!-- ===== MI CUENTA ===== -->
+            <div v-else-if="currentRoute === 'account'">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">👤 Mi cuenta</h2>
+                    <p class="text-gray-500 text-sm mt-1">{{ user?.email }}</p>
+                </div>
+
+                <!-- Suscripción -->
+                <div class="mb-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Mi suscripción</h3>
+                    <div v-if="isSubscribed" class="glass-card rounded-2xl p-6 flex items-center gap-4">
+                        <span class="text-3xl">🌟</span>
+                        <div>
+                            <p class="font-semibold text-gray-800">
+                                Suscripción {{ user.userData.subscription.type === 'lifetime' ? 'perpetua' : 'anual' }} activa
+                            </p>
+                            <p v-if="user.userData.subscription.type === 'annual'" class="text-sm text-gray-500">
+                                Vence: {{ new Date(user.userData.subscription.expiresAt.seconds * 1000).toLocaleDateString() }}
+                            </p>
+                            <p v-else class="text-sm text-gray-500">Sin fecha de vencimiento.</p>
+                        </div>
+                    </div>
+                    <div v-else class="glass-card rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <p class="text-gray-500 text-sm">No tienes una suscripción activa — accede a todo el catálogo suscribiéndote.</p>
+                        <button @click="showSubModal = true" class="btn-primary shrink-0 whitespace-nowrap">Ver planes</button>
+                    </div>
+                </div>
+
+                <!-- Programas desbloqueados -->
+                <div class="mb-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Mis programas</h3>
+                    <div v-if="programs.filter(p => isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no tienes programas desbloqueados. Explora el catálogo y solicita acceso al que necesites.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
+                                <button @click="openProgram(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    Abrir programa →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catálogo / pendientes -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Más programas disponibles</h3>
+                    <div v-if="programs.filter(p => !isUnlocked(p.id)).length === 0"
+                         class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Ya tienes acceso a todos los programas del catálogo.
+                    </div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div v-for="prog in programs.filter(p => !isUnlocked(p.id))" :key="prog.id"
+                             class="glass-card rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                            <div class="p-6 flex-grow">
+                                <span class="text-3xl">{{ prog.icon || '📐' }}</span>
+                                <h4 class="text-lg font-bold text-gray-800 mt-2">{{ prog.name }}</h4>
+                                <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
+                                <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
+                                <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
+                                        class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition">
+                                    ▶ Probar gratis
+                                </button>
+                                <button v-if="isRequestPending(prog.id)" disabled
+                                        class="w-full bg-amber-100 text-amber-700 font-semibold py-2.5 rounded-xl cursor-not-allowed">
+                                    ⏳ Solicitud pendiente
+                                </button>
+                                <button v-else @click="requestAccess(prog.id)"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
+                                    💰 Solicitar por {{ prog.price }} Bs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de solicitudes -->
+                <div class="mt-12">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Historial de solicitudes</h3>
+                    <div v-if="myRequests.length === 0" class="glass-card rounded-2xl p-8 text-center text-gray-400">
+                        Todavía no has hecho ninguna solicitud.
+                    </div>
+                    <div v-else class="space-y-2">
+                        <div v-for="req in [...myRequests].sort((a, b) => (b.requestedAt?.seconds || 0) - (a.requestedAt?.seconds || 0))"
+                             :key="req.id"
+                             class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border border-gray-100/50">
+                            <div>
+                                <p class="font-medium text-gray-800">
+                                    {{ req.type === 'subscription_annual' ? '📅 Suscripción anual' : req.type === 'subscription_lifetime' ? '♾️ Suscripción perpetua' : req.toolName }}
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}
+                                </p>
+                                <p v-if="req.status === 'rejected' && req.rejectionReason" class="text-xs text-red-500 mt-1">
+                                    Motivo: {{ req.rejectionReason }}
+                                </p>
+                            </div>
+                            <span class="text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap"
+                                  :class="{
+                                      'bg-amber-100 text-amber-700': req.status === 'pending',
+                                      'bg-green-100 text-green-700': req.status === 'approved',
+                                      'bg-red-100 text-red-700': req.status === 'rejected'
+                                  }">
+                                {{ req.status === 'pending' ? '⏳ Pendiente' : req.status === 'approved' ? '✅ Aprobada' : '❌ Rechazada' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ADMIN ===== -->
+            <div v-else-if="currentRoute === 'admin' && isAdmin">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">🔐 Panel de Administración</h2>
+
+                <!-- Tabs -->
+                <div class="flex gap-2 mb-6 border-b border-gray-200">
+                    <button @click="adminTab = 'programs'"
+                            class="px-4 py-2 font-medium text-sm transition"
+                            :class="adminTab === 'programs' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        Programas
+                    </button>
+                    <button @click="adminTab = 'users'"
+                            class="px-4 py-2 font-medium text-sm transition"
+                            :class="adminTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        Usuarios
+                    </button>
+                    <button @click="adminTab = 'requests'"
+                            class="px-4 py-2 font-medium text-sm transition"
+                            :class="adminTab === 'requests' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        Solicitudes
+                    </button>
+                    <button @click="adminTab = 'pricing'"
+                            class="px-4 py-2 font-medium text-sm transition"
+                            :class="adminTab === 'pricing' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'">
+                        Precios
+                    </button>
+                </div>
+
+                <!-- TAB: PRECIOS -->
+                <div v-if="adminTab === 'pricing'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-6">Gestión de precios</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Suscripción anual -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Suscripción anual (Bs/año)</label>
+                            <input type="number"
+                                   :value="pricingForm.annualPrice" 
+                                   @input="pricingForm.annualPrice = Number($event.target.value)"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updateSubscriptionPricing(pricingForm.annualPrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.annualPrice }} Bs</p>
+                        </div>
+
+                        <!-- Pack completo -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Pack completo (Bs)</label>
+                            <input type="number"
+                                   :value="pricingForm.packPrice" 
+                                   @input="pricingForm.packPrice = Number($event.target.value)"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updatePackPricing(pricingForm.packPrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.packPrice }} Bs</p>
+                            <p class="text-xs text-gray-500 text-center">Total individual: {{ totalIndividualPrice }} Bs</p>
+                        </div>
+
+                        <!-- Licencia perpetua -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 p-4 space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Licencia perpetua (Bs)</label>
+                            <input type="number"
+                                   :value="pricingForm.licensePrice" 
+                                   @input="pricingForm.licensePrice = Number($event.target.value)"
+                                   class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                            <button @click="updateLicensePricing(pricingForm.licensePrice)" class="btn-primary text-sm w-full">Guardar</button>
+                            <p class="text-xs text-gray-400 text-center">Actual: {{ allPricing.licensePrice }} Bs</p>
+                        </div>
+
+                        <!-- Info de precios -->
+                        <div class="bg-blue-50 rounded-xl border border-blue-200 p-4 text-sm text-gray-600 space-y-2">
+                            <p class="font-semibold text-gray-700">Resumen actual:</p>
+                            <p><strong>Individual:</strong> Según cada programa</p>
+                            <p><strong>Pack:</strong> {{ allPricing.packPrice }} Bs</p>
+                            <p><strong>Anual:</strong> {{ allPricing.annualPrice }} Bs</p>
+                            <p><strong>Perpetua:</strong> {{ allPricing.licensePrice }} Bs</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: PROGRAMAS -->
+                <div v-if="adminTab === 'programs'">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                        <h3 class="text-lg font-semibold text-gray-700">Gestión de Programas</h3>
+                        <button @click="editingProgram = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false }; showProgramForm = true"
+                                class="btn-primary text-sm">
+                            + Nuevo Programa
+                        </button>
+                    </div>
+
+                    <div class="space-y-2 mb-6">
+                        <div v-for="p in programs" :key="p.id"
+                             class="flex items-center justify-between flex-wrap gap-3 bg-white rounded-xl p-4 shadow-sm border border-gray-100/50">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span class="text-2xl shrink-0">{{ p.icon }}</span>
+                                <div class="min-w-0">
+                                    <span class="font-medium text-gray-800 break-words">{{ p.name }}</span>
+                                    <span class="text-sm text-gray-500 ml-2 whitespace-nowrap">{{ p.price }} Bs</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 shrink-0">
+                                <button @click="editProgram(p)" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Editar</button>
+                                <button @click="deleteProgram(p.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">Eliminar</button>
+                            </div>
+                        </div>
+                        <p v-if="programs.length === 0" class="text-gray-400 text-center py-4">No hay programas.</p>
+                    </div>
+
+                    <!-- Formulario -->
+                    <div v-if="showProgramForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                        <div class="glass-card rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">{{ editingProgram.id ? 'Editar' : 'Nuevo' }} Programa</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                                    <input v-model="editingProgram.name" type="text"
+                                           class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                                    <input v-model="editingProgram.description" type="text"
+                                           class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Precio (Bs)</label>
+                                        <input v-model.number="editingProgram.price" type="number"
+                                               class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Ícono (emoji)</label>
+                                        <input v-model="editingProgram.icon" type="text" maxlength="2"
+                                               class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                        <input v-model="editingProgram.demo" type="checkbox" class="w-4 h-4 rounded border-gray-300" />
+                                        Permitir "Probar gratis" (modo demo)
+                                    </label>
+                                    <p class="text-xs text-gray-400 mt-1">
+                                        En modo demo, cualquiera puede abrir el programa sin comprar. Los campos quedan
+                                        bloqueados con los valores de ejemplo que ya trae el HTML — no necesitas
+                                        configurar nada más.
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Código HTML del programa</label>
+                                    <textarea v-model="editingProgram.html" rows="8" class="code-editor"></textarea>
+                                    <p class="text-xs text-gray-400 mt-1">Pega aquí el HTML completo de la herramienta (incluye scripts y estilos).</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Vista previa</label>
+                                    <iframe :srcdoc="editingProgram.html || ''" class="program-preview-iframe" sandbox="allow-scripts allow-modals allow-same-origin"></iframe>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-3 mt-6">
+                                <button @click="showProgramForm = false" class="btn-outline text-gray-700 border-gray-300">Cancelar</button>
+                                <button @click="saveProgram" class="btn-primary">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: USUARIOS -->
+                <div v-if="adminTab === 'users'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Usuarios registrados</h3>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100/50 overflow-x-auto">
+                        <table class="w-full text-sm min-w-[480px]">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Fecha de registro</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-600">Programas comprados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="u in allUsers" :key="u.id" class="border-t border-gray-100">
+                                    <td class="px-4 py-3 text-gray-700">{{ u.email }}</td>
+                                    <td class="px-4 py-3 text-gray-500">{{ u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString() : 'N/A' }}</td>
+                                    <td class="px-4 py-3 text-gray-500">{{ (u.purchasedTools || []).length }}</td>
+                                </tr>
+                                <tr v-if="allUsers.length === 0"><td colspan="3" class="text-center py-8 text-gray-400">No hay usuarios registrados.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB: SOLICITUDES -->
+                <div v-if="adminTab === 'requests'">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Solicitudes de acceso pendientes</h3>
+                    <div class="space-y-3">
+                        <div v-for="req in pendingRequests" :key="req.id"
+                             class="bg-white rounded-xl shadow-sm p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-gray-100/50">
+                            <div>
+                                <p class="font-medium text-gray-800">
+                                    {{ req.type === 'subscription_annual' ? '📅 Suscripción anual' : req.type === 'subscription_lifetime' ? '♾️ Suscripción perpetua' : req.toolName }}
+                                </p>
+                                <p class="text-sm text-gray-600">👤 {{ req.userName || req.userEmail }}</p>
+                                <p class="text-sm text-gray-500">{{ req.userEmail }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Solicitado: {{ req.requestedAt ? new Date(req.requestedAt.seconds * 1000).toLocaleString() : 'Reciente' }}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="approveRequest(req)"
+                                        class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-xl transition">
+                                    ✅ Aprobar Pago
+                                </button>
+                                <button @click="rejectRequest(req.id)"
+                                        class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 font-semibold px-6 py-2 rounded-xl transition">
+                                    ❌ Rechazar
+                                </button>
+                            </div>
+                        </div>
+                        <p v-if="pendingRequests.length === 0" class="text-gray-400 text-center py-12 text-lg">🎉 No hay solicitudes pendientes.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NO ADMIN -->
+            <div v-else-if="currentRoute === 'admin' && !isAdmin">
+                <div class="text-center py-20">
+                    <span class="text-6xl block mb-4">⛔</span>
+                    <h2 class="text-2xl font-bold text-red-600">Acceso Restringido</h2>
+                    <p class="text-gray-500 mt-2">Tu cuenta no tiene permisos de administrador.</p>
+                    <button @click="goHome" class="mt-6 btn-primary">Volver al inicio</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="bg-gray-900 text-gray-400 py-8 px-4 mt-8">
+            <div class="max-w-6xl mx-auto text-center text-sm">
+                <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="logo-symmetrica !text-white">
+                        <div class="logo-icon"></div>
+                        <span class="logo-text hidden sm:inline">Symmetrica<span>.</span></span>
+                    </div>
+                </div>
+                <p class="mt-1">Consultora de Ingeniería Civil · Estructural y Sismorresistente</p>
+                <p class="text-xs opacity-60 mt-2">La Paz, Bolivia</p>
+                <div class="flex justify-center gap-4 mt-3">
+                    <a href="https://www.instagram.com/symmetrica_ingenieria" target="_blank" class="text-gray-500 hover:text-white transition">Instagram</a>
+                    <a href="https://www.facebook.com/profile.php?id=61575207414654" target="_blank" class="text-gray-500 hover:text-white transition">Facebook</a>
+                    <a href="mailto:info@symmetrica.com" class="text-gray-500 hover:text-white transition">Correo</a>
+                </div>
+                <p class="mt-4 text-xs opacity-40">© 2025 Symmetrica Ingeniería. Todos los derechos reservados.</p>
+            </div>
+        </footer>
+
+        <!-- ===== MODALES ===== -->
+
+        <!-- Login -->
+        <div v-if="showLogin" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Iniciar sesión</h2>
+                </div>
+                <div class="space-y-4">
+                    <input v-model="loginEmail" type="email" placeholder="Correo electrónico"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                    <input v-model="loginPassword" type="password" placeholder="Contraseña"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                    <button @click="loginWithEmail" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">
+                        Iniciar Sesión
+                    </button>
+                    <button @click="loginWithGoogle" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Continuar con Google
+                    </button>
+                    <p class="text-center text-sm text-gray-500">
+                        ¿No tienes cuenta? <a href="#" @click.prevent="switchToRegister" class="text-blue-600 hover:underline">Regístrate</a>
+                    </p>
+                </div>
+                <button @click="showLogin = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
         </div>
 
-        <div class="empty-state" id="emptyState" style="display: none;">
-            Aún no hay artículos en esta categoría.
+        <!-- Register -->
+        <div v-if="showRegister" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Crear cuenta</h2>
+                </div>
+                <div class="space-y-4">
+                    <input v-model="registerEmail" type="email" placeholder="Correo electrónico"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                    <input v-model="registerPassword" type="password" placeholder="Contraseña (6+ caracteres)"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                    <button @click="registerWithEmail" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-xl transition">
+                        Crear cuenta
+                    </button>
+                    <p class="text-center text-sm text-gray-500">
+                        ¿Ya tienes cuenta? <a href="#" @click.prevent="switchToLogin" class="text-blue-600 hover:underline">Inicia sesión</a>
+                    </p>
+                </div>
+                <button @click="showRegister = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago por WhatsApp -->
+        <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">💳</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Falta un paso para desbloquear</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de <strong>{{ paymentModalProgram?.name }}</strong>
+                        ({{ paymentModalProgram?.price }} Bs). Para activarlo, contáctanos por WhatsApp,
+                        realiza el pago y en cuanto lo confirmemos te damos acceso.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closePaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closePaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Elegir plan de suscripción -->
+        <div v-if="showSubModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-2xl w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">✨</span>
+                    <h2 class="text-2xl font-bold text-gray-800">Elige tu suscripción</h2>
+                    <p class="text-gray-500 text-sm mt-2">Acceso a todo el catálogo, incluidos los programas nuevos.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col">
+                        <h3 class="font-bold text-gray-800 text-lg">📅 Anual</h3>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">{{ pricing.annualPrice }} Bs</p>
+                        <p class="text-sm text-gray-500 mt-1 flex-grow">Acceso por 1 año a todo el catálogo, incluidos los programas nuevos que salgan durante ese tiempo.</p>
+                        <button @click="requestSubscription('annual')" class="btn-primary w-full mt-4">Suscribirme</button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-blue-200 p-6 flex flex-col ring-2 ring-blue-100">
+                        <h3 class="font-bold text-gray-800 text-lg">♾️ Perpetua</h3>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">{{ pricing.lifetimePrice }} Bs</p>
+                        <p class="text-sm text-gray-500 mt-1 flex-grow">Pago único, acceso de por vida a todo el catálogo presente y futuro.</p>
+                        <button @click="requestSubscription('lifetime')" class="btn-primary w-full mt-4">Suscribirme</button>
+                    </div>
+                </div>
+                <button @click="showSubModal = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de suscripción por WhatsApp -->
+        <div v-if="showSubPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">💳</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Falta un paso para activar tu suscripción</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de suscripción
+                        <strong>{{ subPaymentInfo?.type === 'lifetime' ? 'perpetua' : 'anual' }}</strong>
+                        ({{ subPaymentInfo?.price }} Bs). Para activarla, contáctanos por WhatsApp,
+                        realiza el pago y en cuanto lo confirmemos te damos acceso a todo el catálogo.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappSubLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closeSubPaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closeSubPaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de pack por WhatsApp -->
+        <div v-if="showPackPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">📦</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Solicitud de pack registrada</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud del pack con todos los programas actuales ({{ allPricing.packPrice }} Bs).
+                        Para completar tu compra, contáctanos por WhatsApp, realiza el pago y te damos acceso inmediato.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappPackLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closePackPaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closePackPaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+        </div>
+
+        <!-- Pago de licencia perpetua por WhatsApp -->
+        <div v-if="showLicensePaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div class="glass-card rounded-3xl max-w-md w-full p-6 sm:p-8 relative">
+                <div class="text-center mb-6">
+                    <span class="text-5xl block mb-3">♾️</span>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Solicitud de licencia perpetua registrada</h2>
+                    <p class="text-gray-500 text-sm mt-2">
+                        Registramos tu solicitud de licencia perpetua ({{ allPricing.licensePrice }} Bs).
+                        Para completar tu compra, contáctanos por WhatsApp, realiza el pago y obtendrás acceso permanente.
+                    </p>
+                </div>
+                <div class="space-y-3">
+                    <a :href="whatsappLicenseLink" target="_blank" rel="noopener"
+                       class="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl transition">
+                        💬 Contactar por WhatsApp y pagar
+                    </a>
+                    <p class="text-center text-xs text-gray-400">o escríbenos directo al +591 69737901</p>
+                    <button @click="closeLicensePaymentModal" class="w-full text-gray-500 hover:text-gray-700 text-sm py-2">
+                        Cerrar
+                    </button>
+                </div>
+                <button @click="closeLicensePaymentModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
         </div>
 
     </div>
 
-    <!-- FOOTER -->
-    <div class="footer">
-        © 2024 Symmetrica Ingeniería · <a href="https://symmetrica-ingenieria.vercel.app/">Volver al sitio</a>
-    </div>
-
-    <script>
-        // Filtrado simple por categoría (sin recargar página)
-        const filterTags = document.querySelectorAll('.filter-tag');
-        const articles = document.querySelectorAll('.article-card');
-        const emptyState = document.getElementById('emptyState');
-
-        filterTags.forEach(tag => {
-            tag.addEventListener('click', () => {
-                filterTags.forEach(t => t.classList.remove('active'));
-                tag.classList.add('active');
-
-                const cat = tag.dataset.cat;
-                let visibleCount = 0;
-
-                articles.forEach(article => {
-                    const matches = cat === 'todos' || article.dataset.cat === cat;
-                    article.style.display = matches ? 'block' : 'none';
-                    if (matches) visibleCount++;
-                });
-
-                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-            });
-        });
-    </script>
-
+    <!-- ===== VUE 3 + FIREBASE ===== -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="module" src="./src/app.js"></script>
 </body>
 </html>
