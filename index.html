@@ -319,6 +319,7 @@
             <div class="hidden md:flex items-center gap-1 text-sm">
                 <button @click="currentRoute = 'home'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Inicio</button>
                 <button @click="goToPrograms" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Programas</button>
+                <a href="/blog/calculadora-smf-aci318.html" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">📚 Recursos</a>
                 <button @click="currentRoute = 'plans'" class="text-gray-700 hover:text-blue-600 px-3 py-1 transition font-medium whitespace-nowrap">Planes</button>
             </div>
             <div class="flex items-center gap-1.5 sm:gap-3 overflow-x-auto">
@@ -446,6 +447,70 @@
                         No hay programas disponibles aún.
                     </p>
                 </div>
+
+                <!-- ===== RECURSOS TÉCNICOS / BLOG ===== -->
+                <section class="mb-16" id="resources">
+                    <div class="relative rounded-2xl overflow-hidden">
+                        <!-- Fondo degradado profesional -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50"></div>
+                        <div class="absolute inset-0 opacity-[0.03]"
+                             style="background-image: url('data:image/svg+xml,<svg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg><g fill=none fill-rule=evenodd><g fill=%231e3a8a><path d=M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z/></g></g></svg>')"></div>
+                        
+                        <div class="relative px-4 py-12 md:py-16">
+                            <div class="max-w-6xl mx-auto">
+                                <!-- Encabezado -->
+                                <div class="text-center mb-12">
+                                    <div class="inline-block bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                                        📚 Aprende con nuestros recursos
+                                    </div>
+                                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                                        Guías técnicas y tutoriales
+                                    </h2>
+                                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                                        Artículos prácticos sobre diseño estructural SMF, ACI 318-19 y cómo usar nuestras herramientas para verificar cada paso de tus cálculos
+                                    </p>
+                                </div>
+
+                                <!-- Grid de artículos/recursos -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Artículo 1: Calculadora SMF -->
+                                    <a href="/blog/calculadora-smf-aci318.html"
+                                       class="group glass-card rounded-2xl p-6 md:p-8 hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
+                                        <div>
+                                            <div class="text-4xl mb-3">🧮</div>
+                                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition mb-2">
+                                                Calculadora SMF — ACI 318-19
+                                            </h3>
+                                            <p class="text-gray-600 text-sm leading-relaxed">
+                                                Tutorial paso a paso: cómo usar nuestra herramienta para diseñar vigas en pórticos especiales. Desde solicitaciones de ETABS/SAP2000 hasta informe técnico listo para municipios.
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-6 text-blue-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                                            Leer artículo
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </a>
+
+                                    <!-- Artículo 2: Próximamente -->
+                                    <div class="glass-card rounded-2xl p-6 md:p-8 opacity-60">
+                                        <div class="text-4xl mb-3">📖</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                            Más artículos
+                                        </h3>
+                                        <p class="text-gray-600 text-sm leading-relaxed">
+                                            Próximamente: errores comunes en diseño SMF, diferencias entre normas, y guías de implementación en ETABS/SAP2000.
+                                        </p>
+                                        <div class="mt-6 text-gray-500 font-semibold text-sm">
+                                            🚀 Próximamente
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- ===== QUIÉNES SOMOS ===== -->
                 <section class="mb-16" id="about">
@@ -1104,24 +1169,6 @@
             </div>
 
         </main>
-
-        <!-- ===== SECCIÓN DE BLOG / RECURSOS TÉCNICOS ===== -->
-        <section class="bg-gray-50 py-16 px-4 mt-12 border-t border-gray-200">
-            <div class="max-w-6xl mx-auto text-center">
-                <div class="mb-8">
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">📚 Recursos técnicos</h2>
-                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                        Guías prácticas sobre diseño estructural SMF y cómo usar nuestras herramientas para verificar cada paso según ACI 318-19
-                    </p>
-                </div>
-                <div class="mt-8">
-                    <a href="/blog/calculadora-smf-aci318.html" 
-                       class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-200 transform hover:scale-105">
-                        Leer: Tutorial — Calculadora SMF →
-                    </a>
-                </div>
-            </div>
-        </section>
 
         <!-- ===== FOOTER ===== -->
         <footer class="bg-gray-900 text-gray-400 py-8 px-4 mt-8">
