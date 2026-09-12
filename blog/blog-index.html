@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Técnico · Symmetrica Ingeniería</title>
+    <meta name="description" content="Artículos técnicos sobre diseño estructural, optimización de secciones y herramientas de cálculo para ingeniería civil.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            line-height: 1.7;
+            color: #182430;
+            background: #e8ebef;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #16222e 0%, #1a2f4a 100%);
+            color: #ffffff;
+            padding: 70px 20px 60px;
+            text-align: center;
+            border-bottom: 1px solid #d6dbe1;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header-eyebrow {
+            font-size: 13px;
+            color: #8fa8b8;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .header p {
+            font-size: 17px;
+            color: #b8c5d0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 20px 80px;
+        }
+
+        /* Filtros de categoría */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .filter-tag {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: 1px solid #d6dbe1;
+            background: #ffffff;
+            color: #5c6b7a;
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+        }
+
+        .filter-tag:hover {
+            border-color: #1c72c4;
+            color: #1c72c4;
+        }
+
+        .filter-tag.active {
+            background: #1c72c4;
+            border-color: #1c72c4;
+            color: #ffffff;
+        }
+
+        /* Lista de artículos */
+        .article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .article-card {
+            background: #ffffff;
+            border: 1px solid #d6dbe1;
+            border-radius: 6px;
+            padding: 28px;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: border-color .15s, transform .15s;
+        }
+
+        .article-card:hover {
+            border-color: #1c72c4;
+            transform: translateY(-2px);
+        }
+
+        .article-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .article-category {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(28, 114, 196, 0.1);
+            color: #1c72c4;
+            white-space: nowrap;
+        }
+
+        .article-date {
+            font-size: 12.5px;
+            color: #8996a3;
+            white-space: nowrap;
+        }
+
+        .article-title {
+            font-size: 21px;
+            font-weight: 700;
+            color: #16222e;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .article-excerpt {
+            font-size: 14.5px;
+            color: #5c6b7a;
+            margin-bottom: 14px;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12.5px;
+            color: #8996a3;
+        }
+
+        .article-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Card destacada (primer artículo) */
+        .article-card.featured {
+            border-left: 4px solid #1c72c4;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .featured-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #1a7d3f;
+            color: #ffffff;
+            margin-right: 8px;
+        }
+
+        /* Estado vacío para futuras categorías sin artículos */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8996a3;
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #ffffff;
+            border-top: 1px solid #d6dbe1;
+            padding: 32px 20px;
+            text-align: center;
+            color: #5c6b7a;
+            font-size: 13px;
+        }
+
+        .footer a {
+            color: #1c72c4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+            .header h1 { font-size: 28px; }
+            .header { padding: 50px 20px 44px; }
+            .article-card-top { flex-direction: column; }
+            .article-title { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-eyebrow">Symmetrica Ingeniería</div>
+            <h1>Blog Técnico</h1>
+            <p>Artículos sobre diseño estructural, algoritmos de optimización y herramientas de cálculo para ingeniería civil.</p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="container">
+
+        <div class="filter-bar">
+            <span class="filter-tag active" data-cat="todos">Todos</span>
+            <span class="filter-tag" data-cat="optimizacion">Optimización</span>
+            <span class="filter-tag" data-cat="diseno">Diseño estructural</span>
+            <span class="filter-tag" data-cat="herramientas">Herramientas</span>
+        </div>
+
+        <div class="article-list" id="articleList">
+
+            <!-- ARTÍCULO 1 -->
+            <a href="optimizacion-smf.html" class="article-card featured" data-cat="optimizacion">
+                <div class="article-card-top">
+                    <div>
+                        <span class="featured-badge">Más reciente</span>
+                        <span class="article-category">Optimización</span>
+                    </div>
+                    <span class="article-date">Septiembre 2024</span>
+                </div>
+                <div class="article-title">Optimización Inteligente de Secciones SMF</div>
+                <p class="article-excerpt">
+                    Cómo pasar de un optimizador de fuerza bruta a uno que filtra soluciones ineficientes,
+                    compara costo vs. robustez con la frontera de Pareto, y entrega tres criterios de diseño
+                    en vez de una sola respuesta.
+                </p>
+                <div class="article-meta">
+                    <span class="article-meta-item">⏱️ 12 min de lectura</span>
+                    <span class="article-meta-item">🎯 Nivel intermedio-avanzado</span>
+                </div>
+            </a>
+
+            <!-- Próximos artículos se agregan aquí siguiendo la misma estructura -->
+
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            Aún no hay artículos en esta categoría.
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        © 2024 Symmetrica Ingeniería · <a href="https://symmetrica-ingenieria.vercel.app/">Volver al sitio</a>
+    </div>
+
+    <script>
+        // Filtrado simple por categoría (sin recargar página)
+        const filterTags = document.querySelectorAll('.filter-tag');
+        const articles = document.querySelectorAll('.article-card');
+        const emptyState = document.getElementById('emptyState');
+
+        filterTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                filterTags.forEach(t => t.classList.remove('active'));
+                tag.classList.add('active');
+
+                const cat = tag.dataset.cat;
+                let visibleCount = 0;
+
+                articles.forEach(article => {
+                    const matches = cat === 'todos' || article.dataset.cat === cat;
+                    article.style.display = matches ? 'block' : 'none';
+                    if (matches) visibleCount++;
+                });
+
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            });
+        });
+    </script>
+
+</body>
+</html>
