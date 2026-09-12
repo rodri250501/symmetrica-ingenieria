@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Guía práctica: cómo usar la calculadora SMF de Symmetrica para diseñar vigas en pórticos especiales según ACI 318-19. Tutorial paso a paso con ejemplos reales.">
+    <meta name="keywords" content="calculadora SMF, diseño de vigas, ACI 318-19, pórticos especiales, ingeniería sismorresistente Bolivia, Symmetrica">
+    <meta name="author" content="Symmetrica Ingeniería">
+    <meta name="og:title" content="Calculadora SMF: Diseño rápido de vigas en pórticos especiales (ACI 318-19)">
+    <meta name="og:description" content="Tutorial: cómo usar nuestra herramienta para calcular acero longitudinal, estribos y generar informes técnicos listos para presentar.">
+    <meta name="og:type" content="article">
+    <title>Calculadora SMF — Diseño de vigas en pórticos especiales | Symmetrica</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.7;
+            color: #1f2937;
+            background: #fafbfc;
+        }
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            background: white;
+        }
+        header {
+            margin-bottom: 40px;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 24px;
+        }
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            color: #1e40af;
+            line-height: 1.2;
+        }
+        .subtitle {
+            font-size: 1.1em;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+        .meta {
+            color: #9ca3af;
+            font-size: 0.95em;
+        }
+        h2 {
+            font-size: 1.6em;
+            margin-top: 36px;
+            margin-bottom: 16px;
+            color: #1e40af;
+            border-left: 4px solid #1e40af;
+            padding-left: 16px;
+        }
+        h3 {
+            font-size: 1.2em;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        h4 {
+            font-size: 1em;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            color: #4b5563;
+            font-weight: 600;
+        }
+        p {
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        ul, ol {
+            margin-left: 28px;
+            margin-bottom: 16px;
+        }
+        li {
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        .highlight {
+            background: #eff6ff;
+            border-left: 4px solid #1e40af;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        .highlight strong {
+            color: #1e40af;
+        }
+        .example {
+            background: #fef9e7;
+            border-left: 4px solid #d97706;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        .example strong {
+            color: #b45309;
+        }
+        .step-box {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 6px;
+        }
+        .step-number {
+            display: inline-block;
+            background: #1e40af;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 700;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        table th {
+            background: #1e40af;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        table td {
+            border: 1px solid #e5e7eb;
+            padding: 10px 12px;
+        }
+        table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 32px 28px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        .cta-section h3 {
+            color: white;
+            margin-top: 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #1e40af;
+            padding: 13px 32px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        .breadcrumb {
+            font-size: 0.9em;
+            color: #9ca3af;
+            margin-bottom: 24px;
+        }
+        a {
+            color: #1e40af;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .inline-code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        footer {
+            border-top: 1px solid #e5e7eb;
+            margin-top: 48px;
+            padding-top: 24px;
+            color: #6b7280;
+            font-size: 0.95em;
+        }
+        .warning {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        .warning strong {
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="https://symmetrica-ingenieria.vercel.app/">Inicio</a> > Blog > Calculadora SMF
+        </div>
+
+        <header>
+            <h1>Calculadora SMF: Cómo diseñar vigas en pórticos especiales (ACI 318-19)</h1>
+            <div class="subtitle">Tutorial práctico — de datos de análisis sísmico a informe técnico en minutos</div>
+            <div class="meta">
+                📅 Publicado: enero 2025 | ✍️ Symmetrica Ingeniería | ⏱️ Lectura: 10 min | 🔧 Herramienta disponible
+            </div>
+        </header>
+
+        <article>
+            <h2>Introducción: ¿Por qué necesitas una herramienta de verificación SMF?</h2>
+            
+            <p>
+                <strong>Sí, ETABS y SAP2000 ya calculan momentos, cortantes y solicitaciones.</strong> Eso está hecho. Pero lo que esos programas NO hacen es <strong>verificar y mostrar paso a paso cómo se diseña una viga SMF según ACI 318-19.</strong>
+            </p>
+
+            <p>
+                Cuando le pides a ETABS "dame las solicitaciones en la viga", obtienes números. Pero la pregunta profesional es: <strong>¿cómo convertir esos números en acero y estribos?</strong> Y más importante: <strong>¿estoy cumpliendo con ACI 318-19?</strong>
+            </p>
+
+            <p>
+                Aquí es donde una herramienta especializada de verificación cambia el juego. Que no reemplaza tu modelo sísmico, sino que:
+            </p>
+
+            <ul>
+                <li><strong>Toma las solicitaciones de ETABS/SAP2000/SYPE</strong> (momentos, cortantes — ya calculados)</li>
+                <li><strong>Diseña el acero longitudinal en múltiples secciones:</strong> negativo/positivo en apoyos e intermedios (variable según tramos)</li>
+                <li><strong>Verifica estribos de confinamiento:</strong> con espaciamiento d/4 en zona plástica (no d/2)</li>
+                <li><strong>Calcula momentos probables y cortante probable (Vp)</strong> para verificar que la columna no falla antes que la viga</li>
+                <li><strong>Chequea cada requisito ACI 318-19:</strong> cuantía, refuerzo en apoyos ≥50%, anclaje</li>
+                <li><strong>Genera un informe técnico verificable</strong> que puedas defender ante una supervisión</li>
+            </ul>
+
+            <p>
+                <strong>El valor no es "calcular solicitaciones"</strong> (eso ya lo hace ETABS perfectamente). <strong>El valor es tener total claridad y control sobre el diseño SMF</strong>, verificación paso a paso, y un documento técnico que demuestre que cada decisión cumple ACI.
+            </p>
+
+            <p>
+                Por eso desarrollamos esta herramienta: <strong>no reemplaza tu análisis sísmico, lo complementa</strong> con un proceso de diseño transparente que puedas auditar línea por línea.
+            </p>
+
+            <h2>Paso 1: Preparar datos del análisis sísmico</h2>
+
+            <h3>Geometría y materiales de la viga</h3>
+            
+            <p>
+                Abre la calculadora en la pestaña <span class="inline-code">01 · Datos de entrada</span>. Comienza con los parámetros globales:
+            </p>
+
+            <div class="step-box">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.95em;">
+                    <div><strong>h (altura):</strong> cm<br>Ej: 50 cm para vano de 5m</div>
+                    <div><strong>b (ancho):</strong> cm<br>Típicamente: 0.4–0.6h (aquí: 40 cm)</div>
+                    <div><strong>Recub. inferior (r):</strong> cm<br>ACI mínimo: 2.5 cm (usualmente 3)</div>
+                    <div><strong>Recub. superior (d'):</strong> cm<br>Igual al inferior (2.5–3 cm)</div>
+                    <div><strong>f'c (concreto):</strong> kgf/cm²<br>Bolivia estándar: 210</div>
+                    <div><strong>fy (acero):</strong> kgf/cm²<br>Grado 60: 5000</div>
+                </div>
+            </div>
+
+            <p>
+                La herramienta calcula automáticamente el peralte efectivo: <strong>d = h − r − (Ø/2)</strong>. No hagas esto a mano.
+            </p>
+
+            <h3>Definir el número de tramos</h3>
+            
+            <p>
+                En <span class="inline-code">Número de tramos</span>, ingresa cuántos tramos continuos tiene tu viga. Presiona **"Generar campos"** y la calculadora creará automáticamente tablas para cada tramo:
+            </p>
+            
+            <ul>
+                <li>Longitudes libres (Ln) de cada tramo</li>
+                <li>Momentos en apoyos e intermedios (M neg y M pos)</li>
+                <li>Cortantes del análisis sísmico (Vu) y gravitacional (Vg)</li>
+                <li>Estribos propuestos en extremos</li>
+            </ul>
+
+            <div class="example">
+                <strong>💡 Ejemplo:</strong> Una viga de 3 apoyos con 2 tramos continuos de 5m cada uno:
+                <ul style="margin-top: 8px;">
+                    <li>Número de tramos = 2</li>
+                    <li>Se generan automáticamente 2 × 6 = 12 secciones de acero (3 por tramo: izq, centro, der; × 2 orientaciones: superior/inferior)</li>
+                    <li>3 apoyos (izquierdo, central, derecho)</li>
+                </ul>
+            </div>
+
+            <h2>Paso 2: Ingresar solicitaciones del análisis sísmico</h2>
+
+            <p>
+                Aquí va lo crítico: <strong>los momentos y cortantes deben provenir directamente de tu análisis sísmico (SAP2000/ETABS), sin amplificaciones adicionales</strong>. El análisis ya incluye los espectros de respuesta o el estático equivalente según NB 1225001.
+            </p>
+
+            <h3>¿De dónde vienen los momentos?</h3>
+
+            <ol>
+                <li>Abre tu modelo de análisis (SAP2000, ETABS, Robot)</li>
+                <li>Aplica el caso sísmico (espectral o estático equivalente)</li>
+                <li>Visualiza el diagrama de momentos en las vigas</li>
+                <li>Lee los valores en cada sección:
+                    <ul>
+                        <li><strong>Apoyo izquierdo:</strong> momento negativo (M−) en kgf·m o t·m</li>
+                        <li><strong>Centro del tramo:</strong> momento positivo (M+)</li>
+                        <li><strong>Apoyo derecho:</strong> momento negativo (M−)</li>
+                        <li>Repite para cada uno de los n tramos</li>
+                    </ul>
+                </li>
+                <li>Ingresa en la tabla de la calculadora (se generó en Paso 1)</li>
+            </ol>
+
+            <div class="warning">
+                <strong>⚠️ Punto crítico:</strong> Los momentos que ingreses deben ser <u>exactamente los que sale del análisis sísmico</u>. No los ampliques por un factor adicional — el análisis ya incluye toda la amplificación sísmica necesaria (espectro, factor de zona, tipo de suelo, etc.).
+            </div>
+
+            <h2>Paso 3: Cortante gravitacional (Vg) — Extrae de tu modelo</h2>
+
+            <p>
+                <strong>ETABS, SAP2000, SYPE y cualquier software estructural serio ya calculan el cortante gravitacional.</strong> No necesitas hacerlo a mano. Aquí te muestro qué buscar:
+            </p>
+
+            <h3>¿De dónde extraigo Vg?</h3>
+
+            <ol>
+                <li>En tu modelo (ETABS, SAP2000, etc.), abre el <strong>caso de carga gravitacional</strong> (típicamente "1.2D+L" o el correspondiente a tu criterio de diseño)</li>
+                <li>Visualiza el <strong>diagrama de cortante</strong> en cada viga</li>
+                <li>Lee el valor del cortante en el vano (aproximadamente L/2)</li>
+                <li>Ingresa ese valor en la tabla de la calculadora como "Vg"</li>
+            </ol>
+
+            <p style="font-size: 0.95em; color: #6b7280;">
+                <strong>¿Por qué extraer de tu modelo en lugar de calcularlo a mano?</strong> Porque tu modelo ya tiene todas las cargas correctamente asignadas, las combinaciones aplicadas, y la geometría actualizada. Confiar en el modelo es más seguro que intentar reproducir manualmente.
+            </p>
+
+            <h3>¿Cómo se calcula Vg?</h3>
+
+            <p>
+                El software (ETABS, SAP2000, SYPE) ya lo calcula automáticamente en sus casos de carga. Pero aquí está la fórmula y qué representa cada variable:
+            </p>
+
+            <p style="text-align: center; font-family: 'Courier New', monospace; background: #f3f4f6; padding: 12px; margin: 16px 0; border-radius: 4px; font-size: 0.9em;">
+                <strong>W<sub>u</sub></strong> = (1.2 + 0.2·S<sub>DS</sub>)·<strong>D</strong> + <strong>L</strong> &nbsp;&nbsp; (Criterio 1, con vivas)<br>
+                <strong>W<sub>u</sub></strong> = (0.9 − 0.2·S<sub>DS</sub>)·<strong>D</strong> &nbsp;&nbsp; (Criterio 2, sin vivas)<br>
+                <br>
+                <strong>V<sub>g</sub></strong> = W<sub>u</sub> · <strong>L<sub>libre</sub></strong> / 2
+            </p>
+
+            <p>
+                Desglose de variables:
+            </p>
+
+            <ul>
+                <li><strong>D</strong> = Carga muerta por unidad de longitud (kgf/m)<br>
+                    D = peso propio viga + carga permanente (PP) + sobrecarga de construcción (SCP)
+                </li>
+                <li><strong>L</strong> = Carga viva por unidad de longitud (kgf/m)<br>
+                    Típicamente: 1000–1500 kgf/m según uso del edificio
+                </li>
+                <li><strong>S<sub>DS</sub></strong> = Parámetro de respuesta espectral de corto período (aceleración)<br>
+                    Para Bolivia, típicamente S<sub>DS</sub> = 0 en cálculos simplificados
+                </li>
+                <li><strong>L<sub>libre</strong> = Luz libre del tramo entre caras de columnas (m)</li>
+                <li><strong>W<sub>u</sub></strong> = Carga última distribuida (kgf/m)<br>
+                    Ya incluye los factores 1.2, 0.2, 0.9 según la combinación de cargas
+                </li>
+                <li><strong>V<sub>g</sub></strong> = Cortante gravitacional máximo en el tramo (kgf o t)</li>
+            </ul>
+
+            <div class="example">
+                <strong>📊 Ejemplo de cálculo (mostrado por referencia):</strong>
+                <p style="font-size: 0.9em; margin-top: 8px;">Tu software (ETABS, SAP2000) hace exactamente esto:</p>
+                <ul style="margin-top: 8px; font-size: 0.9em;">
+                    <li>b = 40 cm, h = 55 cm → Peso viga = 528.61 kgf/m</li>
+                    <li>PP = 2000 kgf/m, SCP = 1500 kgf/m, CV (L) = 1000 kgf/m</li>
+                    <li>D = 528.61 + 2000 + 1500 = 4028.61 kgf/m</li>
+                    <li>W<sub>u</sub> (Criterio 1) = (1.2 + 0) × 4028.61 + 1000 = <strong>5834.33 kgf/m</strong></li>
+                    <li>L<sub>libre</sub> = 5.5 m</li>
+                    <li><strong>V<sub>g</sub> = 5834.33 × 5.5 / 2 = 16044.41 kgf</strong> (es decir, ≈ 16 t)</li>
+                </ul>
+                <p style="font-size: 0.9em; margin-top: 8px; color: #6b7280;"><strong>Nota:</strong> Tu software ya calcula esto. La razón de mostrar la fórmula es que entiendas exactamente qué valor extraes del modelo y qué significa. Luego lo ingresas en la calculadora para diseñar y verificar los estribos.</p>
+            </div>
+
+            <h2>Paso 4: Cortantes del análisis sísmico (Vu)</h2>
+
+            <p>
+                De tu modelo sísmico, extrae los cortantes en cada extremo de cada tramo:
+            </p>
+
+            <table>
+                <tr>
+                    <th>Parámetro</th>
+                    <th>Descripción</th>
+                    <th>Fuente</th>
+                </tr>
+                <tr>
+                    <td><strong>Vu izq</strong></td>
+                    <td>Cortante sísmico en extremo izquierdo (con signo, positivo o negativo)</td>
+                    <td>SAP2000 / ETABS (caso sísmico)</td>
+                </tr>
+                <tr>
+                    <td><strong>Vu der</strong></td>
+                    <td>Cortante sísmico en extremo derecho (con signo)</td>
+                    <td>SAP2000 / ETABS</td>
+                </tr>
+            </table>
+
+            <p>
+                La calculadora internamente computa el **cortante probable (Vp)** a partir de los momentos probables (Mpr) en los apoyos. Mpr se calcula aplicando α=1.25 (factor de sobrerresistencia del acero) al acero diseñado:
+            </p>
+
+            <p style="text-align: center; font-family: 'Courier New', monospace; background: #f3f4f6; padding: 10px; margin: 16px 0; border-radius: 4px;">
+                M<sub>pr</sub> = α · f<sub>y</sub> · A<sub>s</sub> · (d − a/2)
+            </p>
+
+            <p>
+                Vp es la resultante de los momentos probables dividido por la luz del tramo. <strong>No ingresas Vp manualmente</strong> — la calculadora lo calcula automáticamente una vez que tienes el acero diseñado.
+            </p>
+
+            <h2>Paso 5: Proponer estribos iniciales</h2>
+
+            <p>
+                En <span class="inline-code">Estribos propuestos (por extremo de tramo)</span>, ingresa:
+            </p>
+
+            <ul>
+                <li><strong>Diámetro (mm):</strong> típicamente 10 o 12 mm</li>
+                <li><strong>Ramas:</strong> 2 (cerrado) es lo normal; 3 solo para cortantes muy altos</li>
+            </ul>
+
+            <p>
+                La calculadora verifica si tus propuestas son suficientes. Si no, te indica qué espaciamiento necesitas. Es iterativo: si no cumple, aumenta el diámetro y recalcula.
+            </p>
+
+            <h2>Paso 6: Calcular el diseño</h2>
+
+            <p>
+                Presiona <span class="inline-code">Calcular diseño completo</span>. La herramienta hace en segundos lo que manualmente toma 30–60 minutos:
+            </p>
+
+            <ol>
+                <li>Calcula As requerido para cada sección de cada tramo</li>
+                <li>Aplica requisitos SMF: cuantía mín/máx, refuerzo superior ≥50% inferior en apoyos</li>
+                <li>Determina profundidad de bloque de compresión (a)</li>
+                <li>Calcula momentos probables (Mpr) y cortante probable (Vp)</li>
+                <li>Verifica equilibrio de cortante (Ve) y condiciones Ra, Rb según ACI 18.4.4.1</li>
+                <li>Calcula Vc (cortante de concreto) y Vs (cortante de acero)</li>
+                <li>Determina espaciamiento de estribos (s req vs s def, limitado por norma)</li>
+                <li>Genera esquema dibujado de la viga con todas las cotas</li>
+            </ol>
+
+            <h2>Paso 7: Revisar resultados</h2>
+
+            <p>
+                Automáticamente cambias a <span class="inline-code">02 · Resultados del diseño</span>. Verás:
+            </p>
+
+            <h3>Esquema de la viga</h3>
+            <p>
+                Representación dibujada con:
+            </p>
+            <ul>
+                <li>Geometría (columnas, longitudes de tramos, cotas)</li>
+                <li>Acero longitudinal por sección (At superior, Ab inferior)</li>
+                <li>Estribos (diámetro y espaciamiento)</li>
+                <li><strong>Botón "Exportar a AutoCAD (.dxf)":</strong> descarga para integrar en tus planos</li>
+            </ul>
+
+            <h3>Tablas de resultados</h3>
+            <ul>
+                <li><strong>Acero longitudinal:</strong> As (cm²) por sección y tramo</li>
+                <li><strong>Estribos:</strong> espaciamiento requerido vs aplicado</li>
+                <li><strong>Cálculos detallados:</strong> momentos, cortantes, verificaciones ACI por tramo</li>
+            </ul>
+
+            <h2>Paso 8: Generar informe para municipio</h2>
+
+            <p>
+                Botón <span class="inline-code">Informe</span> en la barra superior. Abre vista de impresión con:
+            </p>
+
+            <ul>
+                <li>Membrete (proyecto, elemento, norma, fecha)</li>
+                <li>Esquema de viga</li>
+                <li>Tablas de acero y estribos</li>
+                <li>Verificaciones ACI</li>
+            </ul>
+
+            <p>
+                Presiona Ctrl+P (o Cmd+P en Mac) para imprimir a PDF. <strong>Resultado: documento técnico listo para tu expediente municipal.</strong>
+            </p>
+
+            <div class="example">
+                <strong>⏱️ Ahorro real:</strong> 2 vigas SMF de 2 tramos cada una:
+                <ul style="margin-top: 8px;">
+                    <li><strong>Manual:</strong> 45 min cálculos + 30 min redactando informe = 75 min</li>
+                    <li><strong>Con calculadora:</strong> 5 min ingreso + 1 min cálculo + 2 min PDF = 8 min</li>
+                    <li><strong>Reducción: 90% del tiempo</strong></li>
+                </ul>
+            </div>
+
+            <h2>Requisitos SMF que se verifican automáticamente</h2>
+
+            <table>
+                <tr>
+                    <th>Requisito ACI 318-19</th>
+                    <th>Qué verifica</th>
+                    <th>Qué hace la calculadora</th>
+                </tr>
+                <tr>
+                    <td>Cuantía (ρ)</td>
+                    <td>1% ≤ ρ ≤ 2.5%</td>
+                    <td>Ajusta As automáticamente si queda fuera de rango</td>
+                </tr>
+                <tr>
+                    <td>Refuerzo en apoyos</td>
+                    <td>At ≥ 0.5 × Ab</td>
+                    <td>Incrementa At si no cumple</td>
+                </tr>
+                <tr>
+                    <td>Luz mínima</td>
+                    <td>Ln ≥ 4d</td>
+                    <td>Aviso si no cumple; requiere redimensionar</td>
+                </tr>
+                <tr>
+                    <td>Estribos zona plástica</td>
+                    <td>s ≤ d/4</td>
+                    <td>Limita s def a máximo d/4 en extremos</td>
+                </tr>
+                <tr>
+                    <td>Cortante probable</td>
+                    <td>Vp desde Mpr (α=1.25)</td>
+                    <td>Calcula automáticamente sin entrada adicional</td>
+                </tr>
+            </table>
+
+            <h2>Errores comunes que evitarás</h2>
+
+            <ul>
+                <li><strong>Olvidar la sobrerresistencia en cortante:</strong> Vp se calcula correctamente desde Mpr</li>
+                <li><strong>Perder refuerzo en apoyos:</strong> Requisito 50% nunca se olvida</li>
+                <li><strong>Estribos insuficientes:</strong> s = d/2 en toda la viga (incorrecto). Calculadora restringe a d/4 automáticamente</li>
+                <li><strong>Vigas demasiado cortas:</strong> Ln < 4d genera aviso</li>
+                <li><strong>Cortantes inconsistentes:</strong> Mezclar Vg + Vu correctamente es crítico; la calculadora lo maneja</li>
+            </ul>
+
+            <h2>Conclusión: Herramienta de verificación paso a paso</h2>
+
+            <p>
+                El diseño SMF requiere coordinación simultánea de acero en múltiples secciones, cuantías dentro de límites estrictos, cortantes que combinan análisis sísmico + gravitacional, momentos probables para verificar que columnas no fallen, y estribos con espaciamiento riguroso. Luego, un documento técnico que demuestre cada paso.
+            </p>
+
+            <p>
+                <strong>La calculadora SMF es tu herramienta de verificación:</strong> tomas las solicitaciones de ETABS/SAP2000/SYPE, ingresas aquí, y obtienes:
+            </p>
+
+            <ul>
+                <li>✅ Acero diseñado según ACI 318-19, sección por sección</li>
+                <li>✅ Estribos verificados: espaciamiento requerido vs aplicado</li>
+                <li>✅ Momentos y cortantes probables calculados automáticamente</li>
+                <li>✅ Cada requisito SMF chequeado (cuantía, refuerzo en apoyos, anclaje)</li>
+                <li>✅ Informe técnico auditable para supervisión y municipios</li>
+            </ul>
+
+            <p>
+                Si diseñas más de 2-3 vigas SMF al mes, esta herramienta se paga a sí misma en claridad y tiempo en la primera semana.
+            </p>
+
+            <div class="cta-section">
+                <h3>Prueba la calculadora SMF</h3>
+                <p>
+                    Acceso inmediato. Carga datos reales de tu análisis sísmico y obtén resultados en minutos. Incluye esquema CAD, tablas de acero/estribos, informe listo para imprimir.
+                </p>
+                <a href="https://symmetrica-ingenieria.vercel.app/" class="cta-button">Abrir calculadora SMF</a>
+                <p style="margin-top: 16px; font-size: 0.95em;">
+                    ¿Preguntas? Contacta a nuestro equipo:<br>
+                    <strong>📧 info@symmetrica.com</strong> | <strong>📱 +591 69737901</strong>
+                </p>
+            </div>
+
+        </article>
+
+        <footer>
+            <p>
+                <strong>Symmetrica Ingeniería</strong> es una consultora de ingeniería estructural y sismorresistente basada en La Paz, Bolivia. Hemos diseñado puentes, edificios en zonas sísmicas, y asesorado municipios en normativa estructural. Las herramientas que desarrollamos reflejan exactamente cómo trabajamos en proyectos reales — no son "calculadoras simplificadas", sino automatización del conocimiento técnico de nuestro equipo.
+            </p>
+            <p>
+                📧 <a href="mailto:info@symmetrica.com">info@symmetrica.com</a> | 📱 <a href="tel:+59169737901">+591 69737901</a> | 🏢 La Paz, Bolivia<br>
+                Síguenos: <a href="https://www.instagram.com/symmetrica_ingenieria">Instagram</a> | <a href="https://www.facebook.com/profile.php?id=61575207414654">Facebook</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
