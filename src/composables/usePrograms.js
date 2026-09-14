@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { observeCards } from '../core/ui-helpers.js';
 import { buildDemoHtml } from '../core/demo-lock.js';
+import { canAccessProgram, isFreeProgram } from '../core/program-access.mjs';
 
 const { ref, computed, nextTick } = Vue;
 
@@ -42,14 +43,16 @@ export function usePrograms(userRef, isSubscribedRef) {
         return prog.html || '';
     });
 
-    // Acceso si: (a) el programa está en purchasedTools, o (b) el
+    // Acceso público si el precio es cero; en los demás casos,
+    // acceso si: (a) el programa está en purchasedTools, o (b) el
     // usuario tiene una suscripción activa (anual vigente o perpetua),
     // que da acceso a todo el catálogo automáticamente.
     const isUnlocked = (programId) => {
-        if (isSubscribedRef && isSubscribedRef.value) return true;
-        if (!userRef.value) return false;
-        const userData = userRef.value.userData;
-        return userData && userData.purchasedTools && userData.purchasedTools.includes(programId);
+        return canAccessProgram(
+            programs.value.find(p => p.id === programId),
+            userRef.value,
+            isSubscribedRef?.value
+        );
     };
 
     const goHome = () => {
@@ -139,7 +142,7 @@ export function usePrograms(userRef, isSubscribedRef) {
         programs, currentRoute, currentProgramId, currentProgram,
         isDemoView, programIframeSrcdoc,
         adminTab, showProgramForm, editingProgram,
-        isUnlocked, goHome, openProgram, openProgramDemo,
+        isUnlocked, isFreeProgram, goHome, openProgram, openProgramDemo,
         loadPrograms, saveProgram, editProgram, deleteProgram
     };
 }

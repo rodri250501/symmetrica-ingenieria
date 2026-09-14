@@ -1,0 +1,4 @@
+# Sources for manual import into Firebase, not a public standalone calculator.
+programs/
+tests/
+docs/

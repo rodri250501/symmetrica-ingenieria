@@ -358,11 +358,8 @@
                         Accede, calcula y construye con confianza.
                     </p>
                     <div class="hero-cta mt-8 flex flex-wrap gap-4">
-                        <button v-if="!user" @click="showLogin = true" class="btn-primary text-base px-8 py-3">
-                            Comienza ahora
-                        </button>
-                        <button v-else @click="scrollToPrograms" class="btn-outline text-base px-8 py-3">
-                            Ver herramientas
+                        <button @click="goToPrograms" class="btn-primary text-base px-8 py-3">
+                            Explorar herramientas
                         </button>
                     </div>
                 </div>
@@ -418,17 +415,17 @@
                                     <span class="text-3xl">{{ prog.icon || '📐' }}</span>
                                     <span class="text-xs font-medium px-3 py-1 rounded-full"
                                           :class="isUnlocked(prog.id) ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
-                                        {{ isUnlocked(prog.id) ? '✓ Desbloqueado' : '🔒 Bloqueado' }}
+                                        {{ isFreeProgram(prog) ? 'Gratis' : (isUnlocked(prog.id) ? '✓ Desbloqueado' : '🔒 Bloqueado') }}
                                     </span>
                                 </div>
                                 <h3 class="text-xl font-bold text-gray-800">{{ prog.name }}</h3>
                                 <p class="text-gray-500 text-sm mt-1">{{ prog.description }}</p>
-                                <p class="text-xs text-gray-400 mt-3 font-medium">Costo: {{ prog.price }} Bs</p>
+                                <p class="text-xs text-gray-400 mt-3 font-medium">{{ isFreeProgram(prog) ? 'Sin costo · Sin registro' : `Costo: ${prog.price} Bs` }}</p>
                             </div>
                             <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50 space-y-2">
                                 <button v-if="isUnlocked(prog.id)" @click="openProgram(prog.id)"
                                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    Abrir programa →
+                                    {{ isFreeProgram(prog) ? 'Usar gratis →' : 'Abrir programa →' }}
                                 </button>
                                 <template v-else>
                                     <button v-if="prog.demo" @click="openProgramDemo(prog.id)"
@@ -697,7 +694,7 @@
                                 <p class="text-xs text-gray-500 mb-2">Precios disponibles:</p>
                                 <div class="space-y-1">
                                     <p v-for="prog in programs" :key="prog.id" class="text-sm font-medium text-gray-700">
-                                        • {{ prog.name }}: Bs {{ prog.price }}
+                                        • {{ prog.name }}: {{ isFreeProgram(prog) ? 'Gratis' : `Bs ${prog.price}` }}
                                     </p>
                                     <p v-if="programs.length === 0" class="text-xs text-gray-400">Cargando programas...</p>
                                 </div>
@@ -880,7 +877,7 @@
                             <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-100/50">
                                 <button @click="openProgram(prog.id)"
                                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">
-                                    Abrir programa →
+                                    {{ isFreeProgram(prog) ? 'Usar gratis →' : 'Abrir programa →' }}
                                 </button>
                             </div>
                         </div>

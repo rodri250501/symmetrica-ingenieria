@@ -9,6 +9,7 @@ import { useContact } from './composables/useContact.js';
 import { useSubscriptions } from './composables/useSubscriptions.js';
 import { usePricing } from './composables/usePricing.js';
 import { scrollToPrograms, observeCards } from './core/ui-helpers.js';
+import { requiresSignedInUser } from './core/program-access.mjs';
 
 const { createApp, watch, onMounted, nextTick, ref, computed } = Vue;
 
@@ -82,9 +83,11 @@ const App = {
         };
 
         watch(authApi.user, (newUser) => {
-            const protectedRoute = programsApi.currentRoute.value === 'admin' ||
-                                    programsApi.currentRoute.value === 'account' ||
-                                    programsApi.currentRoute.value === 'program';
+            const protectedRoute = requiresSignedInUser(
+                programsApi.currentRoute.value,
+                programsApi.currentProgram.value,
+                programsApi.isDemoView.value
+            );
             if (!newUser && protectedRoute) {
                 programsApi.goHome();
             }
