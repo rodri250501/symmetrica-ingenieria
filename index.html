@@ -1,34 +1,238 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Symmetrica Ingeniería</title>
-<link rel="stylesheet" href="./src/style.css">
-</head>
-<body>
-<div id="app">
-<!-- SYMMETRICA PREMIUM LANDING INTEGRATION -->
-<section class="hero-premium">
-<img src="./assets/images/hero-premium.jpg" alt="Symmetrica Ingeniería">
-<div class="hero-content">
-<p>CALCULO · DISEÑO · CONFIANZA</p>
-<h1>Ingeniería<br>sin límites</h1>
-<p>Herramientas estructurales profesionales en la nube.</p>
-<button>Ver herramientas →</button>
-</div>
-</section>
+// ============================================================
+// app.js — Punto de entrada
+// ============================================================
+import { useAuth } from './composables/useAuth.js';
+import { usePrograms } from './composables/usePrograms.js';
+import { useRequests } from './composables/useRequests.js';
+import { useAdminUsers } from './composables/useAdminUsers.js';
+import { useContact } from './composables/useContact.js';
+import { useSubscriptions } from './composables/useSubscriptions.js';
+import { usePricing } from './composables/usePricing.js';
+import { scrollToPrograms, observeCards } from './core/ui-helpers.js';
+import { requiresSignedInUser } from './core/program-access.mjs';
 
-<section class="product-premium">
-<h2>Convierte tus cálculos en grandes proyectos</h2>
-<div class="devices">
-<img src="./assets/images/smf-screen.png">
-<img src="./assets/images/column-screen.png">
-<img src="./assets/images/mobile-screen.png">
-</div>
-</section>
-</div>
+const { createApp, watch, onMounted, onUnmounted, nextTick, ref, computed } = Vue;
 
-<script type="module" src="./src/app.js"></script>
-</body>
-</html>
+const App = {
+    setup() {
+        const authApi = useAuth();
+        const subsApi = useSubscriptions(authApi.user, authApi.showLogin);
+        const programsApi = usePrograms(authApi.user, subsApi.isSubscribed);
+        const pricingApi = usePricing(authApi.user, authApi.showLogin, programsApi.programs);
+        const requestsApi = useRequests(
+            authApi.user, programsApi.programs, authApi.showLogin,
+            subsApi.buildSubscriptionPayload
+        );
+        const usersApi = useAdminUsers();
+        const contactApi = useContact();
+
+        // ============================================
+        // NAVBAR: estado "sólido" vs "transparente"
+        // ============================================
+        const scrolled = ref(false);
+        const onScroll = () => { scrolled.value = window.scrollY > 20; };
+        const navbarSolid = computed(() => {
+            // En home: transparente solo arriba de todo
+            if (programsApi.currentRoute.value === 'home') return scrolled.value;
+            // En cualquier otra ruta: siempre sólido
+            return true;
+        });
+        const navLinkClass = (routeKey) => {
+            const active =
+                (routeKey === 'home' && programsApi.currentRoute.value === 'home') ||
+                (routeKey === 'programs' && programsApi.currentRoute.value === 'programs') ||
+                (routeKey === 'plans' && programsApi.currentRoute.value === 'plans') ||
+                (routeKey === 'resources' && programsApi.currentRoute.value === 'resources') ||
+                (routeKey === 'about' && programsApi.currentRoute.value === 'about') ||
+                (routeKey === 'product' && programsApi.currentRoute.value === 'home' && scrolled.value);
+            const base = 'nav-link';
+            const color = navbarSolid.value
+                ? (active ? 'text-gray-900 active' : 'text-gray-600 hover:text-gray-900')
+                : (active ? 'text-white active' : 'text-white/80 hover:text-white');
+            return `${base} ${color}`;
+        };
+
+        // ============================================
+        // Navegación
+        // ============================================
+        const goHomeTop = () => {
+            programsApi.currentRoute.value = 'home';
+            programsApi.currentProgramId.value = null;
+            programsApi.isDemoView.value = false;
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            nextTick(() => observeCards());
+        };
+
+        const goToPrograms = () => {
+            programsApi.currentRoute.value = 'programs';
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        };
+        const goToPlans = () => {
+            programsApi.currentRoute.value = 'plans';
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        };
+        const goToResources = () => {
+            programsApi.currentRoute.value = 'resources';
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        };
+        const goToAbout = () => {
+            programsApi.currentRoute.value = 'about';
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        };
+        const goToProduct = () => {
+            programsApi.currentRoute.value = 'home';
+            nextTick(() => {
+                document.getElementById('more-than-numbers')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        };
+
+        // ============================================
+        // Modales de pago pack / licencia
+        // ============================================
+        const showPackPaymentModal = ref(false);
+        const showLicensePaymentModal = ref(false);
+
+        const requestPackFlow = async () => {
+            const result = await pricingApi.requestPack();
+            if (result) showPackPaymentModal.value = true;
+        };
+        const requestLicenseFlow = async () => {
+            const result = await pricingApi.requestLicense();
+            if (result) showLicensePaymentModal.value = true;
+        };
+        const closePackPaymentModal = () => { showPackPaymentModal.value = false; };
+        const closeLicensePaymentModal = () => { showLicensePaymentModal.value = false; };
+
+        // ============================================
+        // Precios: FIX de la colisión de nombres.
+        // - subsApi expone:  pricing, pricingForm, updatePricing, loadPricing
+        // - pricingApi expone: pricing, pricingForm, updatePricing, loadPricing  (¡mismos nombres!)
+        // Solución: exponerlos con alias separados y NO esparcir pricingApi.
+        // ============================================
+        const subsPricing = computed(() => subsApi.pricing.value || { annualPrice: 0, lifetimePrice: 0 });
+        const subsPricingForm = subsApi.pricingForm;              // editable en admin
+        const packPricing = computed(() => pricingApi.pricing.value || { packPrice: 0, licensePrice: 0 });
+        const packPricingForm = pricingApi.pricingForm;           // editable en admin
+
+        const allPricing = computed(() => ({
+            annualPrice: subsApi.pricing.value?.annualPrice || 0,
+            lifetimePrice: subsApi.pricing.value?.lifetimePrice || 0,
+            packPrice: pricingApi.pricing.value?.packPrice || 0,
+            licensePrice: pricingApi.pricing.value?.licensePrice || 0
+        }));
+
+        const updateSubscriptionPricing = (annualPrice) => {
+            subsApi.updatePricing(annualPrice, subsApi.pricing.value.lifetimePrice);
+        };
+        const updatePackPricing = (packPrice) => {
+            pricingApi.updatePricing(packPrice, pricingApi.pricing.value.licensePrice);
+        };
+        const updateLicensePricing = (licensePrice) => {
+            pricingApi.updatePricing(pricingApi.pricing.value.packPrice, licensePrice);
+        };
+
+        // ============================================
+        // Admin sync
+        // ============================================
+        let adminDataLoaded = false;
+        const syncAdminData = () => {
+            if (authApi.isAdmin.value && !adminDataLoaded) {
+                usersApi.loadUsers();
+                requestsApi.loadRequests();
+                adminDataLoaded = true;
+            } else if (!authApi.isAdmin.value && adminDataLoaded) {
+                usersApi.allUsers.value = [];
+                requestsApi.pendingRequests.value = [];
+                adminDataLoaded = false;
+            }
+        };
+
+        watch(authApi.user, (newUser) => {
+            const protectedRoute = requiresSignedInUser(
+                programsApi.currentRoute.value,
+                programsApi.currentProgram.value,
+                programsApi.isDemoView.value
+            );
+            if (!newUser && protectedRoute) {
+                goHomeTop();
+            }
+            requestsApi.loadMyRequests();
+            syncAdminData();
+        });
+
+        watch(programsApi.currentRoute, (newRoute) => {
+            if (newRoute === 'programs') {
+                nextTick(() => observeCards());
+            }
+            nextTick(onScroll);
+        });
+
+        onMounted(() => {
+            programsApi.loadPrograms();
+            subsApi.loadPricing();
+            pricingApi.loadPricing();
+            syncAdminData();
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+            setTimeout(() => observeCards(), 300);
+        });
+
+        onUnmounted(() => {
+            window.removeEventListener('scroll', onScroll);
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'symmetrica-unlock-request') {
+                const programId = programsApi.currentProgramId.value;
+                if (programId) requestsApi.requestAccess(programId);
+            }
+        });
+
+        return {
+            // Auth
+            ...authApi,
+            // Programas / navegación
+            ...programsApi,
+            // Requests
+            ...requestsApi,
+            // Admin
+            ...usersApi,
+            // Contacto
+            ...contactApi,
+            // Suscripciones (pricing anual/perpetua)
+            ...subsApi,
+            // Precios (pack/licencia) — con alias para NO colisionar
+            packPricing, packPricingForm,
+            requestPack: pricingApi.requestPack,
+            requestLicense: pricingApi.requestLicense,
+            updatePricing: pricingApi.updatePricing,
+            totalIndividualPrice: pricingApi.totalIndividualPrice,
+            packDiscount: pricingApi.packDiscount,
+            packDiscountPercent: pricingApi.packDiscountPercent,
+            whatsappPackLink: pricingApi.whatsappPackLink,
+            whatsappLicenseLink: pricingApi.whatsappLicenseLink,
+
+            // Precios unificados
+            subsPricing, subsPricingForm,
+            allPricing,
+            updateSubscriptionPricing, updatePackPricing, updateLicensePricing,
+
+            // Modales pack/licencia
+            showPackPaymentModal, showLicensePaymentModal,
+            requestPackFlow, requestLicenseFlow,
+            closePackPaymentModal, closeLicensePaymentModal,
+
+            // Navbar helpers
+            navbarSolid, navLinkClass,
+
+            // Navegación
+            goHomeTop, goToProduct, goToPrograms, goToPlans, goToResources, goToAbout,
+
+            // Helpers de scroll (los usa observeCards)
+            scrollToPrograms
+        };
+    }
+};
+
+createApp(App).mount('#app');
