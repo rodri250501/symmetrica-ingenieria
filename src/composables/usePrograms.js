@@ -12,11 +12,11 @@
 
 import { db } from '../core/firebase-config.js';
 import {
-    collection, doc, addDoc, updateDoc, deleteDoc,
+    collection, doc, getDoc, writeBatch, deleteField,
     serverTimestamp, query, orderBy, onSnapshot
 } from "firebase/firestore";
 import { observeCards } from '../core/ui-helpers.js';
-import { buildDemoHtml } from '../core/demo-lock.js';
+import { buildSafeDemoHtml } from '../core/demo-preview.js';
 import { canAccessProgram, isFreeProgram } from '../core/program-access.mjs';
 
 const { ref, computed, nextTick } = Vue;
@@ -28,7 +28,9 @@ export function usePrograms(userRef, isSubscribedRef) {
     const isDemoView = ref(false);
     const adminTab = ref('programs');
     const showProgramForm = ref(false);
-    const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false });
+    const editingProgram = ref({ id: '', name: '', description: '', price: 20, icon: '📐', html: '', demoHtml: '', demo: false });
+    const programContentHtml = ref('');
+    const programContentState = ref('idle');
 
     const currentProgram = computed(() => {
         return programs.value.find(p => p.id === currentProgramId.value);
@@ -37,10 +39,10 @@ export function usePrograms(userRef, isSubscribedRef) {
     const programIframeSrcdoc = computed(() => {
         const prog = currentProgram.value;
         if (!prog) return '';
-        if (isDemoView.value && !isUnlocked(prog.id)) {
-            return buildDemoHtml(prog.html || '');
-        }
-        return prog.html || '';
+        if (isDemoView.value) return prog.demoHtml || buildSafeDemoHtml(prog);
+        if (programContentState.value === 'loading') return '<p style="font:16px system-ui;padding:24px">Cargando herramienta…</p>';
+        if (programContentState.value !== 'ready') return '<p style="font:16px system-ui;padding:24px">No se pudo cargar la herramienta autorizada.</p>';
+        return programContentHtml.value;
     });
 
     // Acceso público si el precio es cero; en los demás casos,
@@ -59,16 +61,31 @@ export function usePrograms(userRef, isSubscribedRef) {
         currentRoute.value = 'home';
         currentProgramId.value = null;
         isDemoView.value = false;
+        programContentHtml.value = '';
+        programContentState.value = 'idle';
         nextTick(() => observeCards());
     };
 
-    const openProgram = (programId) => {
-        if (isUnlocked(programId)) {
-            currentProgramId.value = programId;
-            currentRoute.value = 'program';
-            isDemoView.value = false;
-        } else {
+    const openProgram = async (programId) => {
+        if (!isUnlocked(programId)) {
             alert('No tienes acceso a este programa. Solicita acceso o suscríbete.');
+            return;
+        }
+        currentProgramId.value = programId;
+        currentRoute.value = 'program';
+        isDemoView.value = false;
+        programContentHtml.value = '';
+        programContentState.value = 'loading';
+        try {
+            const content = await getDoc(doc(db, 'programContents', programId));
+            const html = content.exists() ? content.data().html : '';
+            if (typeof html !== 'string' || !html.trim()) throw new Error('Contenido protegido no disponible.');
+            programContentHtml.value = html;
+            programContentState.value = 'ready';
+        } catch (error) {
+            programContentState.value = 'error';
+            alert('No se pudo cargar la herramienta autorizada. Revisa la migración de contenido privado.');
+            console.error(error);
         }
     };
 
@@ -76,13 +93,18 @@ export function usePrograms(userRef, isSubscribedRef) {
         currentProgramId.value = programId;
         currentRoute.value = 'program';
         isDemoView.value = true;
+        programContentHtml.value = '';
+        programContentState.value = 'idle';
     };
 
     const loadPrograms = () => {
         const q = query(collection(db, "programs"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             programs.value = [];
-            snapshot.forEach(d => programs.value.push({ id: d.id, ...d.data() }));
+            snapshot.forEach(d => {
+                const { html: _legacyHtml, ...publicProgram } = d.data();
+                programs.value.push({ id: d.id, ...publicProgram });
+            });
             nextTick(() => observeCards());
         });
     };
@@ -94,44 +116,55 @@ export function usePrograms(userRef, isSubscribedRef) {
             return;
         }
         try {
+            const metadata = {
+                name: p.name,
+                description: p.description,
+                price: p.price,
+                icon: p.icon,
+                demo: !!p.demo,
+                demoHtml: p.demo ? (p.demoHtml || buildSafeDemoHtml(p)) : ''
+            };
             if (p.id) {
-                await updateDoc(doc(db, "programs", p.id), {
-                    name: p.name,
-                    description: p.description,
-                    price: p.price,
-                    icon: p.icon,
-                    html: p.html,
-                    demo: !!p.demo
-                });
+                const batch = writeBatch(db);
+                // Elimina también el campo legado `html` del documento público.
+                // El contenido completo vive únicamente en `programContents/{id}`.
+                batch.set(doc(db, "programs", p.id), { ...metadata, html: deleteField() }, { merge: true });
+                batch.set(doc(db, "programContents", p.id), { html: p.html, updatedAt: serverTimestamp() }, { merge: true });
+                await batch.commit();
                 alert('✅ Programa actualizado correctamente.');
             } else {
-                await addDoc(collection(db, "programs"), {
-                    name: p.name,
-                    description: p.description,
-                    price: p.price,
-                    icon: p.icon,
-                    html: p.html,
-                    demo: !!p.demo,
-                    createdAt: serverTimestamp()
-                });
+                const programRef = doc(collection(db, "programs"));
+                const batch = writeBatch(db);
+                batch.set(programRef, { ...metadata, createdAt: serverTimestamp() });
+                batch.set(doc(db, "programContents", programRef.id), { html: p.html, updatedAt: serverTimestamp() });
+                await batch.commit();
                 alert('✅ Programa creado exitosamente.');
             }
             showProgramForm.value = false;
-            editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demo: false };
+            editingProgram.value = { id: '', name: '', description: '', price: 20, icon: '📐', html: '', demoHtml: '', demo: false };
         } catch (e) {
             alert('❌ Error al guardar: ' + e.message);
         }
     };
 
-    const editProgram = (program) => {
-        editingProgram.value = { ...program };
-        showProgramForm.value = true;
+    const editProgram = async (program) => {
+        try {
+            const content = await getDoc(doc(db, 'programContents', program.id));
+            editingProgram.value = { ...program, html: content.exists() ? (content.data().html || '') : '', demoHtml: program.demoHtml || '' };
+            showProgramForm.value = true;
+        } catch (error) {
+            alert('❌ No se pudo cargar el contenido privado para editarlo.');
+            console.error(error);
+        }
     };
 
     const deleteProgram = async (id) => {
         if (!confirm('¿Eliminar este programa permanentemente?')) return;
         try {
-            await deleteDoc(doc(db, "programs", id));
+            const batch = writeBatch(db);
+            batch.delete(doc(db, "programs", id));
+            batch.delete(doc(db, "programContents", id));
+            await batch.commit();
             alert('✅ Programa eliminado.');
         } catch (e) {
             alert('❌ Error al eliminar: ' + e.message);
@@ -140,7 +173,7 @@ export function usePrograms(userRef, isSubscribedRef) {
 
     return {
         programs, currentRoute, currentProgramId, currentProgram,
-        isDemoView, programIframeSrcdoc,
+        isDemoView, programIframeSrcdoc, programContentState,
         adminTab, showProgramForm, editingProgram,
         isUnlocked, isFreeProgram, goHome, openProgram, openProgramDemo,
         loadPrograms, saveProgram, editProgram, deleteProgram

@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symmetrica Ingeniería | Secciones de Acero</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiI+PHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTMiIGZpbGw9IiMxNTI3MzMiLz48ZyBzdHJva2U9IiNmZmYiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTE1IDE1aDQydjQySDE1VjE1Wm0wIDI2aDE4djE2Ii8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik0xMSAxMWg4djhoLTh6bTQyIDBoOHY4aC04ek0xMSA1M2g4djhoLTh6bTQyIDBoOHY4aC04eiIvPjwvZz48L3N2Zz4=">
+
+    <style>
+        :root{
+            --bg:#dfe3e7; --panel:#ffffff; --panel-alt:#f4f6f8; --panel-head:#eaeef1;
+            --line:#c4ccd4; --line-soft:#dde3e8; --ink:#1b2733; --ink-soft:#586673;
+            --ink-faint:#8a95a0; --accent:#152733; --accent-dark:#0a1820; --accent-soft:#e6ecf0;
+            --symmetrica-red:#ca244b;
+            --ok:#12803f; --ok-bg:#e3f4e9; --fail:#bf2a2a; --fail-bg:#fae7e7;
+            --warn:#97600a; --warn-bg:#faf0dc; --radius:3px;
+        }
+        *{box-sizing:border-box;}
+        html,body{height:100%;margin:0;}
+        body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased;}
+        .mono{font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== LAYOUT ====== */
+        .app{display:grid;grid-template-rows:46px 30px 1fr 22px;height:100vh;}
+
+        /* ====== TOOLBAR ====== */
+        .toolbar{
+            display:flex;align-items:center;gap:4px;
+            background:linear-gradient(#f3f6f7,#e9edf0);
+            border-bottom:1px solid var(--line);
+            padding:0 8px;
+        }
+        .tb-brand{
+            display:flex;align-items:center;gap:10px;
+            padding:0 14px 0 6px;
+            border-right:1px solid var(--line-soft);
+            height:100%;
+            text-decoration:none;
+            color:var(--accent);
+        }
+        .tb-brand svg{width:30px;height:31px;flex:none;}
+        .tb-brand-text{display:flex;flex-direction:column;line-height:1;}
+        .tb-brand-text .name{
+            font-size:14px;font-weight:300;letter-spacing:1.5px;
+            display:flex;align-items:center;color:var(--accent);
+        }
+        .tb-brand-text .name .axis{
+            height:14px;border-left:2px dashed var(--symmetrica-red);
+            margin:0 2px;
+        }
+        .tb-brand-text .sub{
+            font-size:9px;color:var(--ink-faint);letter-spacing:.08em;
+            text-transform:uppercase;margin-top:3px;font-weight:500;
+        }
+
+        .tb-group{display:flex;align-items:center;gap:2px;padding:0 7px;height:100%;}
+        .tb-group + .tb-group{border-left:1px solid var(--line-soft);}
+        .tbtn{
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+            min-width:52px;height:38px;padding:2px 7px;border:1px solid transparent;border-radius:var(--radius);
+            background:transparent;cursor:pointer;color:var(--ink);font-size:10px;font-family:'IBM Plex Sans',sans-serif;
+        }
+        .tbtn svg{width:17px;height:17px;}
+        .tbtn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .tbtn:active{background:#d6e2ea;}
+        .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+        .tbtn.primary:hover{background:var(--accent-dark);}
+        .tbtn.primary svg{stroke:#fff;}
+        .tbtn[disabled]{opacity:.45;cursor:default;}
+        .toolbar .spacer{flex:1;}
+
+        /* ====== TABS ====== */
+        .tabs{display:flex;align-items:flex-end;gap:1px;background:var(--panel-head);border-bottom:1px solid var(--line);padding:0 8px;}
+        .tab{
+            border:1px solid var(--line);border-bottom:none;
+            background:linear-gradient(#eef1f3,#e3e7ea);
+            color:var(--ink-soft);font-size:11.5px;font-weight:500;
+            padding:5px 16px 4px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px;
+        }
+        .tab:hover{color:var(--ink);}
+        .tab.active{background:var(--panel);color:var(--accent-dark);font-weight:600;top:1px;box-shadow:0 -2px 0 var(--accent) inset;}
+        .tabs .spacer{flex:1;padding:4px 8px 0;font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== CONTENT ====== */
+        .content{overflow-y:auto;overflow-x:hidden;padding:12px;}
+        .view{display:none;}
+        .view.active{display:block;}
+
+        /* ====== STATUS ====== */
+        .statusbar{
+            display:flex;align-items:center;gap:16px;
+            background:linear-gradient(#eef1f3,#e5e9ec);
+            border-top:1px solid var(--line);
+            font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);
+            padding:0 10px;overflow:hidden;white-space:nowrap;
+        }
+        .status-cell{display:flex;align-items:center;gap:5px;}
+        .status-cell.name{background:var(--panel);border:1px solid var(--line-soft);border-radius:2px;padding:1px 8px;}
+        .status-dot{width:7px;height:7px;border-radius:50%;background:#a9b3bd;flex:none;}
+        .status-dot.ok{background:#2ea35a;}
+        .status-dot.pending{background:#d69a2d;}
+        .status-dot.fail{background:#d04545;}
+        .statusbar .spacer{flex:1;}
+
+        /* ====== CARDS ====== */
+        .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;}
+        .card-head{
+            display:flex;align-items:center;justify-content:space-between;
+            background:linear-gradient(#f7f9fa,#eef1f3);
+            border-bottom:1px solid var(--line);padding:5px 10px;
+        }
+        .card-head h2{font-size:12px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px;color:var(--ink);}
+        .card-head h2 .idx{
+            font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:var(--accent);
+            border-radius:2px;padding:0 5px;line-height:16px;
+        }
+        .card-head .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+        .card-body{padding:10px;}
+
+        .grid-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+        .field label{display:block;font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+        .field input,.field select{
+            width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:2px;
+            background:var(--panel-alt);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink);
+        }
+        .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+
+        /* ====== TABLES ====== */
+        .tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+        .tbl th{
+            background:var(--panel-head);color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-weight:600;
+            font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;text-align:center;
+            border:1px solid var(--line);padding:3px 5px;
+        }
+        .tbl td{border:1px solid var(--line-soft);padding:2px 4px;text-align:center;}
+        .tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+        .tbl tbody tr:nth-child(even){background:#fafbfc;}
+        .tbl tbody tr:hover{background:var(--accent-soft);}
+        .tbl tr.total{background:#f1f4f6 !important;font-weight:600;}
+
+        /* ====== BUTTONS ====== */
+        .btn{
+            font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;border-radius:var(--radius);
+            border:1px solid var(--line);padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+            background:linear-gradient(#fbfcfd,#eef1f3);color:var(--ink);
+        }
+        .btn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .btn svg{width:13px;height:13px;}
+        .btn.accent{background:var(--accent);border-color:var(--accent-dark);color:#fff;}
+        .btn.accent:hover{background:var(--accent-dark);}
+        .btn.danger{background:#fae7e7;border-color:#e5b8b8;color:var(--fail);}
+        .btn.sm{padding:2px 8px;font-size:10.5px;}
+        .btn[disabled]{opacity:.45;cursor:default;}
+
+        /* ====== BADGES ====== */
+        .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+        .badge.ok{background:var(--ok-bg);color:var(--ok);}
+        .badge.fail{background:var(--fail-bg);color:var(--fail);}
+        .badge.warn{background:var(--warn-bg);color:var(--warn);}
+
+        /* ====== KPI RESUMEN ====== */
+        .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+        .kpi-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;text-align:center;}
+        .kpi-box .k{font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+        .kpi-box .v{font-size:16px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:2px;color:var(--accent);}
+        .kpi-box.good .v{color:var(--ok);}
+        .kpi-box.bad .v{color:var(--fail);}
+
+        /* ====== GRUPOS ====== */
+        .grupo-card{
+            display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+            background:var(--panel-alt);border:1px solid var(--line-soft);border-radius:var(--radius);
+            padding:8px;margin-bottom:8px;
+        }
+        .grupo-card .num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--ink-soft);min-width:52px;}
+        .grupo-card .field{flex:1;min-width:110px;margin:0;}
+        .grupo-card .field label{font-size:9px;color:var(--ink-faint);text-transform:none;letter-spacing:.02em;font-weight:500;}
+
+        .empty{text-align:center;color:var(--ink-faint);padding:24px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);}
+        .empty svg{width:26px;height:26px;margin-bottom:6px;opacity:.5;}
+        .hint{font-size:10.5px;color:var(--ink-faint);margin:6px 0 0;}
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- ================= TOOLBAR ================= -->
+    <div class="toolbar">
+        <a class="tb-brand" href="#" onclick="return false;" title="Symmetrica Ingeniería">
+            <svg viewBox="0 0 68 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M6 6H62V64H6V6ZM6 40H30V64" stroke="currentColor" stroke-width="1.65"/>
+                <g fill="currentColor">
+                    <rect x="2.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="2.8" y="60.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="60.8" width="6.4" height="6.4"/>
+                </g>
+            </svg>
+            <span class="tb-brand-text">
+                <span class="name">SYM<span class="axis" aria-hidden="true"></span>METRICA</span>
+                <span class="sub">Secciones de Acero</span>
+            </span>
+        </a>
+
+        <div class="tb-group">
+            <button class="tbtn" onclick="limpiarGrupos()" title="Reiniciar valores">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                Reiniciar
+            </button>
+        </div>
+
+        <div class="tb-group">
+            <button class="tbtn primary" onclick="calcular()" title="Ejecutar el cálculo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                Calcular
+            </button>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="tb-group">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);letter-spacing:.04em;">ACERO DE REFUERZO</span>
+        </div>
+    </div>
+
+    <!-- ================= TABS ================= -->
+    <div class="tabs">
+        <button class="tab active" id="tab-datos" onclick="switchTab('datos')">01 · Datos y resultados</button>
+        <div class="spacer" id="tabsInfo">Sin calcular</div>
+    </div>
+
+    <!-- ================= CONTENT ================= -->
+    <div class="content">
+
+        <!-- ---------- VISTA DATOS / RESULTADOS ---------- -->
+        <div class="view active" id="view-datos">
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">01</span> Área de acero requerida</h2>
+                    <span class="tag">As</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Área requerida · As (cm²)</label><input type="number" id="asReq" value="10.0" step="0.01" min="0" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">02</span> Grupos de barras</h2>
+                    <span class="tag">Combinación propuesta</span>
+                </div>
+                <div class="card-body">
+                    <div id="gruposContainer"></div>
+                    <div style="display:flex;gap:8px;margin-top:8px;">
+                        <button class="btn sm" onclick="agregarGrupo()">+ Agregar grupo</button>
+                        <button class="btn sm danger" onclick="limpiarGrupos()">Limpiar</button>
+                    </div>
+                    <p class="hint">Cada grupo representa barras del mismo diámetro. Agregue los grupos necesarios.</p>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="btn accent" onclick="calcular()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    Calcular sección de acero
+                </button>
+                <p class="hint" style="align-self:center;">Resultado actualizado automáticamente.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">R1</span> Resultado</h2>
+                    <span class="tag">Verificación</span>
+                </div>
+                <div class="card-body">
+                    <div id="resultadosContainer">
+                        <div id="resultadosVacio" class="empty">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                            <div style="font-size:12.5px;">Presione «Calcular sección de acero» para ver los resultados.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= STATUS BAR ================= -->
+    <div class="statusbar">
+        <div class="status-cell name"><span class="status-dot pending" id="statusDot"></span><span id="statusTexto">Sin calcular</span></div>
+        <div class="status-cell" id="statusResumen">As req: —</div>
+        <div class="status-cell" id="statusGrupos">Grupos: 1</div>
+        <div class="status-cell" id="statusNorma">ACI 318</div>
+        <div class="spacer"></div>
+        <div class="status-cell" id="statusHora">—</div>
+    </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ================================================================
+   NAVEGACIÓN
+   ================================================================ */
+function switchTab(tab){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    const t = document.getElementById('tab-' + tab);
+    if (t) t.classList.add('active');
+}
+
+/* ================================================================
+   BARRA DE ESTADO
+   ================================================================ */
+function actualizarBarraEstado(calculado){
+    const dot = document.getElementById('statusDot');
+    const texto = document.getElementById('statusTexto');
+    if (calculado){
+        dot.classList.add('ok'); dot.classList.remove('pending');
+        texto.textContent = 'Calculado ✓';
+        document.getElementById('statusHora').textContent = new Date().toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('tabsInfo').textContent = 'Calculado';
+    } else {
+        dot.classList.add('pending'); dot.classList.remove('ok');
+        texto.textContent = 'Sin calcular';
+        document.getElementById('statusHora').textContent = '—';
+        document.getElementById('tabsInfo').textContent = 'Sin calcular';
+    }
+}
+
+/* ================================================================
+   DIÁMETROS DISPONIBLES (mm)
+   ================================================================ */
+const diametros = [
+    { value: 6, label: '6 mm' },
+    { value: 8, label: '8 mm' },
+    { value: 10, label: '10 mm' },
+    { value: 12, label: '12 mm' },
+    { value: 14, label: '14 mm' },
+    { value: 16, label: '16 mm' },
+    { value: 18, label: '18 mm' },
+    { value: 20, label: '20 mm' },
+    { value: 22, label: '22 mm' },
+    { value: 25, label: '25 mm' },
+    { value: 28, label: '28 mm' },
+    { value: 32, label: '32 mm' },
+    { value: 9.525, label: '3/8" (9.53 mm)' },
+    { value: 12.7, label: '1/2" (12.70 mm)' },
+    { value: 15.875, label: '5/8" (15.88 mm)' },
+    { value: 19.05, label: '3/4" (19.05 mm)' },
+    { value: 22.225, label: '7/8" (22.23 mm)' },
+    { value: 25.4, label: '1" (25.40 mm)' }
+];
+
+/* ================================================================
+   GRUPOS DE BARRAS
+   ================================================================ */
+let contadorGrupos = 0;
+
+function obtenerOpcionesDiametros(selectedValue){
+    return diametros.map(d =>
+        `<option value="${d.value}" ${d.value === selectedValue ? 'selected' : ''}>${d.label}</option>`
+    ).join('');
+}
+
+function agregarGrupo(diametro, nBarras){
+    contadorGrupos++;
+    const id = contadorGrupos;
+    const container = document.getElementById('gruposContainer');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'grupo-card';
+    div.id = `grupo-${id}`;
+
+    const diametroVal = diametro !== undefined && diametro !== null ? diametro : 12;
+    const nBarrasVal = nBarras !== undefined && nBarras !== null ? nBarras : 2;
+
+    div.innerHTML = `
+        <span class="num">Grupo ${id}</span>
+        <div class="field">
+            <label>N° de barras</label>
+            <input type="number" id="nBarras_${id}" value="${nBarrasVal}" min="0" step="1" oninput="calcular()" />
+        </div>
+        <div class="field">
+            <label>Diámetro (mm)</label>
+            <select id="diametro_${id}" onchange="calcular()">
+                ${obtenerOpcionesDiametros(diametroVal)}
+            </select>
+        </div>
+        <button class="btn sm danger" onclick="eliminarGrupo(${id})" title="Eliminar grupo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            Quitar
+        </button>
+    `;
+
+    container.appendChild(div);
+    actualizarContadorGrupos();
+    calcular();
+}
+
+function eliminarGrupo(id){
+    const el = document.getElementById(`grupo-${id}`);
+    if (el) el.remove();
+    actualizarContadorGrupos();
+    calcular();
+}
+
+function limpiarGrupos(){
+    const container = document.getElementById('gruposContainer');
+    container.innerHTML = '';
+    contadorGrupos = 0;
+    agregarGrupo(12, 2);
+}
+
+function actualizarContadorGrupos(){
+    const n = document.querySelectorAll('#gruposContainer .grupo-card').length;
+    document.getElementById('statusGrupos').textContent = `Grupos: ${n}`;
+}
+
+/* ================================================================
+   CÁLCULO PRINCIPAL
+   ================================================================ */
+function calcular(){
+    const asReq = parseFloat(document.getElementById('asReq').value);
+    if (isNaN(asReq) || asReq < 0) {
+        alert('Complete el área de acero requerida.');
+        return;
+    }
+
+    const grupos = [];
+    document.querySelectorAll('#gruposContainer .grupo-card').forEach(el => {
+        const id = el.id.split('-')[1];
+        const nBarras = parseInt(document.getElementById(`nBarras_${id}`).value) || 0;
+        const diametro = parseFloat(document.getElementById(`diametro_${id}`).value) || 0;
+        if (nBarras > 0 && diametro > 0) {
+            const area = (Math.PI / 4) * Math.pow(diametro / 10, 2);
+            grupos.push({ id, nBarras, diametro, areaUnitaria: area, areaTotal: nBarras * area });
+        }
+    });
+
+    const areaTotal = grupos.reduce((sum, g) => sum + g.areaTotal, 0);
+    const diferencia = areaTotal - asReq;
+    const cumple = diferencia >= -0.001;
+
+    document.getElementById('statusResumen').textContent = `As req: ${asReq.toFixed(2)} cm² · As prov: ${areaTotal.toFixed(2)} cm²`;
+    actualizarBarraEstado(true);
+    actualizarContadorGrupos();
+
+    const container = document.getElementById('resultadosContainer');
+
+    let html = `
+        <div class="kpi">
+            <div class="kpi-box"><div class="k">Área requerida</div><div class="v">${asReq.toFixed(3)} cm²</div></div>
+            <div class="kpi-box"><div class="k">Área calculada</div><div class="v">${areaTotal.toFixed(3)} cm²</div></div>
+            <div class="kpi-box ${cumple ? 'good' : 'bad'}"><div class="k">Estado</div><div class="v">${cumple ? 'CUMPLE' : 'NO CUMPLE'}</div></div>
+        </div>`;
+
+    if (grupos.length > 0) {
+        html += `
+        <table class="tbl">
+            <thead><tr><th>Grupo</th><th>N° barras</th><th>Diámetro (mm)</th><th>Área unitaria (cm²)</th><th>Área total (cm²)</th></tr></thead>
+            <tbody>`;
+        grupos.forEach(g => {
+            html += `<tr>
+                <td class="left">Grupo ${g.id}</td>
+                <td>${g.nBarras}</td>
+                <td>${g.diametro.toFixed(2)}</td>
+                <td>${g.areaUnitaria.toFixed(4)}</td>
+                <td>${g.areaTotal.toFixed(3)}</td>
+            </tr>`;
+        });
+        html += `
+            <tr class="total">
+                <td class="left" colspan="4">Área total provista</td>
+                <td>${areaTotal.toFixed(3)} cm²</td>
+            </tr>
+            </tbody></table>`;
+
+        const detalle = !cumple
+            ? `<span class="badge fail">Faltan ${Math.abs(diferencia).toFixed(3)} cm²</span>`
+            : (diferencia > 0
+                ? `<span class="badge warn">Exceso de ${diferencia.toFixed(3)} cm²</span>`
+                : `<span class="badge ok">Cumple exactamente</span>`);
+        html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <span class="mono" style="font-size:11px;color:var(--ink-soft);">As prov − As req = ${diferencia.toFixed(3)} cm²</span>
+            ${detalle}
+        </div>`;
+    } else {
+        html += `<div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+            <div style="font-size:12px;">No hay grupos de barras definidos.</div>
+        </div>`;
+    }
+
+    // Tabla de áreas de referencia (solo diámetros en uso)
+    const diametrosUsados = new Set(grupos.map(g => g.diametro));
+    const diametrosMostrar = diametros.filter(d => diametrosUsados.has(d.value));
+    if (diametrosMostrar.length === 0) {
+        diametrosMostrar.push(...diametros.filter(d => [10, 12, 16, 20, 25].includes(d.value)));
+    }
+    html += `
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line-soft);">
+            <h4 style="font-size:11px;font-weight:600;margin:0 0 6px;color:var(--ink);">Áreas de barras individuales</h4>
+            <table class="tbl">
+                <thead><tr><th>Diámetro (mm)</th><th>Área (cm²)</th></tr></thead>
+                <tbody>`;
+    diametrosMostrar.forEach(d => {
+        const area = (Math.PI / 4) * Math.pow(d.value / 10, 2);
+        html += `<tr><td class="left">${d.label}</td><td>${area.toFixed(4)}</td></tr>`;
+    });
+    html += `</tbody></table>
+        </div>`;
+
+    container.innerHTML = html;
+}
+
+/* ================================================================
+   INICIO
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('asReq').addEventListener('input', calcular);
+    document.getElementById('asReq').addEventListener('change', calcular);
+    limpiarGrupos();
+    calcular();
+});
+</script>
+
+</body>
+</html>

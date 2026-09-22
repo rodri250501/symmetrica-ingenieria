@@ -126,7 +126,10 @@ const App = {
         });
 
         window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'symmetrica-unlock-request') {
+            const iframe = document.querySelector('.program-iframe');
+            const trustedFrame = iframe && event.source === iframe.contentWindow;
+            const trustedOrigin = event.origin === window.location.origin || event.origin === 'null';
+            if (trustedFrame && trustedOrigin && event.data?.type === 'symmetrica-unlock-request') {
                 const programId = programsApi.currentProgramId.value;
                 if (programId) requestsApi.requestAccess(programId);
             }

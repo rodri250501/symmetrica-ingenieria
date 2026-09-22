@@ -61,7 +61,9 @@ export function useSubscriptions(userRef, showLoginRef) {
     };
 
     // true si el usuario tiene una suscripción activa vigente
-    // (anual no vencida, o perpetua).
+    // (anual no vencida, o perpetua). La anual se activa por un año
+    // y no se renueva automáticamente: una nueva solicitud crea otro
+    // período solo después de que el usuario lo pida y pague.
     const isSubscribed = computed(() => {
         const u = userRef.value;
         if (!u || !u.userData || !u.userData.subscription) return false;

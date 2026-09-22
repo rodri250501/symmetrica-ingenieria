@@ -1,0 +1,1252 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symmetrica Ingeniería | Diseño Biaxial de Zapatas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiI+PHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTMiIGZpbGw9IiMxNTI3MzMiLz48ZyBzdHJva2U9IiNmZmYiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTE1IDE1aDQydjQySDE1VjE1Wm0wIDI2aDE4djE2Ii8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik0xMSAxMWg4djhoLTh6bTQyIDBoOHY4aC04ek0xMSA1M2g4djhoLTh6bTQyIDBoOHY4aC04eiIvPjwvZz48L3N2Zz4=">
+
+    <style>
+        :root{
+            --bg:#dfe3e7; --panel:#ffffff; --panel-alt:#f4f6f8; --panel-head:#eaeef1;
+            --line:#c4ccd4; --line-soft:#dde3e8; --ink:#1b2733; --ink-soft:#586673;
+            --ink-faint:#8a95a0; --accent:#152733; --accent-dark:#0a1820; --accent-soft:#e6ecf0;
+            --symmetrica-red:#ca244b;
+            --ok:#12803f; --ok-bg:#e3f4e9; --fail:#bf2a2a; --fail-bg:#fae7e7;
+            --warn:#97600a; --warn-bg:#faf0dc; --radius:3px;
+        }
+        *{box-sizing:border-box;}
+        html,body{height:100%;margin:0;}
+        body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased;}
+        .mono{font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== LAYOUT ====== */
+        .app{display:grid;grid-template-rows:46px 30px 1fr 22px;height:100vh;}
+
+        /* ====== TOOLBAR ====== */
+        .toolbar{
+            display:flex;align-items:center;gap:4px;
+            background:linear-gradient(#f3f6f7,#e9edf0);
+            border-bottom:1px solid var(--line);
+            padding:0 8px;
+        }
+        .tb-brand{
+            display:flex;align-items:center;gap:10px;
+            padding:0 14px 0 6px;
+            border-right:1px solid var(--line-soft);
+            height:100%;
+            text-decoration:none;
+            color:var(--accent);
+        }
+        .tb-brand svg{width:30px;height:31px;flex:none;}
+        .tb-brand-text{display:flex;flex-direction:column;line-height:1;}
+        .tb-brand-text .name{
+            font-size:14px;font-weight:300;letter-spacing:1.5px;
+            display:flex;align-items:center;color:var(--accent);
+        }
+        .tb-brand-text .name .axis{
+            height:14px;border-left:2px dashed var(--symmetrica-red);
+            margin:0 2px;
+        }
+        .tb-brand-text .sub{
+            font-size:9px;color:var(--ink-faint);letter-spacing:.08em;
+            text-transform:uppercase;margin-top:3px;font-weight:500;
+        }
+
+        .tb-group{display:flex;align-items:center;gap:2px;padding:0 7px;height:100%;}
+        .tb-group + .tb-group{border-left:1px solid var(--line-soft);}
+        .tbtn{
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+            min-width:52px;height:38px;padding:2px 7px;border:1px solid transparent;border-radius:var(--radius);
+            background:transparent;cursor:pointer;color:var(--ink);font-size:10px;font-family:'IBM Plex Sans',sans-serif;
+        }
+        .tbtn svg{width:17px;height:17px;}
+        .tbtn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .tbtn:active{background:#d6e2ea;}
+        .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+        .tbtn.primary:hover{background:var(--accent-dark);}
+        .tbtn.primary svg{stroke:#fff;}
+        .tbtn[disabled]{opacity:.45;cursor:default;}
+        .toolbar .spacer{flex:1;}
+
+        /* ====== TABS ====== */
+        .tabs{display:flex;align-items:flex-end;gap:1px;background:var(--panel-head);border-bottom:1px solid var(--line);padding:0 8px;}
+        .tab{
+            border:1px solid var(--line);border-bottom:none;
+            background:linear-gradient(#eef1f3,#e3e7ea);
+            color:var(--ink-soft);font-size:11.5px;font-weight:500;
+            padding:5px 16px 4px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px;
+        }
+        .tab:hover{color:var(--ink);}
+        .tab.active{background:var(--panel);color:var(--accent-dark);font-weight:600;top:1px;box-shadow:0 -2px 0 var(--accent) inset;}
+        .tabs .spacer{flex:1;padding:4px 8px 0;font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== CONTENT ====== */
+        .content{overflow-y:auto;overflow-x:hidden;padding:12px;}
+        .view{display:none;}
+        .view.active{display:block;}
+
+        /* ====== STATUS ====== */
+        .statusbar{
+            display:flex;align-items:center;gap:16px;
+            background:linear-gradient(#eef1f3,#e5e9ec);
+            border-top:1px solid var(--line);
+            font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);
+            padding:0 10px;overflow:hidden;white-space:nowrap;
+        }
+        .status-cell{display:flex;align-items:center;gap:5px;}
+        .status-cell.name{background:var(--panel);border:1px solid var(--line-soft);border-radius:2px;padding:1px 8px;}
+        .status-dot{width:7px;height:7px;border-radius:50%;background:#a9b3bd;flex:none;}
+        .status-dot.ok{background:#2ea35a;}
+        .status-dot.pending{background:#d69a2d;}
+        .status-dot.fail{background:#d04545;}
+        .statusbar .spacer{flex:1;}
+
+        /* ====== CARDS ====== */
+        .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;}
+        .card-head{
+            display:flex;align-items:center;justify-content:space-between;
+            background:linear-gradient(#f7f9fa,#eef1f3);
+            border-bottom:1px solid var(--line);padding:5px 10px;
+        }
+        .card-head h2{font-size:12px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px;color:var(--ink);}
+        .card-head h2 .idx{
+            font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:var(--accent);
+            border-radius:2px;padding:0 5px;line-height:16px;
+        }
+        .card-head .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+        .card-body{padding:10px;}
+
+        .grid-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+        .field label{display:block;font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+        .field input,.field select{
+            width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:2px;
+            background:var(--panel-alt);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink);
+        }
+        .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+
+        /* ====== TABLES ====== */
+        .tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+        .tbl th{
+            background:var(--panel-head);color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-weight:600;
+            font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;text-align:center;
+            border:1px solid var(--line);padding:3px 5px;
+        }
+        .tbl td{border:1px solid var(--line-soft);padding:2px 4px;text-align:center;}
+        .tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+        .tbl tbody tr:nth-child(even){background:#fafbfc;}
+        .tbl tbody tr:hover{background:var(--accent-soft);}
+        .tbl tr.total{background:#f1f4f6 !important;font-weight:600;}
+
+        /* ====== BUTTONS ====== */
+        .btn{
+            font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;border-radius:var(--radius);
+            border:1px solid var(--line);padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+            background:linear-gradient(#fbfcfd,#eef1f3);color:var(--ink);
+        }
+        .btn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .btn svg{width:13px;height:13px;}
+        .btn.accent{background:var(--accent);border-color:var(--accent-dark);color:#fff;}
+        .btn.accent:hover{background:var(--accent-dark);}
+        .btn.sm{padding:2px 8px;font-size:10.5px;}
+        .btn[disabled]{opacity:.45;cursor:default;}
+
+        /* ====== BADGES ====== */
+        .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+        .badge.ok{background:var(--ok-bg);color:var(--ok);}
+        .badge.fail{background:var(--fail-bg);color:var(--fail);}
+        .badge.warn{background:var(--warn-bg);color:var(--warn);}
+
+        .empty{text-align:center;color:var(--ink-faint);padding:44px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);}
+        .empty svg{width:30px;height:30px;margin-bottom:8px;opacity:.5;}
+        .esquema-wrap{width:100%;overflow-x:auto;background:#fbfcfd;border:1px solid var(--line-soft);border-radius:var(--radius);}
+        .esquema-canvas{display:block;}
+        .hint{font-size:10.5px;color:var(--ink-faint);margin:6px 0 0;}
+        .diag-box{background:var(--fail-bg);border-left:4px solid var(--fail);padding:14px;border-radius:var(--radius);}
+        .diag-box h3{margin-top:0;color:var(--fail);font-size:14px;}
+
+        /* ====== REPORT OVERLAY ====== */
+        #reportOverlay{position:fixed;inset:0;z-index:1000;background:#5a6570;display:none;flex-direction:column;}
+        #reportOverlay.open{display:flex;}
+        .report-toolbar{display:flex;align-items:center;gap:10px;background:linear-gradient(#f4f6f8,#e7ebee);border-bottom:1px solid #aab3bb;padding:7px 12px;flex:none;}
+        .report-toolbar .rt-title{font-weight:600;font-size:12.5px;color:var(--ink);}
+        .report-toolbar .rt-sub{font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+        .report-toolbar .spacer{flex:1;}
+        .report-scroll{flex:1;overflow:auto;padding:20px 10px 60px;background:#7c858f;}
+        .report-page{
+            width:210mm;min-height:297mm;background:#fff;color:#1b2733;
+            padding:16mm 14mm;margin:0 auto 14px;box-shadow:0 2px 10px rgba(0,0,0,.35);
+            position:relative;font-size:11px;
+        }
+        .report-page .page-foot{
+            position:absolute;bottom:8mm;left:14mm;right:14mm;
+            border-top:1px solid #c4ccd4;padding-top:3px;
+            display:flex;justify-content:space-between;font-size:9px;color:#6b7681;
+            font-family:'IBM Plex Mono',monospace;
+        }
+
+        /* ====== CARÁTULA ====== */
+        .caratula{display:flex;flex-direction:column;height:100%;}
+        .caratula .c-top{
+            border:2px solid #16222e;border-bottom:none;padding:14px 18px;
+            display:flex;align-items:center;gap:14px;
+        }
+        .caratula .c-logo{
+            width:62px;height:62px;flex:none;
+            display:flex;align-items:center;justify-content:center;
+        }
+        .caratula .c-org{font-size:13px;font-weight:700;letter-spacing:.02em;line-height:1.25;text-transform:uppercase;}
+        .caratula .c-sub{font-size:10px;color:#5a6874;margin-top:2px;}
+        .caratula .c-brand{
+            display:flex;flex-direction:column;line-height:1;
+        }
+        .caratula .c-brand .c-name{
+            font-size:20px;font-weight:300;letter-spacing:1.8px;
+            display:flex;align-items:center;color:#16222e;
+        }
+        .caratula .c-brand .c-name .c-axis{
+            height:18px;border-left:2px dashed var(--symmetrica-red);
+            margin:0 3px;
+        }
+        .caratula .c-body{
+            flex:1;border:2px solid #16222e;
+            display:flex;flex-direction:column;justify-content:center;align-items:center;
+            text-align:center;padding:30px 24px;
+        }
+        .caratula .c-kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#ca244b;font-weight:600;margin-bottom:10px;}
+        .caratula .c-title{font-size:30px;font-weight:700;line-height:1.15;margin:0 0 6px;}
+        .caratula .c-title small{display:block;font-size:14px;font-weight:500;color:#586673;margin-top:8px;letter-spacing:.01em;}
+        .caratula .c-rule{width:90px;height:4px;background:#16222e;margin:20px auto;}
+        .caratula .c-meta{margin-top:8px;width:100%;max-width:420px;}
+        .caratula .c-meta table{width:100%;border-collapse:collapse;font-size:12px;}
+        .caratula .c-meta td{padding:6px 8px;border-bottom:1px solid #dde3e8;text-align:left;}
+        .caratula .c-meta td.k{color:#586673;width:38%;font-weight:600;text-transform:uppercase;font-size:9.5px;letter-spacing:.04em;}
+        .caratula .c-foot{
+            border:2px solid #16222e;border-top:none;padding:8px 18px;
+            display:flex;justify-content:space-between;font-size:10px;color:#586673;
+            font-family:'IBM Plex Mono',monospace;
+        }
+
+        /* ====== REPORT ====== */
+        .r-head{border-bottom:2px solid #16222e;padding-bottom:8px;margin-bottom:12px;}
+        .r-head h1{font-size:17px;margin:0 0 3px;}
+        .r-head .r-sub{font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+        .r-section{margin-bottom:16px;break-inside:avoid;}
+        .r-section h2{font-size:12.5px;margin:0 0 7px;padding:4px 8px;background:#eef1f3;border-left:3px solid #16222e;text-transform:uppercase;letter-spacing:.03em;}
+        .r-tbl{width:100%;border-collapse:collapse;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+        .r-tbl th{background:#eef1f3;border:1px solid #c4ccd4;padding:3px 5px;font-family:'IBM Plex Sans',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.03em;text-align:center;}
+        .r-tbl td{border:1px solid #dde3e8;padding:2px 5px;text-align:center;}
+        .r-tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+        .r-meta-tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:10px;}
+        .r-meta-tbl td{padding:4px 6px;border:1px solid #dde3e8;}
+        .r-meta-tbl td.k{background:#f4f6f8;color:#586673;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.04em;width:22%;}
+        .r-note{font-size:9.5px;color:#6b7681;margin-top:6px;font-style:italic;}
+        .r-schema{border:1px solid #c4ccd4;border-radius:3px;padding:6px;background:#fbfcfd;text-align:center;}
+        .r-schema canvas{max-width:100%;height:auto;}
+        .r-graficos{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-top:4px;}
+        .r-graficos figure{margin:0;border:1px solid #dde3e8;border-radius:4px;background:#fff;padding:8px;text-align:center;}
+        .r-graficos figcaption{font-size:9px;color:#586673;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:6px;font-family:'IBM Plex Sans',sans-serif;}
+        .r-graficos img{max-width:100%;height:auto;display:inline-block;}
+        .r-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;}
+        .r-kpi-box{background:#f4f6f8;border:1px solid #dde3e8;border-radius:3px;padding:6px 8px;text-align:center;}
+        .r-kpi-box .k{font-size:8.5px;color:#586673;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+        .r-kpi-box .v{font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+
+        @page{size:A4 portrait;margin:14mm 12mm;}
+        @media print{
+            body{background:#fff;}
+            .app,#reportOverlay .report-toolbar{display:none !important;}
+            #reportOverlay{position:static;display:block !important;background:#fff;}
+            #reportOverlay:not(.open){display:none !important;}
+            .report-scroll{overflow:visible;padding:0;background:#fff;}
+            .report-page{width:auto;min-height:auto;margin:0;padding:0;box-shadow:none;page-break-after:always;}
+            .report-page:last-child{page-break-after:auto;}
+            .report-page .page-foot{position:static;margin-top:14px;}
+            .caratula{min-height:265mm;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- ================= TOOLBAR ================= -->
+    <div class="toolbar">
+        <a class="tb-brand" href="#" onclick="return false;" title="Symmetrica Ingeniería">
+            <svg viewBox="0 0 68 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M6 6H62V64H6V6ZM6 40H30V64" stroke="currentColor" stroke-width="1.65"/>
+                <g fill="currentColor">
+                    <rect x="2.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="2.8" y="60.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="60.8" width="6.4" height="6.4"/>
+                </g>
+            </svg>
+            <span class="tb-brand-text">
+                <span class="name">SYM<span class="axis" aria-hidden="true"></span>METRICA</span>
+                <span class="sub">Zapatas Biaxiales</span>
+            </span>
+        </a>
+
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('datos')" title="Ir a datos de entrada">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+                Datos
+            </button>
+            <button class="tbtn" onclick="limpiarTodo()" title="Reiniciar valores">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                Reiniciar
+            </button>
+        </div>
+
+        <div class="tb-group">
+            <button class="tbtn primary" onclick="calcularTodo()" title="Ejecutar el cálculo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                Calcular
+            </button>
+        </div>
+
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('resultados')" title="Ver resultados">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                Resultados
+            </button>
+            <button class="tbtn" onclick="switchTab('graficos')" title="Ver gráficos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 10h-4a1 1 0 0 1-1-1V5a3 3 0 0 0-6 0v4h-4a3 3 0 0 0 0 6h4v4a3 3 0 0 0 6 0v-4h4a3 3 0 0 0 0-6z"/></svg>
+                Gráficos
+            </button>
+            <button class="tbtn" id="btnInforme" onclick="generarInforme()" disabled title="Generar informe con carátula">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+                Informe
+            </button>
+            <button class="tbtn" id="btnPDF" onclick="imprimirInforme()" disabled title="Imprimir / Guardar PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                PDF
+            </button>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="tb-group">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);letter-spacing:.04em;">ACI 318 · ZAPATAS</span>
+        </div>
+    </div>
+
+    <!-- ================= TABS ================= -->
+    <div class="tabs">
+        <button class="tab active" id="tab-datos" onclick="switchTab('datos')">01 · Datos de entrada</button>
+        <button class="tab" id="tab-resultados" onclick="switchTab('resultados')">02 · Resultados del diseño</button>
+        <button class="tab" id="tab-graficos" onclick="switchTab('graficos')">03 · Gráficos</button>
+        <div class="spacer" id="tabsInfo">Sin calcular</div>
+    </div>
+
+    <!-- ================= CONTENT ================= -->
+    <div class="content">
+
+        <!-- ---------- VISTA DATOS ---------- -->
+        <div class="view active" id="view-datos">
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">00</span> Identificación del proyecto</h2>
+                    <span class="tag">Encabezado del informe</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Proyecto</label><input type="text" id="proyNombre" value="Edificio — Diseño estructural" /></div>
+                        <div class="field"><label>Elemento</label><input type="text" id="proyElemento" value="Zapata Z-1" /></div>
+                        <div class="field"><label>Norma</label><input type="text" id="proyNorma" value="ACI 318" /></div>
+                        <div class="field"><label>Ubicación</label><input type="text" id="proyUbicacion" value="—" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">01</span> Configuración de la zapata</h2>
+                    <span class="tag">Tipo y método</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field">
+                            <label>Tipo de zapata</label>
+                            <select id="footingType">
+                                <option value="concentric">Céntrica</option>
+                                <option value="eccentric">Excéntrica (Lindero)</option>
+                                <option value="corner">Esquinera</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Método de cálculo</label>
+                            <select id="metodoCalculo">
+                                <option value="rigido">Rígido (Tradicional)</option>
+                                <option value="winkler">Winkler (Lecho elástico)</option>
+                                <option value="pasternak">Pasternak (Mejorado)</option>
+                            </select>
+                        </div>
+                        <div class="field" id="eccentric-edge-group" style="display:none;">
+                            <label>Columna en borde</label>
+                            <select id="eccentricEdge">
+                                <option value="L">Lado Largo (L)</option>
+                                <option value="B">Lado Corto (B)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">02</span> Geometría</h2>
+                    <span class="tag">Dimensiones</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Largo, L (m)</label><input type="number" id="zapataL" value="3.0" step="0.05" /></div>
+                        <div class="field"><label>Ancho, B (m)</label><input type="number" id="zapataB" value="2.5" step="0.05" /></div>
+                        <div class="field"><label>Altura, h (m)</label><input type="number" id="zapataH" value="0.6" step="0.01" /></div>
+                        <div class="field"><label>Columna cx (m)</label><input type="number" id="columnaL" value="0.5" step="0.01" /></div>
+                        <div class="field"><label>Columna cy (m)</label><input type="number" id="columnaB" value="0.4" step="0.01" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">03</span> Materiales</h2>
+                    <span class="tag">Resistencias</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>f'c (MPa)</label><input type="number" id="fc" value="21" step="1" /></div>
+                        <div class="field"><label>fy (MPa)</label><input type="number" id="fy" value="420" step="10" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">04</span> Cargas de servicio (en columna)</h2>
+                    <span class="tag">D, L, E</span>
+                </div>
+                <div class="card-body">
+                    <table class="tbl">
+                        <thead><tr><th></th><th>Axial (kN)</th><th>Mx (kN·m)</th><th>My (kN·m)</th></tr></thead>
+                        <tbody>
+                            <tr><td class="left">Muerta (D)</td><td><input type="number" id="PD" value="800" /></td><td><input type="number" id="MDx" value="40" /></td><td><input type="number" id="MDy" value="25" /></td></tr>
+                            <tr><td class="left">Viva (L)</td><td><input type="number" id="PL" value="300" /></td><td><input type="number" id="MLx" value="20" /></td><td><input type="number" id="MLy" value="15" /></td></tr>
+                            <tr><td class="left">Sismo (E)</td><td><input type="number" id="PE" value="50" /></td><td><input type="number" id="MEx" value="80" /></td><td><input type="number" id="MEy" value="60" /></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">05</span> Suelo</h2>
+                    <span class="tag">Parámetros geotécnicos</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field">
+                            <label>Tipo de suelo</label>
+                            <select id="soilSelector">
+                                <option value="denseSand">Arena Densa</option>
+                                <option value="looseSand">Arena Suelta</option>
+                                <option value="firmClay">Arcilla Firme</option>
+                                <option value="softClay">Arcilla Blanda</option>
+                            </select>
+                        </div>
+                        <div class="field"><label>q adm (kPa)</label><input type="number" id="q_adm" /></div>
+                        <div class="field"><label>k s (kN/m³)</label><input type="number" id="k_s" /></div>
+                        <div class="field"><label>G (kPa)</label><input type="number" id="G_s" /></div>
+                        <div class="field"><label>Asent. adm (mm)</label><input type="number" id="asentamiento_adm" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">06</span> Armado propuesto (opcional)</h2>
+                    <span class="tag">Refuerzo</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>φ barras X (mm)</label><input type="number" id="diamX" value="12" step="1" /></div>
+                        <div class="field"><label>Separación X (cm)</label><input type="number" id="sepX" value="15" step="1" /></div>
+                        <div class="field"><label>φ barras Y (mm)</label><input type="number" id="diamY" value="12" step="1" /></div>
+                        <div class="field"><label>Separación Y (cm)</label><input type="number" id="sepY" value="15" step="1" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="btn accent" onclick="calcularTodo()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    Calcular diseño
+                </button>
+                <p class="hint" style="align-self:center;">Los resultados se muestran en «Resultados del diseño».</p>
+            </div>
+        </div>
+
+        <!-- ---------- VISTA RESULTADOS ---------- -->
+        <div class="view" id="view-resultados">
+            <div id="resultadosContainer"></div>
+            <div id="resultadosVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                <div style="font-size:12.5px;">Aún no se ha calculado el diseño.</div>
+                <div style="font-size:11px;margin-top:2px;">Complete los datos y presione «Calcular diseño».</div>
+            </div>
+        </div>
+
+        <!-- ---------- VISTA GRÁFICOS ---------- -->
+        <div class="view" id="view-graficos">
+            <div id="graficosContainer"></div>
+            <div id="graficosVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 10h-4a1 1 0 0 1-1-1V5a3 3 0 0 0-6 0v4h-4a3 3 0 0 0 0 6h4v4a3 3 0 0 0 6 0v-4h4a3 3 0 0 0 0-6z"/></svg>
+                <div style="font-size:12.5px;">Los gráficos aparecerán aquí tras calcular el diseño.</div>
+                <div style="font-size:11px;margin-top:2px;">Complete los datos y presione «Calcular diseño».</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= STATUS BAR ================= -->
+    <div class="statusbar">
+        <div class="status-cell name"><span class="status-dot pending" id="statusDot"></span><span id="statusTexto">Sin calcular</span></div>
+        <div class="status-cell" id="statusSeccion">Col: — × — m</div>
+        <div class="status-cell" id="statusMateriales">f'c: — · fy: —</div>
+        <div class="status-cell" id="statusNorma">ACI 318</div>
+        <div class="spacer"></div>
+        <div class="status-cell" id="statusHora">—</div>
+    </div>
+
+</div>
+
+<!-- ================= REPORT OVERLAY ================= -->
+<div id="reportOverlay">
+    <div class="report-toolbar">
+        <button class="btn" onclick="cerrarInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Volver
+        </button>
+        <span class="rt-title">Memoria de cálculo — Zapatas biaxiales</span>
+        <span class="rt-sub" id="rtSub">ACI 318</span>
+        <div class="spacer"></div>
+        <button class="btn accent" onclick="imprimirInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+            Imprimir / Guardar PDF
+        </button>
+    </div>
+    <div class="report-scroll" id="reportScroll">
+        <div id="reporte"></div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+/* ================================================================
+   NAVEGACIÓN
+   ================================================================ */
+function switchTab(tab){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    const t = document.getElementById('tab-' + tab);
+    if (t) t.classList.add('active');
+}
+
+/* ================================================================
+   BARRA DE ESTADO
+   ================================================================ */
+function actualizarBarraEstado(calculado){
+    const cx = document.getElementById('columnaL').value;
+    const cy = document.getElementById('columnaB').value;
+    const fc = document.getElementById('fc').value;
+    const fy = document.getElementById('fy').value;
+    document.getElementById('statusSeccion').textContent = `Col: ${cx} × ${cy} m`;
+    document.getElementById('statusMateriales').textContent = `f'c: ${fc} MPa · fy: ${fy} MPa`;
+    document.getElementById('statusNorma').textContent = document.getElementById('proyNorma').value || 'ACI 318';
+
+    const dot = document.getElementById('statusDot');
+    const texto = document.getElementById('statusTexto');
+    if (calculado){
+        dot.classList.add('ok'); dot.classList.remove('pending');
+        texto.textContent = 'Diseño calculado ✓';
+        document.getElementById('statusHora').textContent = 'Últ. actualización: ' +
+            new Date().toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('tabsInfo').textContent = 'Diseño calculado';
+    } else {
+        dot.classList.add('pending'); dot.classList.remove('ok');
+        texto.textContent = 'Sin calcular';
+        document.getElementById('statusHora').textContent = '—';
+        document.getElementById('tabsInfo').textContent = 'Sin calcular';
+    }
+}
+
+/* ================================================================
+   DATOS DEL SUELO
+   ================================================================ */
+const soilData = {
+    denseSand: { q_adm: 350, ks: 50000, Gs: 20000, type: 'sand', sett_adm: 25 },
+    looseSand: { q_adm: 150, ks: 20000, Gs: 8000, type: 'sand', sett_adm: 25 },
+    firmClay:  { q_adm: 200, ks: 35000, Gs: 12000, type: 'clay', sett_adm: 40 },
+    softClay:  { q_adm: 100, ks: 15000, Gs: 5000, type: 'clay', sett_adm: 50 }
+};
+
+/* ================================================================
+   DIBUJOS EN CANVAS
+   ================================================================ */
+function dibujarPlanoZapata(canvasId, L, B, cx, cy, footingType, eccentricEdge) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    if (L === 0 || B === 0) return;
+    const padding = 20;
+    const scale = Math.min((w - 2*padding)/L, (h - 2*padding)/B);
+    const fw = L*scale, fh = B*scale;
+    const fx = (w - fw)/2, fy = (h - fh)/2;
+
+    ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.strokeRect(fx, fy, fw, fh);
+    const cw = cx*scale, ch = cy*scale;
+    let colX, colY;
+    if (footingType === 'concentric') {
+        colX = fx + (fw - cw)/2; colY = fy + (fh - ch)/2;
+    } else if (footingType === 'eccentric') {
+        if (eccentricEdge === 'L') { colX = fx; colY = fy + (fh - ch)/2; }
+        else { colX = fx + (fw - cw)/2; colY = fy; }
+    } else {
+        colX = fx; colY = fy;
+    }
+    ctx.fillStyle = 'rgba(129,140,248,0.5)'; ctx.strokeStyle = '#4f46e5';
+    ctx.fillRect(colX, colY, cw, ch); ctx.strokeRect(colX, colY, cw, ch);
+    ctx.fillStyle = '#1f2937'; ctx.font = '10px IBM Plex Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`L = ${L.toFixed(2)} m`, w/2, fy - 5);
+    ctx.save(); ctx.translate(fx - 10, h/2); ctx.rotate(-Math.PI/2); ctx.fillText(`B = ${B.toFixed(2)} m`, 0, 0); ctx.restore();
+}
+
+function dibujarEsquemaArmado(canvas, L, B, cx, cy, diamX, sepX, diamY, sepY, As_x_req, As_y_req) {
+    if (typeof canvas === 'string') canvas = document.getElementById(canvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const escala = 110;
+    const mSup = 50, mInf = 90, mIzq = 88, mDer = 42;
+    const fw = L * escala, fh = B * escala;
+    const ancho = fw + mIzq + mDer;
+    const alto = fh + mSup + mInf;
+    canvas.width = ancho;
+    canvas.height = alto;
+    canvas.style.width = ancho + 'px';
+    canvas.style.height = alto + 'px';
+    ctx.clearRect(0, 0, ancho, alto);
+
+    const x0 = mIzq, y0 = mSup;
+
+    const flecha = (x1,y1,x2,y2) => {
+        const ang = Math.atan2(y2-y1, x2-x1), s = 7;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x2,y2);
+        ctx.lineTo(x2 - s*Math.cos(ang-0.4), y2 - s*Math.sin(ang-0.4));
+        ctx.moveTo(x2,y2);
+        ctx.lineTo(x2 - s*Math.cos(ang+0.4), y2 - s*Math.sin(ang+0.4));
+        ctx.stroke();
+    };
+
+    // Encabezado
+    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 13px IBM Plex Sans'; ctx.textAlign = 'center';
+    ctx.fillText('ESQUEMA DE ARMADO · PLANTA', ancho/2, 22);
+    ctx.font = '10px IBM Plex Mono'; ctx.fillStyle = '#5c6b7a';
+    ctx.fillText(`Escala · ${L} m de largo`, ancho/2, 37);
+
+    // Zapata
+    ctx.fillStyle = '#f2f5f8';
+    ctx.fillRect(x0, y0, fw, fh);
+    ctx.strokeStyle = '#6d7a88'; ctx.lineWidth = 2;
+    ctx.strokeRect(x0, y0, fw, fh);
+
+    // Columna
+    const colW = cx*escala, colH = cy*escala;
+    const colX = x0 + (fw-colW)/2, colY = y0 + (fh-colH)/2;
+    ctx.fillStyle = '#d5dee6'; ctx.fillRect(colX, colY, colW, colH);
+    ctx.strokeStyle = '#55616e'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(colX, colY, colW, colH);
+    ctx.fillStyle = '#33404d'; ctx.font = '10px IBM Plex Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`${cx.toFixed(2)} × ${cy.toFixed(2)} m`, colX+colW/2, colY+colH/2+3);
+
+    // Parrilla: barras X (verticales) y barras Y (horizontales)
+    const nbX = Math.max(Math.round(L*100/sepX), 2);
+    const nbY = Math.max(Math.round(B*100/sepY), 2);
+    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = '#1c72c4';
+    for (let i=1; i<=nbX; i++){
+        const x = x0 + (i/(nbX+1))*fw;
+        ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0+fh); ctx.stroke();
+    }
+    ctx.strokeStyle = '#0e9f8f';
+    for (let i=1; i<=nbY; i++){
+        const y = y0 + (i/(nbY+1))*fh;
+        ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0+fw, y); ctx.stroke();
+    }
+
+    // Cotas
+    ctx.fillStyle = '#3f4c59'; ctx.strokeStyle = '#596775'; ctx.lineWidth = 1;
+    // Cota L (inferior)
+    const cY = y0 + fh + 32;
+    ctx.beginPath(); ctx.moveTo(x0, cY); ctx.lineTo(x0+fw, cY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0-4); ctx.lineTo(x0, cY);
+    ctx.moveTo(x0+fw, y0-4); ctx.lineTo(x0+fw, cY); ctx.stroke();
+    flecha(x0, cY, x0+fw, cY); flecha(x0+fw, cY, x0, cY);
+    ctx.font = '10px IBM Plex Mono'; ctx.textAlign = 'center';
+    ctx.fillText(`L = ${L.toFixed(2)} m`, x0+fw/2, cY-7);
+    // Cota B (izquierda, vertical)
+    const cX = x0 - 32;
+    ctx.beginPath(); ctx.moveTo(cX, y0); ctx.lineTo(cX, y0+fh); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(cX, y0);
+    ctx.moveTo(x0, y0+fh); ctx.lineTo(cX, y0+fh); ctx.stroke();
+    flecha(cX, y0, cX, y0+fh); flecha(cX, y0+fh, cX, y0);
+    ctx.save(); ctx.translate(cX-8, y0+fh/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign = 'center'; ctx.fillText(`B = ${B.toFixed(2)} m`, 0, 0); ctx.restore();
+
+    // Leyenda de refuerzo
+    const areaX = (Math.PI*(diamX/10)**2/4)*(100/sepX);
+    const areaY = (Math.PI*(diamY/10)**2/4)*(100/sepY);
+    const ly = y0 + fh + 54;
+    ctx.textAlign = 'left'; ctx.font = 'bold 10px IBM Plex Mono';
+    ctx.fillStyle = '#1c72c4';
+    ctx.fillText(`X · φ${diamX} @ ${sepX} cm`, x0, ly);
+    ctx.font = 'bold 10px IBM Plex Mono'; ctx.fillStyle = '#0e9f8f';
+    ctx.fillText(`Y · φ${diamY} @ ${sepY} cm`, x0, ly+20);
+}
+
+function dibujarDiagramaPresiones(canvas, pressureFn, p_max, p_min) {
+    if (typeof canvas === 'string') canvas = document.getElementById(canvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const footingTop = h*0.4, footingHeight = h*0.15, margin = w*0.1, footingWidth = w*0.8;
+    ctx.fillStyle = '#d1d5db'; ctx.fillRect(margin, footingTop, footingWidth, footingHeight);
+    const colWidth = footingWidth * (document.getElementById('columnaL').value / document.getElementById('zapataL').value);
+    ctx.fillStyle = '#9ca3af'; ctx.fillRect(w/2 - colWidth/2, footingTop - h*0.25, colWidth, h*0.25);
+    const pressureBase = footingTop + footingHeight;
+    const maxDisplayPressure = Math.max(p_max, Math.abs(p_min))*1.2 || 1;
+    const maxPressureHeight = h*0.4;
+    ctx.fillStyle = 'rgba(59,130,246,0.3)'; ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(margin, pressureBase);
+    const steps = 100;
+    for (let i=0; i<=steps; i++) {
+        const x_norm = i/steps;
+        const pressure = pressureFn(x_norm*2-1);
+        const p_height = (pressure / maxDisplayPressure) * maxPressureHeight;
+        ctx.lineTo(margin + x_norm*footingWidth, pressureBase + p_height);
+    }
+    ctx.lineTo(margin + footingWidth, pressureBase); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#1e3a8a'; ctx.font = '10px IBM Plex Mono';
+    ctx.textAlign = 'left'; ctx.fillText(`${pressureFn(-1).toFixed(0)} kPa`, margin, h-5);
+    ctx.textAlign = 'right'; ctx.fillText(`${pressureFn(1).toFixed(0)} kPa`, margin+footingWidth, h-5);
+}
+
+/* ================================================================
+   CÁLCULO PRINCIPAL
+   ================================================================ */
+let ultimoResultado = null;
+
+function calcularTodo() {
+    const metodo = document.getElementById('metodoCalculo').value;
+    const footingType = document.getElementById('footingType').value;
+    const eccentricEdge = document.getElementById('eccentricEdge').value;
+    const L = parseFloat(document.getElementById('zapataL').value);
+    const B = parseFloat(document.getElementById('zapataB').value);
+    const h = parseFloat(document.getElementById('zapataH').value);
+    const cx = parseFloat(document.getElementById('columnaL').value);
+    const cy = parseFloat(document.getElementById('columnaB').value);
+    const PD = parseFloat(document.getElementById('PD').value);
+    const PL = parseFloat(document.getElementById('PL').value);
+    const PE = parseFloat(document.getElementById('PE').value);
+    const MDx = parseFloat(document.getElementById('MDx').value);
+    const MLx = parseFloat(document.getElementById('MLx').value);
+    const MEx = parseFloat(document.getElementById('MEx').value);
+    const MDy = parseFloat(document.getElementById('MDy').value);
+    const MLy = parseFloat(document.getElementById('MLy').value);
+    const MEy = parseFloat(document.getElementById('MEy').value);
+    const fc = parseFloat(document.getElementById('fc').value);
+    const fy = parseFloat(document.getElementById('fy').value);
+    const q_adm = parseFloat(document.getElementById('q_adm').value);
+    const k_s = parseFloat(document.getElementById('k_s').value);
+    const G_s = parseFloat(document.getElementById('G_s').value);
+    const asentamiento_adm = parseFloat(document.getElementById('asentamiento_adm').value);
+    const diamX = parseFloat(document.getElementById('diamX').value) || 0;
+    const sepX = parseFloat(document.getElementById('sepX').value) || 0;
+    const diamY = parseFloat(document.getElementById('diamY').value) || 0;
+    const sepY = parseFloat(document.getElementById('sepY').value) || 0;
+
+    if ([L,B,h,cx,cy,PD,PL,PE,MDx,MLx,MEx,MDy,MLy,MEy,fc,fy,q_adm,k_s,G_s,asentamiento_adm].some(isNaN)) {
+        alert('Complete todos los campos.');
+        return;
+    }
+
+    const soilType = soilData[document.getElementById('soilSelector').value].type;
+    const recub = 0.075, d = h - recub;
+    const A = L*B, Ix = (B*L**3)/12, Iy = (L*B**3)/12;
+    const phi_flex = 0.9, phi_shear = 0.75;
+
+    let e_geom_x = 0, e_geom_y = 0;
+    if (footingType === 'eccentric') {
+        if (eccentricEdge === 'L') e_geom_x = L/2 - cx/2;
+        else e_geom_y = B/2 - cy/2;
+    } else if (footingType === 'corner') {
+        e_geom_x = L/2 - cx/2; e_geom_y = B/2 - cy/2;
+    }
+
+    const Ps = PD + PL;
+    const Msx_applied = MDx + MLx;
+    const Msy_applied = MDy + MLy;
+    const Msx_total = Msx_applied + Ps*e_geom_y;
+    const Msy_total = Msy_applied + Ps*e_geom_x;
+    const ex_total = Msy_total / Ps;
+    const ey_total = Msx_total / Ps;
+    const kern_x = L/6, kern_y = B/6;
+
+    const q_avg_s = Ps / A;
+    const rigid_pressures_s = [
+        q_avg_s + Msx_total*(B/2)/Iy + Msy_total*(L/2)/Ix,
+        q_avg_s + Msx_total*(B/2)/Iy - Msy_total*(L/2)/Ix,
+        q_avg_s - Msx_total*(B/2)/Iy - Msy_total*(L/2)/Ix,
+        q_avg_s - Msx_total*(B/2)/Iy + Msy_total*(L/2)/Ix
+    ];
+    let q_max_s, p_min_s, pressureFn;
+    if (metodo === 'rigido') {
+        q_max_s = Math.max(...rigid_pressures_s);
+        p_min_s = Math.min(...rigid_pressures_s);
+        pressureFn = (x_norm) => q_avg_s + Msy_total*(x_norm*L/2)/Ix;
+    } else if (metodo === 'winkler') {
+        q_max_s = Math.max(...rigid_pressures_s) * (soilType === 'sand' ? 1.2 : 1.3);
+        p_min_s = 2*q_avg_s - q_max_s;
+        pressureFn = (x_norm) => { const x_abs = Math.abs(x_norm); return soilType === 'sand' ? p_min_s + (q_max_s - p_min_s)*(1 - x_abs**2) : p_min_s + (q_max_s - p_min_s)*x_abs**2; };
+    } else {
+        q_max_s = Math.max(...rigid_pressures_s) * (soilType === 'sand' ? 1.14 : 1.235);
+        p_min_s = 2*q_avg_s - q_max_s;
+        pressureFn = (x_norm) => { const x_abs = Math.abs(x_norm); return p_min_s + (q_max_s - p_min_s)*(soilType === 'sand' ? (1 - x_abs**1.5) : x_abs**1.5); };
+    }
+
+    const asentamiento_s = (q_avg_s / k_s) * 1000;
+
+    const combinations = [
+        { Pu:1.4*PD, Mux:1.4*MDx, Muy:1.4*MDy },
+        { Pu:1.2*PD+1.6*PL, Mux:1.2*MDx+1.6*MLx, Muy:1.2*MDy+1.6*MLy },
+        { Pu:1.2*PD+1.0*PE+1.0*PL, Mux:1.2*MDx+1.0*MEx+1.0*MLx, Muy:1.2*MDy+1.0*MEy+1.0*MLy },
+        { Pu:0.9*PD+1.0*PE, Mux:0.9*MDx+1.0*MEx, Muy:0.9*MDy+1.0*MEy }
+    ];
+
+    let max_Mux = 0, max_Muy = 0, max_Vx = 0, max_Vy = 0, max_Vp = 0;
+    combinations.forEach(c => {
+        if (c.Pu < 0) return;
+        const Mux_total = c.Mux + c.Pu*e_geom_y;
+        const Muy_total = c.Muy + c.Pu*e_geom_x;
+        const q_avg_u = c.Pu / A;
+        const pf = (x,y) => q_avg_u + Mux_total*y/Iy + Muy_total*x/Ix;
+
+        if (footingType === 'concentric') {
+            const Lvx = (L - cx)/2, Lvy = (B - cy)/2;
+            const q_face_y = pf(cx/2, 0), q_edge_y = pf(L/2, 0);
+            max_Muy = Math.max(max_Muy, B*((q_face_y - q_edge_y)*Lvx*Lvx/3 + q_edge_y*Lvx*Lvx/2));
+            const q_face_x = pf(0, cy/2), q_edge_x = pf(0, B/2);
+            max_Mux = Math.max(max_Mux, L*((q_face_x - q_edge_x)*Lvy*Lvy/3 + q_edge_x*Lvy*Lvy/2));
+            max_Vy = Math.max(max_Vy, pf(cx/2+d, 0)*B*(Lvx-d));
+            max_Vx = Math.max(max_Vx, pf(0, cy/2+d)*L*(Lvy-d));
+            max_Vp = Math.max(max_Vp, c.Pu - q_avg_u*(cx+d)*(cy+d));
+        } else if (footingType === 'eccentric') {
+            const Lvx = eccentricEdge === 'L' ? L - cx : (L - cx)/2;
+            const Lvy = eccentricEdge === 'B' ? B - cy : (B - cy)/2;
+            max_Muy = Math.max(max_Muy, B*((pf(L/2,0) - pf(-L/2+cx,0))*Lvx*Lvx/3 + pf(-L/2+cx,0)*Lvx*Lvx/2));
+            max_Mux = Math.max(max_Mux, L*((pf(0,B/2) - pf(0,-B/2+cy))*Lvy*Lvy/3 + pf(0,-B/2+cy)*Lvy*Lvy/2));
+            max_Vy = Math.max(max_Vy, pf(cx/2+d,0)*B*(Lvx-d));
+            max_Vx = Math.max(max_Vx, pf(0,cy/2+d)*L*(Lvy-d));
+            max_Vp = Math.max(max_Vp, c.Pu - q_avg_u*(cx+d/2)*(cy+d));
+        } else {
+            const Lvx = L - cx, Lvy = B - cy;
+            max_Muy = Math.max(max_Muy, B*((pf(L/2,0) - pf(-L/2+cx,0))*Lvx*Lvx/3 + pf(-L/2+cx,0)*Lvx*Lvx/2));
+            max_Mux = Math.max(max_Mux, L*((pf(0,B/2) - pf(0,-B/2+cy))*Lvy*Lvy/3 + pf(0,-B/2+cy)*Lvy*Lvy/2));
+            max_Vy = Math.max(max_Vy, pf(cx/2+d,0)*B*(Lvx-d));
+            max_Vx = Math.max(max_Vx, pf(0,cy/2+d)*L*(Lvy-d));
+            max_Vp = Math.max(max_Vp, c.Pu - q_avg_u*(cx+d/2)*(cy+d/2));
+        }
+    });
+
+    const factor = metodo === 'winkler' ? (soilType === 'clay' ? 1.15 : 0.9) : metodo === 'pasternak' ? (soilType === 'clay' ? 1.1 : 0.95) : 1;
+    max_Mux *= factor; max_Muy *= factor; max_Vx *= factor; max_Vy *= factor; max_Vp *= (metodo === 'winkler' ? (soilType === 'sand' ? 1.1 : 0.9) : metodo === 'pasternak' ? (soilType === 'sand' ? 1.05 : 0.95) : 1);
+
+    const phiVcx = phi_shear * 0.17 * Math.sqrt(fc) * B * d * 1000;
+    const phiVcy = phi_shear * 0.17 * Math.sqrt(fc) * L * d * 1000;
+    let bo;
+    if (footingType === 'concentric') bo = 2*((cx+d)+(cy+d));
+    else if (footingType === 'eccentric') bo = (eccentricEdge === 'L') ? (cy+d)+2*(cx+d/2) : (cx+d)+2*(cy+d/2);
+    else bo = (cx+d/2)+(cy+d/2);
+    const phiVp = phi_shear * 0.33 * Math.sqrt(fc) * bo * d * 1000;
+
+    function calculatePhiMn_max(fc, width_m, d_m) {
+        const b_mm = width_m*1000, d_mm = d_m*1000;
+        let beta1 = fc > 28 ? Math.max(0.65, 0.85 - 0.05*(fc-28)/7) : 0.85;
+        const c_max_mm = 0.375*d_mm, a_max_mm = beta1*c_max_mm;
+        const Mn_max_Nmm = 0.85*fc*a_max_mm*b_mm*(d_mm - a_max_mm/2);
+        return (phi_flex*Mn_max_Nmm)/1e6;
+    }
+    const phiMn_max_x = calculatePhiMn_max(fc, L, d);
+    const phiMn_max_y = calculatePhiMn_max(fc, B, d);
+
+    function calculateAs(Mu, width_m, h_m, d_m) {
+        const Mu_Nmm = Mu*1e6, b_mm = width_m*1000, h_mm = h_m*1000, d_mm = d_m*1000;
+        if ((2*Mu_Nmm)/(phi_flex*0.85*fc*b_mm*d_mm**2) >= 1) return {as_calc: Infinity, as_req: Infinity, obs:'Aumentar sección'};
+        let as_calc = (0.85*fc*b_mm*d_mm/fy)*(1 - Math.sqrt(1 - (2*Mu_Nmm)/(phi_flex*0.85*fc*b_mm*d_mm**2)));
+        const as_min = 0.0018*b_mm*h_mm;
+        const as_req = Math.max(as_calc, as_min);
+        return { as_calc: as_calc/100, as_req: as_req/100, obs: as_req > as_calc ? 'Rige Acero Mínimo' : 'Rige por Flexión' };
+    }
+    const As_x = calculateAs(max_Muy, B, h, d);
+    const As_y = calculateAs(max_Mux, L, h, d);
+
+    ultimoResultado = {
+        metodo, footingType, eccentricEdge, L, B, h, cx, cy,
+        fc, fy, q_adm, k_s, G_s, asentamiento_adm,
+        diamX, sepX, diamY, sepY,
+        q_max_s, p_min_s, pressureFn,
+        asentamiento_s, ex_total, ey_total, kern_x, kern_y,
+        max_Mux, max_Muy, max_Vx, max_Vy, max_Vp,
+        phiVcx, phiVcy, phiVp, phiMn_max_x, phiMn_max_y,
+        As_x, As_y, q_avg_s, Ps, d
+    };
+
+    renderizarResultados(ultimoResultado);
+    actualizarBarraEstado(true);
+    document.getElementById('btnInforme').disabled = false;
+    document.getElementById('btnPDF').disabled = false;
+    switchTab('resultados');
+}
+
+/* ================================================================
+   RENDERIZAR RESULTADOS
+   ================================================================ */
+function renderizarResultados(R) {
+    const {
+        metodo, L, B, cx, cy,
+        q_max_s, p_min_s, pressureFn, asentamiento_s,
+        ex_total, ey_total, kern_x, kern_y,
+        max_Mux, max_Muy, max_Vx, max_Vy, max_Vp,
+        phiVcx, phiVcy, phiVp, phiMn_max_x, phiMn_max_y,
+        As_x, As_y, diamX, sepX, diamY, sepY
+    } = R;
+
+    const container = document.getElementById('resultadosContainer');
+    const graficosContainer = document.getElementById('graficosContainer');
+    document.getElementById('resultadosVacio').style.display = 'none';
+    document.getElementById('graficosVacio').style.display = 'none';
+    let html = '';
+    let gHtml = '';
+
+    // Verificación por servicio
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R1</span> Verificación por servicio</h2><span class="tag">${metodo}</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Límite</th><th>Verificación</th></tr></thead><tbody>
+        <tr><td class="left">Excentricidad</td><td>${(Math.abs(ex_total)/kern_x + Math.abs(ey_total)/kern_y).toFixed(2)}</td><td>≤ 1.0</td><td><span class="badge ${(Math.abs(ex_total)/kern_x + Math.abs(ey_total)/kern_y) <= 1 ? 'ok' : 'fail'}">${(Math.abs(ex_total)/kern_x + Math.abs(ey_total)/kern_y) <= 1 ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Presión máxima</td><td>${q_max_s.toFixed(2)} kPa</td><td>${R.q_adm} kPa</td><td><span class="badge ${q_max_s <= R.q_adm ? 'ok' : 'fail'}">${q_max_s <= R.q_adm ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Asentamiento</td><td>${asentamiento_s.toFixed(2)} mm</td><td>${R.asentamiento_adm} mm</td><td><span class="badge ${asentamiento_s <= R.asentamiento_adm ? 'ok' : 'fail'}">${asentamiento_s <= R.asentamiento_adm ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        </tbody></table></div></div>`;
+
+    // Verificación por resistencia
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R2</span> Verificación por resistencia</h2><span class="tag">ACI 318</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Parámetro</th><th>Solicitación</th><th>Capacidad</th><th>Verificación</th></tr></thead><tbody>
+        <tr><td class="left">Momento X</td><td>${max_Mux.toFixed(2)}</td><td>${phiMn_max_x.toFixed(2)}</td><td><span class="badge ${max_Mux <= phiMn_max_x ? 'ok' : 'fail'}">${max_Mux <= phiMn_max_x ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Momento Y</td><td>${max_Muy.toFixed(2)}</td><td>${phiMn_max_y.toFixed(2)}</td><td><span class="badge ${max_Muy <= phiMn_max_y ? 'ok' : 'fail'}">${max_Muy <= phiMn_max_y ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Cortante X</td><td>${max_Vx.toFixed(2)}</td><td>${phiVcx.toFixed(2)}</td><td><span class="badge ${max_Vx <= phiVcx ? 'ok' : 'fail'}">${max_Vx <= phiVcx ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Cortante Y</td><td>${max_Vy.toFixed(2)}</td><td>${phiVcy.toFixed(2)}</td><td><span class="badge ${max_Vy <= phiVcy ? 'ok' : 'fail'}">${max_Vy <= phiVcy ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Punzonamiento</td><td>${max_Vp.toFixed(2)}</td><td>${phiVp.toFixed(2)}</td><td><span class="badge ${max_Vp <= phiVp ? 'ok' : 'fail'}">${max_Vp <= phiVp ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        </tbody></table></div></div>`;
+
+    // Acero requerido
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R3</span> Acero de refuerzo requerido</h2><span class="tag">Por flexión</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Dirección</th><th>As calc (cm²/m)</th><th>As req (cm²/m)</th><th>Observación</th></tr></thead><tbody>
+        <tr><td class="left">As_x (paralelo a L)</td><td>${As_x.as_calc.toFixed(2)}</td><td>${As_x.as_req.toFixed(2)}</td><td>${As_x.obs}</td></tr>
+        <tr><td class="left">As_y (paralelo a B)</td><td>${As_y.as_calc.toFixed(2)}</td><td>${As_y.as_req.toFixed(2)}</td><td>${As_y.obs}</td></tr>
+        </tbody></table></div></div>`;
+
+    // Gráficos lado a lado
+    gHtml += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start;">
+    <div class="card">
+        <div class="card-head"><h2><span class="idx">G1</span> Diagrama de presiones</h2><span class="tag">Servicio</span></div>
+        <div class="card-body">
+        <div style="display:flex; justify-content:center; align-items:center;"><canvas id="pressureCanvas" width="420" height="150"></canvas></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-head"><h2><span class="idx">G2</span> Esquema de armado propuesto</h2><span class="tag">Planta</span></div>
+        <div class="card-body">
+        <div style="width:100%; overflow-x:auto; padding:4px 0;"><canvas id="esquemaArmadoCanvas" class="esquema-canvas"></canvas></div>
+        </div>
+    </div>
+    </div>`;
+
+    container.innerHTML = html;
+    graficosContainer.innerHTML = gHtml;
+
+    dibujarDiagramaPresiones('pressureCanvas', pressureFn, q_max_s, p_min_s);
+    dibujarEsquemaArmado('esquemaArmadoCanvas', L, B, cx, cy, diamX, sepX, diamY, sepY, As_y.as_req, As_x.as_req);
+}
+
+/* ================================================================
+   REINICIAR
+   ================================================================ */
+function limpiarTodo() {
+    document.getElementById('zapataL').value = 3.0;
+    document.getElementById('zapataB').value = 2.5;
+    document.getElementById('zapataH').value = 0.6;
+    document.getElementById('columnaL').value = 0.5;
+    document.getElementById('columnaB').value = 0.4;
+    document.getElementById('PD').value = 800;
+    document.getElementById('PL').value = 300;
+    document.getElementById('PE').value = 50;
+    document.getElementById('MDx').value = 40;
+    document.getElementById('MLx').value = 20;
+    document.getElementById('MEx').value = 80;
+    document.getElementById('MDy').value = 25;
+    document.getElementById('MLy').value = 15;
+    document.getElementById('MEy').value = 60;
+    document.getElementById('fc').value = 21;
+    document.getElementById('fy').value = 420;
+    const soil = soilData[document.getElementById('soilSelector').value];
+    document.getElementById('q_adm').value = soil.q_adm;
+    document.getElementById('k_s').value = soil.ks;
+    document.getElementById('G_s').value = soil.Gs;
+    document.getElementById('asentamiento_adm').value = soil.sett_adm;
+    document.getElementById('diamX').value = 12;
+    document.getElementById('sepX').value = 15;
+    document.getElementById('diamY').value = 12;
+    document.getElementById('sepY').value = 15;
+
+    document.getElementById('resultadosContainer').innerHTML = '';
+    document.getElementById('resultadosVacio').style.display = 'block';
+    document.getElementById('graficosContainer').innerHTML = '';
+    document.getElementById('graficosVacio').style.display = 'block';
+    document.getElementById('btnInforme').disabled = true;
+    document.getElementById('btnPDF').disabled = true;
+    ultimoResultado = null;
+    actualizarBarraEstado(false);
+    switchTab('datos');
+}
+
+/* ================================================================
+   INFORME CON CARÁTULA
+   ================================================================ */
+function hoyTexto(){
+    return new Date().toLocaleDateString('es-BO', { year:'numeric', month:'long', day:'numeric' });
+}
+
+function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function generarInforme(){
+    if (!ultimoResultado) {
+        alert('Primero calcule el diseño.');
+        return;
+    }
+    const R = ultimoResultado;
+    const proyecto = document.getElementById('proyNombre').value || '—';
+    const elemento = document.getElementById('proyElemento').value || '—';
+    const norma = document.getElementById('proyNorma').value || 'ACI 318';
+    const ubicacion = document.getElementById('proyUbicacion').value || '—';
+
+    const caratula = `
+    <div class="report-page">
+        <div class="caratula">
+            <div class="c-top">
+                <span class="c-logo">
+                    <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" width="62" height="62" aria-hidden="true">
+                        <rect width="72" height="72" rx="13" fill="#152733"/>
+                        <g stroke="#fff" fill="none" stroke-width="2">
+                            <path d="M15 15h42v42H15V15Zm0 26h18v16"/>
+                        </g>
+                        <g fill="#fff">
+                            <path d="M11 11h8v8h-8zm42 0h8v8h-8zM11 53h8v8h-8zm42 0h8v8h-8z"/>
+                        </g>
+                    </svg>
+                </span>
+                <div class="c-brand">
+                    <span class="c-name">SYM<span class="c-axis" aria-hidden="true"></span>METRICA</span>
+                    <div class="c-sub" style="margin-top:5px;">Diseño biaxial de zapatas · ACI 318</div>
+                </div>
+            </div>
+            <div class="c-body">
+                <div class="c-kicker">Informe técnico de diseño</div>
+                <h1 class="c-title">Diseño Biaxial de Zapatas<small>Zapatas céntricas, excéntricas y esquineras · Métodos Rígido, Winkler y Pasternak</small></h1>
+                <div class="c-rule"></div>
+                <div class="c-meta">
+                    <table>
+                        <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td></tr>
+                        <tr><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                        <tr><td class="k">Norma</td><td>${esc(norma)}</td></tr>
+                        <tr><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                        <tr><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="c-foot">
+                <span>Symmetrica Ingeniería</span>
+                <span>Documento generado automáticamente</span>
+            </div>
+        </div>
+    </div>`;
+
+    const cvPre = document.createElement('canvas');
+    cvPre.width = 820; cvPre.height = 320;
+    dibujarDiagramaPresiones(cvPre, R.pressureFn, R.q_max_s, R.p_min_s);
+    const imgPre = cvPre.toDataURL('image/png');
+
+    const cvArm = document.createElement('canvas');
+    dibujarEsquemaArmado(cvArm, R.L, R.B, R.cx, R.cy, R.diamX, R.sepX, R.diamY, R.sepY, R.As_y.as_req, R.As_x.as_req);
+    const imgArm = cvArm.toDataURL('image/png');
+
+    const memoria = `
+    <div class="report-page">
+        <div class="r-head">
+            <h1>Memoria de cálculo</h1>
+            <div class="r-sub">Diseño biaxial de zapatas · ${esc(norma)} · ${esc(hoyTexto())}</div>
+        </div>
+
+        <div class="r-section">
+            <h2>1. Datos generales</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                <tr><td class="k">Norma</td><td>${esc(norma)}</td><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                <tr><td class="k">Fecha</td><td colspan="3">${esc(hoyTexto())}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>2. Configuración y geometría</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Tipo</td><td>${R.footingType === 'concentric' ? 'Céntrica' : R.footingType === 'eccentric' ? 'Excéntrica' : 'Esquinera'}</td><td class="k">Método</td><td>${R.metodo === 'rigido' ? 'Rígido' : R.metodo === 'winkler' ? 'Winkler' : 'Pasternak'}</td></tr>
+                <tr><td class="k">L (m)</td><td>${R.L.toFixed(2)}</td><td class="k">B (m)</td><td>${R.B.toFixed(2)}</td></tr>
+                <tr><td class="k">h (m)</td><td>${R.h.toFixed(2)}</td><td class="k">Columna cx × cy (m)</td><td>${R.cx} × ${R.cy}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>3. Materiales y suelo</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">f'c (MPa)</td><td>${R.fc}</td><td class="k">fy (MPa)</td><td>${R.fy}</td></tr>
+                <tr><td class="k">q adm (kPa)</td><td>${R.q_adm}</td><td class="k">k s (kN/m³)</td><td>${R.k_s}</td></tr>
+                <tr><td class="k">Asent. adm (mm)</td><td>${R.asentamiento_adm}</td><td class="k">Asent. calc (mm)</td><td>${R.asentamiento_s.toFixed(2)}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>4. Verificación por servicio</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Parámetro</th><th>Valor</th><th>Límite</th><th>Verificación</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">Excentricidad</td><td>${(Math.abs(R.ex_total)/R.kern_x + Math.abs(R.ey_total)/R.kern_y).toFixed(2)}</td><td>≤ 1.0</td><td>${(Math.abs(R.ex_total)/R.kern_x + Math.abs(R.ey_total)/R.kern_y) <= 1 ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Presión máxima</td><td>${R.q_max_s.toFixed(2)} kPa</td><td>${R.q_adm} kPa</td><td>${R.q_max_s <= R.q_adm ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Asentamiento</td><td>${R.asentamiento_s.toFixed(2)} mm</td><td>${R.asentamiento_adm} mm</td><td>${R.asentamiento_s <= R.asentamiento_adm ? 'CUMPLE' : 'FALLA'}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>5. Verificación por resistencia</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Parámetro</th><th>Solicitación</th><th>Capacidad</th><th>Verificación</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">Momento X (kN·m)</td><td>${R.max_Mux.toFixed(2)}</td><td>${R.phiMn_max_x.toFixed(2)}</td><td>${R.max_Mux <= R.phiMn_max_x ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Momento Y (kN·m)</td><td>${R.max_Muy.toFixed(2)}</td><td>${R.phiMn_max_y.toFixed(2)}</td><td>${R.max_Muy <= R.phiMn_max_y ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Cortante X (kN)</td><td>${R.max_Vx.toFixed(2)}</td><td>${R.phiVcx.toFixed(2)}</td><td>${R.max_Vx <= R.phiVcx ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Cortante Y (kN)</td><td>${R.max_Vy.toFixed(2)}</td><td>${R.phiVcy.toFixed(2)}</td><td>${R.max_Vy <= R.phiVcy ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Punzonamiento (kN)</td><td>${R.max_Vp.toFixed(2)}</td><td>${R.phiVp.toFixed(2)}</td><td>${R.max_Vp <= R.phiVp ? 'CUMPLE' : 'FALLA'}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>6. Acero de refuerzo requerido</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Dirección</th><th>As calc (cm²/m)</th><th>As req (cm²/m)</th><th>Observación</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">As_x (paralelo a L)</td><td>${R.As_x.as_calc.toFixed(2)}</td><td>${R.As_x.as_req.toFixed(2)}</td><td>${R.As_x.obs}</td></tr>
+                    <tr><td class="left">As_y (paralelo a B)</td><td>${R.As_y.as_calc.toFixed(2)}</td><td>${R.As_y.as_req.toFixed(2)}</td><td>${R.As_y.obs}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>7. Resultados gráficos</h2>
+            <div class="r-graficos">
+                <figure>
+                    <figcaption>A. Diagrama de presiones · servicio</figcaption>
+                    <img src="${imgPre}" alt="Diagrama de presiones"/>
+                </figure>
+                <figure>
+                    <figcaption>B. Esquema de armado propuesto</figcaption>
+                    <img src="${imgArm}" alt="Esquema de armado"/>
+                </figure>
+            </div>
+        </div>
+
+        <div class="page-foot"><span>${esc(elemento)}</span><span>Página 2</span></div>
+    </div>`;
+
+    document.getElementById('reporte').innerHTML = caratula + memoria;
+    document.getElementById('rtSub').textContent = `${norma} · ${elemento}`;
+    document.getElementById('reportOverlay').classList.add('open');
+}
+
+function cerrarInforme(){
+    document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function imprimirInforme(){
+    window.print();
+}
+
+/* ================================================================
+   INICIO
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarBarraEstado(false);
+    dibujarPlanoZapata('footingPlanCanvas', 3.0, 2.5, 0.5, 0.4, 'concentric', 'L');
+
+    document.getElementById('footingType').addEventListener('change', function() {
+        document.getElementById('eccentric-edge-group').style.display = this.value === 'eccentric' ? 'block' : 'none';
+    });
+
+    document.getElementById('soilSelector').addEventListener('change', function() {
+        const s = soilData[this.value];
+        document.getElementById('q_adm').value = s.q_adm;
+        document.getElementById('k_s').value = s.ks;
+        document.getElementById('G_s').value = s.Gs;
+        document.getElementById('asentamiento_adm').value = s.sett_adm;
+    });
+
+    const initialSoil = soilData[document.getElementById('soilSelector').value];
+    document.getElementById('q_adm').value = initialSoil.q_adm;
+    document.getElementById('k_s').value = initialSoil.ks;
+    document.getElementById('G_s').value = initialSoil.Gs;
+    document.getElementById('asentamiento_adm').value = initialSoil.sett_adm;
+});
+</script>
+
+</body>
+</html>

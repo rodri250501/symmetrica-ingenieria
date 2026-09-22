@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMF-Beam Design | Diseño de Vigas Continuas – Pórtico Especial</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+    :root{
+        --bg:#dfe3e7; --panel:#ffffff; --panel-alt:#f4f6f8; --panel-head:#eaeef1;
+        --line:#c4ccd4; --line-soft:#dde3e8; --ink:#1b2733; --ink-soft:#586673;
+        --ink-faint:#8a95a0; --accent:#0e6cb3; --accent-dark:#0a4d80; --accent-soft:#e6f1fb;
+        --ok:#12803f; --ok-bg:#e3f4e9; --fail:#bf2a2a; --fail-bg:#fae7e7;
+        --warn:#97600a; --warn-bg:#faf0dc; --radius:3px;
+    }
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;}
+    body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased;}
+    .mono{font-family:'IBM Plex Mono',monospace;}
+    .app{display:grid;grid-template-rows:42px 30px 1fr 22px;height:100vh;}
+    .toolbar{display:flex;align-items:center;gap:4px;background:linear-gradient(#f3f6f7,#e9edf0);border-bottom:1px solid var(--line);padding:0 8px;}
+    .tb-group{display:flex;align-items:center;gap:2px;padding:0 7px;height:100%;}
+    .tb-group + .tb-group{border-left:1px solid var(--line-soft);}
+    .tbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:52px;height:36px;padding:2px 7px;border:1px solid transparent;border-radius:var(--radius);background:transparent;cursor:pointer;color:var(--ink);font-size:10px;font-family:'IBM Plex Sans',sans-serif;}
+    .tbtn svg{width:17px;height:17px;}
+    .tbtn:hover{background:var(--accent-soft);border-color:#bcd8ef;}
+    .tbtn:active{background:#d6e8f7;}
+    .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+    .tbtn.primary:hover{background:var(--accent-dark);}
+    .tbtn.primary svg{stroke:#fff;}
+    .tbtn[disabled]{opacity:.45;cursor:default;}
+    .toolbar .spacer{flex:1;}
+    .tabs{display:flex;align-items:flex-end;gap:1px;background:var(--panel-head);border-bottom:1px solid var(--line);padding:0 8px;}
+    .tab{border:1px solid var(--line);border-bottom:none;background:linear-gradient(#eef1f3,#e3e7ea);color:var(--ink-soft);font-size:11.5px;font-weight:500;padding:5px 16px 4px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px;}
+    .tab:hover{color:var(--ink);}
+    .tab.active{background:var(--panel);color:var(--accent-dark);font-weight:600;top:1px;box-shadow:0 -2px 0 var(--accent) inset;}
+    .tabs .spacer{flex:1;padding:4px 8px 0;font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+    .content{overflow-y:auto;overflow-x:hidden;padding:12px;}
+    .view{display:none;}
+    .view.active{display:block;}
+    .statusbar{display:flex;align-items:center;gap:16px;background:linear-gradient(#eef1f3,#e5e9ec);border-top:1px solid var(--line);font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);padding:0 10px;overflow:hidden;white-space:nowrap;}
+    .status-cell{display:flex;align-items:center;gap:5px;}
+    .status-cell.name{background:var(--panel);border:1px solid var(--line-soft);border-radius:2px;padding:1px 8px;}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:#a9b3bd;flex:none;}
+    .status-dot.ok{background:#2ea35a;}
+    .status-dot.pending{background:#d69a2d;}
+    .statusbar .spacer{flex:1;}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#f7f9fa,#eef1f3);border-bottom:1px solid var(--line);padding:5px 10px;}
+    .card-head h2{font-size:12px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px;color:var(--ink);}
+    .card-head h2 .idx{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:var(--accent);border-radius:2px;padding:0 5px;line-height:16px;}
+    .card-head .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+    .card-body{padding:10px;}
+    .grid-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;}
+    .field label{display:block;font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+    .field input,.field select{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:2px;background:var(--panel-alt);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+    .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+    .tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+    .tbl th{background:var(--panel-head);color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;text-align:center;border:1px solid var(--line);padding:3px 5px;}
+    .tbl td{border:1px solid var(--line-soft);padding:2px 4px;text-align:center;}
+    .tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+    .tbl tbody tr:nth-child(even){background:#fafbfc;}
+    .tbl tbody tr:hover{background:var(--accent-soft);}
+    .tbl tr.total{background:#f1f4f6 !important;font-weight:600;}
+    .tbl input{width:100%;padding:2px 3px;border:1px solid transparent;border-radius:2px;background:transparent;font-size:11px;font-family:'IBM Plex Mono',monospace;text-align:center;color:var(--ink);}
+    .tbl input:hover{border-color:var(--line);}
+    .tbl input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+    .btn{font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;border-radius:var(--radius);border:1px solid var(--line);padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(#fbfcfd,#eef1f3);color:var(--ink);}
+    .btn:hover{background:var(--accent-soft);border-color:#bcd8ef;}
+    .btn svg{width:13px;height:13px;}
+    .btn.accent{background:var(--accent);border-color:var(--accent-dark);color:#fff;}
+    .btn.accent:hover{background:var(--accent-dark);}
+    .btn.sm{padding:2px 8px;font-size:10.5px;}
+    .btn[disabled]{opacity:.45;cursor:default;}
+    .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+    .badge.ok{background:var(--ok-bg);color:var(--ok);}
+    .badge.fail{background:var(--fail-bg);color:var(--fail);}
+    .empty{text-align:center;color:var(--ink-faint);padding:44px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);}
+    .empty svg{width:30px;height:30px;margin-bottom:8px;opacity:.5;}
+    .esquema-wrap{width:100%;overflow-x:auto;background:#fbfcfd;border:1px solid var(--line-soft);border-radius:var(--radius);}
+    .esquema-canvas{display:block;}
+    .kv{display:grid;grid-template-columns:1fr 1fr;gap:1px 10px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+    .kv .k{color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;}
+    .detalle{border:1px solid var(--line-soft);border-radius:var(--radius);background:var(--panel-alt);padding:7px 9px;}
+    .detalle h5{margin:0 0 5px;font-size:11px;color:var(--accent-dark);}
+    .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;}
+    .hint{font-size:10.5px;color:var(--ink-faint);margin:6px 0 0;}
+    #reportOverlay{position:fixed;inset:0;z-index:1000;background:#5a6570;display:none;flex-direction:column;}
+    #reportOverlay.open{display:flex;}
+    .report-toolbar{display:flex;align-items:center;gap:10px;background:linear-gradient(#f4f6f8,#e7ebee);border-bottom:1px solid #aab3bb;padding:7px 12px;flex:none;}
+    .report-toolbar .rt-title{font-weight:600;font-size:12.5px;color:var(--ink);}
+    .report-toolbar .rt-sub{font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+    .report-toolbar .spacer{flex:1;}
+    .report-scroll{flex:1;overflow:auto;padding:20px 10px 60px;background:#7c858f;}
+    .report-page{width:210mm;min-height:297mm;background:#fff;color:#1b2733;padding:16mm 14mm;margin:0 auto 14px;box-shadow:0 2px 10px rgba(0,0,0,.35);position:relative;font-size:11px;}
+    .report-page .page-foot{position:absolute;bottom:8mm;left:14mm;right:14mm;border-top:1px solid #c4ccd4;padding-top:3px;display:flex;justify-content:space-between;font-size:9px;color:#6b7681;font-family:'IBM Plex Mono',monospace;}
+    .caratula{display:flex;flex-direction:column;height:100%;}
+    .caratula .c-top{border:2px solid #16222e;border-bottom:none;padding:14px 18px;display:flex;align-items:center;gap:14px;}
+    .caratula .c-logo{width:52px;height:52px;flex:none;}
+    .caratula .c-org{font-size:13px;font-weight:700;letter-spacing:.02em;line-height:1.25;text-transform:uppercase;}
+    .caratula .c-sub{font-size:10px;color:#5a6874;margin-top:2px;}
+    .caratula .c-body{flex:1;border:2px solid #16222e;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px 24px;}
+    .caratula .c-kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#0e6cb3;font-weight:600;margin-bottom:10px;}
+    .caratula .c-title{font-size:30px;font-weight:700;line-height:1.15;margin:0 0 6px;}
+    .caratula .c-title small{display:block;font-size:14px;font-weight:500;color:#586673;margin-top:8px;letter-spacing:.01em;}
+    .caratula .c-rule{width:90px;height:4px;background:#0e6cb3;margin:20px auto;}
+    .caratula .c-meta{margin-top:8px;width:100%;max-width:420px;}
+    .caratula .c-meta table{width:100%;border-collapse:collapse;font-size:12px;}
+    .caratula .c-meta td{padding:6px 8px;border-bottom:1px solid #dde3e8;text-align:left;}
+    .caratula .c-meta td.k{color:#586673;width:38%;font-weight:600;text-transform:uppercase;font-size:9.5px;letter-spacing:.04em;}
+    .caratula .c-foot{border:2px solid #16222e;border-top:none;padding:8px 18px;display:flex;justify-content:space-between;font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+    .r-head{border-bottom:2px solid #16222e;padding-bottom:8px;margin-bottom:12px;}
+    .r-head h1{font-size:17px;margin:0 0 3px;}
+    .r-head .r-sub{font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+    .r-section{margin-bottom:16px;break-inside:avoid;}
+    .r-section h2{font-size:12.5px;margin:0 0 7px;padding:4px 8px;background:#eef1f3;border-left:3px solid #0e6cb3;text-transform:uppercase;letter-spacing:.03em;}
+    .r-tbl{width:100%;border-collapse:collapse;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+    .r-tbl th{background:#eef1f3;border:1px solid #c4ccd4;padding:3px 5px;font-family:'IBM Plex Sans',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.03em;text-align:center;}
+    .r-tbl td{border:1px solid #dde3e8;padding:2px 5px;text-align:center;}
+    .r-tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+    .r-meta-tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:10px;}
+    .r-meta-tbl td{padding:4px 6px;border:1px solid #dde3e8;}
+    .r-meta-tbl td.k{background:#f4f6f8;color:#586673;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.04em;width:22%;}
+    .r-note{font-size:9.5px;color:#6b7681;margin-top:6px;font-style:italic;}
+    .r-schema{border:1px solid #c4ccd4;border-radius:3px;padding:6px;background:#fbfcfd;text-align:center;}
+    .r-schema canvas{max-width:100%;height:auto;}
+    @page{size:A4 portrait;margin:14mm 12mm;}
+    @media print{
+        body{background:#fff;}
+        .app,#reportOverlay .report-toolbar{display:none !important;}
+        #reportOverlay{position:static;display:block !important;background:#fff;}
+        #reportOverlay:not(.open){display:none !important;}
+        .report-scroll{overflow:visible;padding:0;background:#fff;}
+        .report-page{width:auto;min-height:auto;margin:0;padding:0;box-shadow:none;page-break-after:always;}
+        .report-page:last-child{page-break-after:auto;}
+        .report-page .page-foot{position:static;margin-top:14px;}
+        .caratula{min-height:265mm;}
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <div class="toolbar">
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('datos')" title="Ir a datos de entrada">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+                Datos
+            </button>
+            <button class="tbtn" onclick="generarCamposTramos()" title="Regenerar campos de los tramos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                Regenerar
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn primary" onclick="calcularTodo()" title="Ejecutar el cálculo completo del diseño">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                Calcular
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('resultados')" title="Ver resultados">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                Resultados
+            </button>
+            <button class="tbtn" onclick="switchTab('esquema')" title="Ver esquema gráfico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 20h18"/><path d="M5 20V9l7-5 7 5v11"/><line x1="9" y1="20" x2="9" y2="13"/><line x1="15" y1="20" x2="15" y2="13"/></svg>
+                Esquema
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn" id="btnDXF" onclick="descargarDXF()" disabled title="Exportar esquema a AutoCAD">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                DXF
+            </button>
+            <button class="tbtn" id="btnInforme" onclick="generarInforme()" disabled title="Generar memoria de cálculo con carátula">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+                Informe
+            </button>
+            <button class="tbtn" id="btnPDF" onclick="generarInforme(true)" disabled title="Generar carátula + memoria y guardar PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                PDF
+            </button>
+        </div>
+        <div class="spacer"></div>
+        <div class="tb-group">
+            <span class="tag" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);">ACI 318 · SMF</span>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" id="tab-datos" onclick="switchTab('datos')">01 · Datos de entrada</button>
+        <button class="tab" id="tab-resultados" onclick="switchTab('resultados')">02 · Resultados del diseño</button>
+        <button class="tab" id="tab-esquema" onclick="switchTab('esquema')">03 · Esquema</button>
+        <div class="spacer" id="tabsInfo">Sin calcular</div>
+    </div>
+
+    <div class="content">
+
+        <div class="view active" id="view-datos">
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">01</span> Identificación del proyecto</h2>
+                    <span class="tag">Encabezado de informe</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Proyecto</label><input type="text" id="proyNombre" value="Edificio — Diseño estructural" /></div>
+                        <div class="field"><label>Elemento</label><input type="text" id="proyElemento" value="Viga eje B — Nivel 3" /></div>
+                        <div class="field"><label>Norma</label><input type="text" id="proyNorma" value="ACI 318 · SMF" /></div>
+                        <div class="field"><label>Ubicación</label><input type="text" id="proyUbicacion" value="—" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">02</span> Geometría y materiales</h2>
+                    <span class="tag">Sección transversal</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Altura h (cm)</label><input type="number" id="h" value="50" step="0.5" /></div>
+                        <div class="field"><label>Ancho b (cm)</label><input type="number" id="b" value="40" step="0.5" /></div>
+                        <div class="field"><label>Recub. inferior r (cm)</label><input type="number" id="r" value="2.5" step="0.1" /></div>
+                        <div class="field"><label>Recub. superior d' (cm)</label><input type="number" id="d_sup" value="2.5" step="0.1" /></div>
+                        <div class="field"><label>f'c (kgf/cm²)</label><input type="number" id="fc" value="210" step="5" /></div>
+                        <div class="field"><label>fy (kgf/cm²)</label><input type="number" id="fy" value="5000" step="100" /></div>
+                        <div class="field"><label>N.º de tramos</label><input type="number" id="nTramos" value="2" min="1" step="1" /></div>
+                        <div class="field" style="display:flex;align-items:flex-end;">
+                            <button class="btn sm" style="width:100%;justify-content:center;height:24px;" onclick="generarCamposTramos()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                                Generar campos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h2><span class="idx">03</span> Datos por tramo — longitudes libres</h2><span class="tag">Luz entre apoyos</span></div>
+                <div class="card-body" id="tramosDatosContainer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h2><span class="idx">04</span> Momentos últimos Mu (t·m)</h2><span class="tag">Flexión</span></div>
+                <div class="card-body" id="momentosContainer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h2><span class="idx">05</span> Cortante — análisis y gravitacional (t)</h2><span class="tag">Corte</span></div>
+                <div class="card-body" id="cortanteContainer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h2><span class="idx">06</span> Estribos propuestos (por extremo de tramo)</h2><span class="tag">Confinamiento</span></div>
+                <div class="card-body" id="estribosContainer"></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="btn accent" onclick="calcularTodo()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    Calcular diseño completo
+                </button>
+                <p class="hint" style="align-self:center;">Los resultados se muestran en «Resultados del diseño» y el esquema en la pestaña «Esquema».</p>
+            </div>
+        </div>
+
+        <div class="view" id="view-resultados">
+            <div id="resultadosContainer"></div>
+            <div id="resultadosVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                <div style="font-size:12.5px;">Aún no se ha calculado el diseño.</div>
+                <div style="font-size:11px;margin-top:2px;">Complete los datos de entrada y presione «Calcular diseño completo».</div>
+            </div>
+        </div>
+
+        <div class="view" id="view-esquema">
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">E</span> Esquema de la viga</h2>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <span class="tag">Elevación esquemática</span>
+                        <button class="btn sm" id="btnDXF2" onclick="descargarDXF()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                            Exportar .dxf
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="esquema-wrap" id="esquemaWrap">
+                        <canvas id="esquemaVigaCanvas" class="esquema-canvas"></canvas>
+                    </div>
+                    <div id="esquemaVacio" class="hint">El esquema se dibuja luego de calcular el diseño.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="statusbar">
+        <div class="status-cell name"><span class="status-dot pending" id="statusDot"></span><span id="statusTexto">Sin calcular</span></div>
+        <div class="status-cell" id="statusSeccion">b×h: — × — cm</div>
+        <div class="status-cell" id="statusMateriales">f'c: — · fy: —</div>
+        <div class="status-cell" id="statusNorma">ACI 318 · SMF</div>
+        <div class="spacer"></div>
+        <div class="status-cell" id="statusHora">—</div>
+    </div>
+
+</div>
+
+<div id="reportOverlay">
+    <div class="report-toolbar">
+        <button class="btn" onclick="cerrarInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Volver
+        </button>
+        <span class="rt-title">Memoria de cálculo — Vista previa</span>
+        <span class="rt-sub" id="rtSub">ACI 318 · SMF</span>
+        <div class="spacer"></div>
+        <button class="btn accent" onclick="imprimirInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+            Imprimir / Guardar PDF
+        </button>
+    </div>
+    <div class="report-scroll" id="reportScroll">
+        <div id="reporte"></div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+let ultimoResultadosTramos = null;
+let ultimoBH = null;
+let ultimoResumen = null;
+
+function switchTab(tab){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    const t = document.getElementById('tab-' + tab);
+    if (t) t.classList.add('active');
+}
+
+function actualizarBarraEstado(calculado){
+    const h = document.getElementById('h').value;
+    const b = document.getElementById('b').value;
+    const fc = document.getElementById('fc').value;
+    const fy = document.getElementById('fy').value;
+    document.getElementById('statusSeccion').textContent = `b×h: ${b} × ${h} cm`;
+    document.getElementById('statusMateriales').textContent = `f'c: ${fc} kgf/cm² · fy: ${fy} kgf/cm²`;
+    document.getElementById('statusNorma').textContent = document.getElementById('proyNorma').value || 'ACI 318 · SMF';
+
+    const dot = document.getElementById('statusDot');
+    const texto = document.getElementById('statusTexto');
+    if (calculado){
+        dot.classList.add('ok'); dot.classList.remove('pending');
+        texto.textContent = 'Diseño calculado ✓';
+        document.getElementById('statusHora').textContent = 'Últ. actualización: ' +
+            new Date().toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('tabsInfo').textContent = 'Diseño calculado';
+    } else {
+        dot.classList.add('pending'); dot.classList.remove('ok');
+        texto.textContent = 'Sin calcular';
+        document.getElementById('statusHora').textContent = '—';
+        document.getElementById('tabsInfo').textContent = 'Sin calcular';
+    }
+    const listo = !!ultimoResultadosTramos;
+    ['btnInforme','btnPDF','btnDXF','btnDXF2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !listo;
+    });
+}
+
+function generarCamposTramos(){
+    const n = parseInt(document.getElementById('nTramos').value) || 1;
+
+    let filasLn = '';
+    for (let i = 1; i <= n; i++){
+        filasLn += `<tr><td class="left">Tramo ${i}</td><td><input type="number" id="Ln_${i}" value="5" step="0.01" /></td></tr>`;
+    }
+    document.getElementById('tramosDatosContainer').innerHTML =
+        `<table class="tbl"><thead><tr><th>Tramo</th><th>Ln (m)</th></tr></thead><tbody>${filasLn}</tbody></table>`;
+
+    let headers = '<th></th>';
+    for (let i = 1; i <= n; i++) headers += `<th colspan="2">Tramo ${i}</th>`;
+    headers += '</tr><tr><th>Momento</th>';
+    for (let i = 1; i <= n; i++) headers += '<th>Ext. Izq</th><th>Centro</th>';
+    let headerFinal = '<th>Ext. Der</th></tr>';
+
+    let filaNeg = '<tr><td class="left">M negativo</td>';
+    for (let i = 1; i <= n; i++){
+        const valIzq = (i === 1) ? 15 : 8;
+        filaNeg += `<td><input type="number" id="M_neg_apoyo_${i-1}" value="${valIzq}" step="0.01" /></td>`;
+        filaNeg += `<td><input type="number" id="M_neg_centro_${i}" value="0" step="0.01" /></td>`;
+    }
+    filaNeg += `<td><input type="number" id="M_neg_apoyo_${n}" value="12" step="0.01" /></td></tr>`;
+
+    let filaPos = '<tr><td class="left">M positivo</td>';
+    for (let i = 1; i <= n; i++){
+        filaPos += `<td><input type="number" id="M_pos_apoyo_${i-1}" value="0" step="0.01" /></td>`;
+        filaPos += `<td><input type="number" id="M_pos_centro_${i}" value="21" step="0.01" /></td>`;
+    }
+    filaPos += `<td><input type="number" id="M_pos_apoyo_${n}" value="0" step="0.01" /></td></tr>`;
+
+    document.getElementById('momentosContainer').innerHTML =
+        `<table class="tbl"><thead><tr>${headers}${headerFinal}</thead><tbody>${filaNeg}${filaPos}</tbody></table>`;
+
+    let hc = '<th></th>';
+    for (let i = 1; i <= n; i++) hc += `<th colspan="2">Tramo ${i}</th>`;
+    hc += '</tr><tr><th>Cortante</th>';
+    for (let i = 1; i <= n; i++) hc += '<th>Vu izq</th><th>Vu der</th>';
+    let filaVu = '<tr><td class="left">Vu</td>';
+    for (let i = 1; i <= n; i++) filaVu += `<td><input type="number" id="Vu_izq_${i}" value="7" step="0.01" /></td><td><input type="number" id="Vu_der_${i}" value="-7" step="0.01" /></td>`;
+    filaVu += '</tr>';
+    let filaVg = '<tr><td class="left">Vg</td>';
+    for (let i = 1; i <= n; i++) filaVg += `<td colspan="2"><input type="number" id="Vg_${i}" value="${i===1?4:5}" step="0.1" /></td>`;
+    filaVg += '</tr>';
+    document.getElementById('cortanteContainer').innerHTML =
+        `<table class="tbl"><thead><tr>${hc}</thead><tbody>${filaVu}${filaVg}</tbody></table>`;
+
+    let he = '<th></th>';
+    for (let i = 1; i <= n; i++) he += `<th colspan="2">Tramo ${i}</th>`;
+    he += '</tr><tr><th>Estribo</th>';
+    for (let i = 1; i <= n; i++) he += '<th>Izq</th><th>Der</th>';
+    let filaDiam = '<tr><td class="left">Ø (mm)</td>';
+    for (let i = 1; i <= n; i++) filaDiam += `<td><input type="number" id="diam_izq_${i}" value="10" step="1" /></td><td><input type="number" id="diam_der_${i}" value="10" step="1" /></td>`;
+    filaDiam += '</tr>';
+    let filaRamas = '<tr><td class="left">Ramas</td>';
+    for (let i = 1; i <= n; i++) filaRamas += `<td><input type="number" id="ramas_izq_${i}" value="2" step="1" min="1" /></td><td><input type="number" id="ramas_der_${i}" value="2" step="1" min="1" /></td>`;
+    filaRamas += '</tr>';
+    document.getElementById('estribosContainer').innerHTML =
+        `<table class="tbl"><thead><tr>${he}</thead><tbody>${filaDiam}${filaRamas}</tbody></table>`;
+
+    actualizarBarraEstado(false);
+}
+
+const Calc = {
+    calcularAs(Mu, b, d, fc, fy, phi){
+        if (Mu <= 0) return 0;
+        const Mu_kgfcm = Mu * 100000;
+        const A = (fy * fy) / (2 * 0.85 * fc * b);
+        const B = -fy * d;
+        const C = Mu_kgfcm / phi;
+        const disc = B * B - 4 * A * C;
+        if (disc < 0) return null;
+        const As = (-B - Math.sqrt(disc)) / (2 * A);
+        const As_min_1 = (14 / fy) * b * d;
+        const As_min_2 = (0.8 * Math.sqrt(fc) / fy) * b * d;
+        const As_min = Math.max(As_min_1, As_min_2);
+        const beta1 = fc <= 280 ? 0.85 : Math.max(0.85 - 0.05 * (fc - 280) / 70, 0.65);
+        const cuantia_max = 0.85 * beta1 * (fc / fy) * (0.003 / (0.003 + 0.005));
+        const As_max = cuantia_max * b * d;
+        return Math.min(Math.max(As, As_min, 0), As_max);
+    },
+    calc_a_c(As, fy, fc, b, beta1){
+        if (As <= 0) return {a:0, c:0};
+        const a = (As * fy) / (0.85 * fc * b);
+        return {a, c: a / beta1};
+    },
+    calcularMpr(As, fy, fc, b, d, alpha){
+        if (As <= 0) return 0;
+        const a = (alpha * fy * As) / (0.85 * fc * b);
+        return alpha * fy * As * (d - a / 2) / 100000;
+    },
+    verificarVc(Vp, Vd, Pu, Ag, fc){
+        const cond1 = Vp / Vd >= 0.5;
+        const Pc = (Ag * fc) / 20;
+        const cond2 = Pu * 1000 <= Pc;
+        return {Ra: cond1 ? 0 : 1, Rb: cond2 ? 0 : 1, Pc, aplicarVc: (cond1 ? 0 : 1) + (cond2 ? 0 : 1) >= 1};
+    },
+    calcularVc(Pu, Ag, fc, b, d){
+        const factor = 1 + (Pu * 1000) / (140 * Ag);
+        return 0.53 * factor * Math.sqrt(fc) * b * d / 1000;
+    },
+    calcularSreq(Av, fy, d, Vs){
+        if (Vs <= 0) return Infinity;
+        return (Av * fy * d) / (Vs * 1000);
+    }
+};
+
+function dibujarEsquemaViga(canvasId, resultadosTramos, bViga, hViga){
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const n = resultadosTramos.length;
+
+    const MARGIN = 60, APOYO_W = 42, COLUMN_DRAW_W = 26, PX_PER_M = 54, TRAMO_MIN_W = 200,
+          INSET = 3, BEAM_H = 46, COL_H = 138, TOP_PAD = 150, BOTTOM_PAD = 140;
+    const FONT_TITLE1 = "600 13px 'IBM Plex Sans'", FONT_TITLE2 = "11px 'IBM Plex Mono'",
+          FONT_COTA_TOTAL = "600 12.5px 'IBM Plex Mono'", FONT_COTA_TRAMO = "12px 'IBM Plex Mono'",
+          FONT_LABEL = "11px 'IBM Plex Mono'", FONT_APOYO = "600 11.5px 'IBM Plex Sans'",
+          FONT_ESTRIBO = "600 10.5px 'IBM Plex Mono'", FONT_RAMAS = "600 10.5px 'IBM Plex Mono'";
+
+    const apoyos = [], tramos = [];
+    let x = MARGIN;
+    apoyos.push({left:x, right:x+APOYO_W, center:x+APOYO_W/2});
+    x += APOYO_W;
+    for (let i = 0; i < n; i++){
+        const w = Math.max(TRAMO_MIN_W, resultadosTramos[i].Ln * PX_PER_M);
+        tramos.push({start:x, end:x+w, width:w});
+        x += w;
+        apoyos.push({left:x, right:x+APOYO_W, center:x+APOYO_W/2});
+        x += APOYO_W;
+    }
+
+    const canvasWidth = x + MARGIN;
+    const canvasHeight = TOP_PAD + BEAM_H + BOTTOM_PAD;
+    canvas.width = canvasWidth; canvas.height = canvasHeight;
+    canvas.style.width = canvasWidth + 'px'; canvas.style.height = canvasHeight + 'px';
+
+    const yViga = TOP_PAD, ySupViga = yViga, yInfViga = yViga + BEAM_H,
+          yCentroViga = yViga + BEAM_H/2, ySupCol = yCentroViga - COL_H/2, yInfCol = yCentroViga + COL_H/2;
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    const xBeamStart = apoyos[0].center, xBeamEnd = apoyos[n].center;
+
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.font = FONT_TITLE1; ctx.fillStyle = '#1e293b'; ctx.fillText('Esquema de la viga', 14, 16);
+    ctx.font = FONT_TITLE2; ctx.fillStyle = '#64748b'; ctx.fillText(`Viga (b × h) = ${bViga} × ${hViga} cm`, 14, 34);
+
+    ctx.fillStyle = '#d1d5db'; ctx.fillRect(xBeamStart, ySupViga, xBeamEnd - xBeamStart, BEAM_H);
+    ctx.fillStyle = '#9ca3af'; apoyos.forEach(ap => ctx.fillRect(ap.center - COLUMN_DRAW_W/2, ySupCol, COLUMN_DRAW_W, COL_H));
+
+    ctx.strokeStyle = '#111827'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(xBeamStart, ySupViga + 8); ctx.lineTo(xBeamEnd, ySupViga + 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xBeamStart, yInfViga - 8); ctx.lineTo(xBeamEnd, yInfViga - 8); ctx.stroke();
+
+    const yCotaTotal = 64;
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+    drawCota(ctx, xBeamStart, xBeamEnd, yCotaTotal);
+    const totalLength = resultadosTramos.reduce((a, r) => a + r.Ln, 0);
+    ctx.font = FONT_COTA_TOTAL; ctx.fillStyle = '#1e293b'; ctx.textBaseline = 'bottom';
+    ctx.fillText(`Longitud total = ${totalLength.toFixed(2)} m`, (xBeamStart + xBeamEnd)/2, yCotaTotal - 6);
+
+    const yCotaTramo = 88, yAt = 112, yAb = 128,
+          yApoyoLabel = yInfCol + 12, yEstriboLine1 = yInfCol + 32, yEstriboLine2 = yEstriboLine1 + 14;
+
+    for (let i = 0; i < n; i++){
+        const t = tramos[i], r = resultadosTramos[i];
+        const xIzq = t.start + INSET, xDer = t.end - INSET, xCentro = (t.start + t.end)/2;
+
+        drawCota(ctx, t.start, t.end, yCotaTramo);
+        ctx.font = FONT_COTA_TRAMO; ctx.fillStyle = '#334155'; ctx.textBaseline = 'bottom';
+        ctx.fillText(`Lt${r.tramo} = ${r.Ln.toFixed(2)} m`, xCentro, yCotaTramo - 5);
+
+        ctx.textBaseline = 'alphabetic'; ctx.font = FONT_LABEL; ctx.fillStyle = '#1e293b';
+        ctx.textAlign = 'left';
+        ctx.fillText(`At = ${r.As_sup_izq.toFixed(2)}`, xIzq, yAt);
+        ctx.fillText(`Ab = ${r.As_inf_izq.toFixed(2)}`, xIzq, yAb);
+        ctx.textAlign = 'right';
+        ctx.fillText(`At = ${r.As_sup_der.toFixed(2)}`, xDer, yAt);
+        ctx.fillText(`Ab = ${r.As_inf_der.toFixed(2)}`, xDer, yAb);
+        ctx.textAlign = 'center';
+        ctx.fillText(`At = ${r.As_sup_cen.toFixed(2)}`, xCentro, yAt);
+        ctx.fillText(`Ab = ${r.As_inf_cen.toFixed(2)}`, xCentro, yAb);
+
+        ctx.textBaseline = 'top'; ctx.font = FONT_ESTRIBO; ctx.fillStyle = '#1e3a8a';
+        ctx.textAlign = 'left'; ctx.fillText(`Ø${r.diam_izq} c/${r.Sdef_izq.toFixed(0)}`, xIzq, yEstriboLine1);
+        ctx.textAlign = 'right'; ctx.fillText(`Ø${r.diam_der} c/${r.Sdef_der.toFixed(0)}`, xDer, yEstriboLine1);
+        ctx.font = FONT_RAMAS; ctx.fillStyle = '#1e3a8a';
+        ctx.textAlign = 'left'; ctx.fillText(`(${r.Nramas_izq}R)`, xIzq, yEstriboLine2);
+        ctx.textAlign = 'right'; ctx.fillText(`(${r.Nramas_der}R)`, xDer, yEstriboLine2);
+    }
+
+    ctx.font = FONT_APOYO; ctx.fillStyle = '#111827'; ctx.textBaseline = 'top'; ctx.textAlign = 'center';
+    apoyos.forEach((ap, j) => ctx.fillText(`Apoyo ${j}`, ap.center, yApoyoLabel));
+}
+
+function drawCota(ctx, x1, x2, y){
+    ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y-5); ctx.lineTo(x1, y+5); ctx.moveTo(x2, y-5); ctx.lineTo(x2, y+5); ctx.stroke();
+}
+
+/* ================================================================
+   EXPORTACIÓN DXF — R12 (AC1009) 100% COMPATIBLE
+   Solo LINE, TEXT, CIRCLE y SOLID. Sin LWPOLYLINE (no existe en R12).
+   Todas las capas usan CONTINUOUS (definido en LTYPE).
+   ================================================================ */
+function generarDXF(rt, S) {
+    const b = S.b, h = S.h, REC = S.r || 2.5;
+    const ACOL = 50;             // ancho de columna = 0.5 m
+    const COL_SUP = 100;         // 1 m por encima de la viga
+    const COL_INF = 100;         // 1 m por debajo de la viga
+    const n = rt.length;
+
+    const dxf = [];
+    const push = (...vals) => vals.forEach(v => dxf.push(String(v)));
+    const f2 = v => Number(v).toFixed(2);
+
+    // Ejes de apoyo (centro de cada columna)
+    const xc = [ACOL / 2];
+    for (let i = 1; i <= n; i++) xc[i] = xc[i-1] + ACOL + rt[i-1].Ln * 100;
+    const TW = xc[n] + ACOL / 2;
+
+    // Cotas verticales
+    const yPos = REC + 1.1;
+    const yNeg = h - (REC + 1.1);
+    const yColSup = h + COL_SUP;
+    const yColInf = -COL_INF;
+    const yEjeSup = yColSup + 35;
+
+    /* ================= HEADER ================= */
+    push('0','SECTION','2','HEADER');
+    push('9','$ACADVER','1','AC1009');
+    push('9','$INSBASE','10','0.0','20','0.0','30','0.0');
+    push('9','$EXTMIN','10','0.0','20',f2(yColInf - 60),'30','0.0');
+    push('9','$EXTMAX','10',f2(TW + 60),'20',f2(yEjeSup + 60),'30','0.0');
+    push('9','$INSUNITS','70','4');
+    push('9','$MEASUREMENT','70','1');
+    push('9','$LTSCALE','40','1.0');
+    push('9','$TEXTSTYLE','7','STANDARD');
+    push('9','$CLAYER','8','0');
+    push('0','ENDSEC');
+
+    /* ================= TABLES ================= */
+    push('0','SECTION','2','TABLES');
+
+    push('0','TABLE','2','LTYPE','70','1');
+    push('0','LTYPE','2','CONTINUOUS','70','64','3','Solid line','72','65','73','0','40','0.0');
+    push('0','ENDTAB');
+
+    push('0','TABLE','2','LAYER','70','8');
+    const layers = [
+        ['0',7], ['VIGAS',7], ['FIERROS',6], ['EJES',2],
+        ['TEXTOS',1], ['COTAS',3], ['SIMBOLOS',4], ['COLUMNAS',8]
+    ];
+    layers.forEach(([name,color]) => {
+        push('0','LAYER','2',name,'70','0','62',String(color),'6','CONTINUOUS');
+    });
+    push('0','ENDTAB');
+
+    push('0','TABLE','2','STYLE','70','1');
+    push('0','STYLE','2','STANDARD','70','0','40','0.0','41','1.0','50','0.0','71','0','42','0.2','3','txt','4','');
+    push('0','ENDTAB');
+
+    push('0','ENDSEC');
+
+    /* ================= ENTITIES ================= */
+    push('0','SECTION','2','ENTITIES');
+
+    // --- helpers ---
+    const addLine = (x1,y1,x2,y2,layer) => {
+        push('0','LINE','8',layer,
+             '10',f2(x1),'20',f2(y1),'30','0.0',
+             '11',f2(x2),'21',f2(y2),'31','0.0');
+    };
+    const addCircle = (x,y,r,layer) => {
+        push('0','CIRCLE','8',layer,'10',f2(x),'20',f2(y),'30','0.0','40',f2(r));
+    };
+    // TEXT centrado (72=1 center, 73=2 middle) — para el texto dentro del círculo
+    const addTextC = (x,y,text,height,layer) => {
+        push('0','TEXT','8',layer,
+             '10',f2(x),'20',f2(y),'30','0.0',
+             '40',f2(height),'1',String(text),
+             '50','0.0','7','STANDARD',
+             '72','1','73','2',
+             '11',f2(x),'21',f2(y),'31','0.0');
+    };
+    // TEXT alineado a la izquierda (esquina inferior izquierda)
+    const addText = (x,y,text,height,layer) => {
+        push('0','TEXT','8',layer,
+             '10',f2(x),'20',f2(y),'30','0.0',
+             '40',f2(height),'1',String(text),
+             '50','0.0','7','STANDARD');
+    };
+
+    /* ---- 1. VIGA + COLUMNAS como UN SOLO contorno continuo ----
+       La viga va de x=0 a x=TW, y de y=0 a y=h.
+       Las columnas van de y=h hacia arriba y de y=0 hacia abajo.
+       En las intersecciones NO se dibujan líneas (se cortan para
+       que se vea como una sola pieza monolítica).                      */
+
+    // Viga: cara superior e inferior segmentadas entre columnas
+    for (let j = 0; j < n; j++) {
+        const x1 = xc[j] + ACOL/2;      // borde derecho de la columna j
+        const x2 = xc[j+1] - ACOL/2;    // borde izquierdo de la columna j+1
+        addLine(x1, h, x2, h, 'VIGAS'); // cara superior de la viga
+        addLine(x1, 0, x2, 0, 'VIGAS'); // cara inferior de la viga
+    }
+    // Caras laterales de la viga (coinciden con las caras de las columnas extremas)
+    addLine(0, 0, 0, h, 'VIGAS');
+    addLine(TW, 0, TW, h, 'VIGAS');
+
+    // Columnas: solo 3 lados (arriba/abajo), sin base/tope porque coinciden con la viga
+    for (let j = 0; j <= n; j++) {
+        const cx = xc[j];
+        const cxl = cx - ACOL/2;
+        const cxr = cx + ACOL/2;
+
+        // Columna superior
+        addLine(cxl, h, cxl, yColSup, 'COLUMNAS');
+        addLine(cxr, h, cxr, yColSup, 'COLUMNAS');
+        addLine(cxl, yColSup, cxr, yColSup, 'COLUMNAS');
+
+        // Columna inferior
+        addLine(cxl, yColInf, cxl, 0, 'COLUMNAS');
+        addLine(cxr, yColInf, cxr, 0, 'COLUMNAS');
+        addLine(cxl, yColInf, cxr, yColInf, 'COLUMNAS');
+    }
+
+    /* ---- 2. EJES verticales con círculo envolviendo el texto ---- */
+    for (let j = 0; j <= n; j++) {
+        addLine(xc[j], yColInf - 20, xc[j], yEjeSup - 14, 'EJES');
+        addCircle(xc[j], yEjeSup, 14, 'SIMBOLOS');
+        addTextC(xc[j], yEjeSup, 'E' + j, 12, 'TEXTOS');
+    }
+
+    /* ---- 3. ACERO SUPERIOR: de extremo a extremo con ganchos hacia abajo ---- */
+    addLine(REC, yNeg, TW - REC, yNeg, 'FIERROS');
+    addLine(REC, yNeg, REC, yNeg - 20, 'FIERROS');
+    addLine(TW - REC, yNeg, TW - REC, yNeg - 20, 'FIERROS');
+
+    /* ---- 4. ACERO INFERIOR: de extremo a extremo con ganchos hacia arriba ---- */
+    addLine(REC, yPos, TW - REC, yPos, 'FIERROS');
+    addLine(REC, yPos, REC, yPos + 20, 'FIERROS');
+    addLine(TW - REC, yPos, TW - REC, yPos + 20, 'FIERROS');
+
+    /* ---- 5. At y Ab en izq, centro y der de cada tramo ---- */
+    rt.forEach((r, i) => {
+        const xIzq = xc[i] + ACOL/2 + 8;
+        const xDer = xc[i+1] - ACOL/2 - 60;
+        const xCen = (xc[i] + xc[i+1]) / 2 - 24;
+
+        const yAt = h + 8;    // justo encima de la viga (entre columnas)
+        const yAb = -16;      // justo debajo de la viga
+
+        // At (acero superior)
+        addText(xIzq, yAt, 'At=' + r.As_sup_izq.toFixed(2), 8, 'TEXTOS');
+        addText(xCen, yAt, 'At=' + r.As_sup_cen.toFixed(2), 8, 'TEXTOS');
+        addText(xDer, yAt, 'At=' + r.As_sup_der.toFixed(2), 8, 'TEXTOS');
+
+        // Ab (acero inferior)
+        addText(xIzq, yAb, 'Ab=' + r.As_inf_izq.toFixed(2), 8, 'TEXTOS');
+        addText(xCen, yAb, 'Ab=' + r.As_inf_cen.toFixed(2), 8, 'TEXTOS');
+        addText(xDer, yAb, 'Ab=' + r.As_inf_der.toFixed(2), 8, 'TEXTOS');
+    });
+
+    /* ---- 6. Estribos (rótulos) ---- */
+    rt.forEach((r, i) => {
+        const fL = xc[i] + ACOL/2;
+        const fR = xc[i+1] - ACOL/2;
+        const txtIzq = 'EST ' + (r.Nramas_izq > 2 ? 'DOBLE ' : '') + 'D' + r.diam_izq + ' c/' + Math.round(r.Sdef_izq);
+        const txtDer = 'EST ' + (r.Nramas_der > 2 ? 'DOBLE ' : '') + 'D' + r.diam_der + ' c/' + Math.round(r.Sdef_der);
+        addText(fL + 10, -45, txtIzq, 8, 'TEXTOS');
+        addText(fR - 100, -45, txtDer, 8, 'TEXTOS');
+    });
+
+    /* ---- 7. Longitud de confinamiento a izq y der de cada tramo ---- */
+    rt.forEach((r, i) => {
+        const xL = xc[i] + ACOL/2 + 10;
+        const xR = xc[i+1] - ACOL/2 - 70;
+        addText(xL, h + 25, 'Lconf=' + (r.Lconf_izq/100).toFixed(2) + 'm', 8, 'TEXTOS');
+        addText(xR, h + 25, 'Lconf=' + (r.Lconf_der/100).toFixed(2) + 'm', 8, 'TEXTOS');
+    });
+
+    /* ---- 8. Cotas por tramo (sin cota de longitud total) ---- */
+    rt.forEach((r, i) => {
+        const fL = xc[i] + ACOL/2;
+        const fR = xc[i+1] - ACOL/2;
+        const yD = yColSup + 30;
+        addLine(fL, yD, fR, yD, 'COTAS');
+        addLine(fL, yD-3, fL, yD+3, 'COTAS');
+        addLine(fR, yD-3, fR, yD+3, 'COTAS');
+        addText((fL + fR)/2 - 18, yD + 5, 'L' + (i+1) + '=' + r.Ln.toFixed(2) + 'm', 10, 'COTAS');
+    });
+
+    /* ---- 9. Rótulo de viga ---- */
+    addText(10, yColSup + 100, 'VIGA ' + b + ' x ' + h + ' cm', 12, 'TEXTOS');
+
+    push('0','ENDSEC');
+    push('0','EOF');
+
+    return dxf.join('\n');
+}
+function descargarDXF(){
+    if (!ultimoResultadosTramos || !ultimoResumen){ alert('Primero calcule el diseño.'); return; }
+    const dxf = generarDXF(ultimoResultadosTramos, ultimoResumen);
+    const blob = new Blob([dxf], {type:'application/dxf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'despiece_viga_smf.dxf';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function calcularTodo(){
+    const h = parseFloat(document.getElementById('h').value);
+    const b = parseFloat(document.getElementById('b').value);
+    const r = parseFloat(document.getElementById('r').value);
+    const d_sup = parseFloat(document.getElementById('d_sup').value);
+    const fc = parseFloat(document.getElementById('fc').value);
+    const fy = parseFloat(document.getElementById('fy').value);
+    const n = parseInt(document.getElementById('nTramos').value) || 1;
+    const Pu = 0;
+
+    if (isNaN(h) || isNaN(b) || isNaN(r) || isNaN(fc) || isNaN(fy)){
+        alert('Complete los parámetros globales (geometría y materiales).');
+        return;
+    }
+
+    const Ln = [];
+    for (let i = 1; i <= n; i++) Ln.push(parseFloat(document.getElementById(`Ln_${i}`).value) || 1);
+
+    const M_neg_apoyo = [], M_pos_apoyo = [], M_neg_centro = [], M_pos_centro = [];
+    for (let i = 0; i <= n; i++){
+        M_neg_apoyo[i] = parseFloat(document.getElementById(`M_neg_apoyo_${i}`).value) || 0;
+        M_pos_apoyo[i] = parseFloat(document.getElementById(`M_pos_apoyo_${i}`).value) || 0;
+    }
+    for (let i = 1; i <= n; i++){
+        M_neg_centro[i] = parseFloat(document.getElementById(`M_neg_centro_${i}`).value) || 0;
+        M_pos_centro[i] = parseFloat(document.getElementById(`M_pos_centro_${i}`).value) || 0;
+    }
+
+    const Vu_izq = [], Vu_der = [], Vg = [];
+    for (let i = 1; i <= n; i++){
+        Vu_izq.push(parseFloat(document.getElementById(`Vu_izq_${i}`).value) || 0);
+        Vu_der.push(parseFloat(document.getElementById(`Vu_der_${i}`).value) || 0);
+        Vg.push(parseFloat(document.getElementById(`Vg_${i}`).value) || 0);
+    }
+
+    const estribosExtremos = [];
+    for (let i = 1; i <= n; i++){
+        estribosExtremos.push({tramo:i, extremo:'izq',
+            diam: parseFloat(document.getElementById(`diam_izq_${i}`).value) || 10,
+            ramas: parseInt(document.getElementById(`ramas_izq_${i}`).value) || 2});
+        estribosExtremos.push({tramo:i, extremo:'der',
+            diam: parseFloat(document.getElementById(`diam_der_${i}`).value) || 10,
+            ramas: parseInt(document.getElementById(`ramas_der_${i}`).value) || 2});
+    }
+
+    const beta1 = fc <= 280 ? 0.85 : Math.max(0.85 - 0.05 * (fc - 280) / 70, 0.65);
+    const phi_b = 0.9, phi_v = 0.6, alpha = 1.25;
+    const d = h - r;
+    const Ag = b * h;
+    const db_long = 2.0;
+
+    const As_min_1 = (14 / fy) * b * d;
+    const As_min_2 = (0.8 * Math.sqrt(fc) / fy) * b * d;
+    const As_min = Math.max(As_min_1, As_min_2);
+
+    const As_req_neg_apoyo = new Array(n+1).fill(0);
+    const As_req_pos_apoyo = new Array(n+1).fill(0);
+    const As_req_neg_centro = new Array(n+1).fill(0);
+    const As_req_pos_centro = new Array(n+1).fill(0);
+
+    for (let i = 0; i <= n; i++){
+        As_req_neg_apoyo[i] = Calc.calcularAs(Math.abs(M_neg_apoyo[i]), b, d, fc, fy, phi_b);
+        As_req_pos_apoyo[i] = Calc.calcularAs(Math.abs(M_pos_apoyo[i]), b, d, fc, fy, phi_b);
+    }
+    for (let i = 1; i <= n; i++){
+        As_req_neg_centro[i] = Calc.calcularAs(Math.abs(M_neg_centro[i]), b, d, fc, fy, phi_b);
+        As_req_pos_centro[i] = Calc.calcularAs(Math.abs(M_pos_centro[i]), b, d, fc, fy, phi_b);
+    }
+
+    let maxAsNegApoyo = 0;
+    for (let i = 0; i <= n; i++) if (As_req_neg_apoyo[i] > maxAsNegApoyo) maxAsNegApoyo = As_req_neg_apoyo[i];
+
+    const resultadosTramos = [];
+
+    for (let i = 1; i <= n; i++){
+        const Ln_i = Ln[i-1];
+        const Vg_i = Vg[i-1];
+        const Vu_izq_i = Vu_izq[i-1];
+        const Vu_der_i = Vu_der[i-1];
+
+        const apoyoIzqIdx = i-1, apoyoDerIdx = i, centroIdx = i;
+
+        let As_sup_izq_req = As_req_neg_apoyo[apoyoIzqIdx];
+        let As_inf_izq_req = As_req_pos_apoyo[apoyoIzqIdx];
+        let As_sup_cen_req = As_req_neg_centro[centroIdx];
+        let As_inf_cen_req = As_req_pos_centro[centroIdx];
+        let As_sup_der_req = As_req_neg_apoyo[apoyoDerIdx];
+        let As_inf_der_req = As_req_pos_apoyo[apoyoDerIdx];
+
+        if (As_inf_izq_req < 0.5 * As_sup_izq_req) As_inf_izq_req = 0.5 * As_sup_izq_req;
+        if (As_inf_der_req < 0.5 * As_sup_der_req) As_inf_der_req = 0.5 * As_sup_der_req;
+
+        const minCentro = 0.25 * maxAsNegApoyo;
+        if (As_sup_cen_req < minCentro) As_sup_cen_req = minCentro;
+        if (As_inf_cen_req < minCentro) As_inf_cen_req = minCentro;
+
+        As_sup_izq_req = Math.max(As_sup_izq_req, As_min);
+        As_inf_izq_req = Math.max(As_inf_izq_req, As_min);
+        As_sup_cen_req = Math.max(As_sup_cen_req, As_min);
+        As_inf_cen_req = Math.max(As_inf_cen_req, As_min);
+        As_sup_der_req = Math.max(As_sup_der_req, As_min);
+        As_inf_der_req = Math.max(As_inf_der_req, As_min);
+
+        const estIzq = estribosExtremos.find(e => e.tramo === i && e.extremo === 'izq');
+        const estDer = estribosExtremos.find(e => e.tramo === i && e.extremo === 'der');
+        const diam_izq = estIzq ? estIzq.diam : 10;
+        const diam_der = estDer ? estDer.diam : 10;
+        const Nramas_izq = estIzq ? estIzq.ramas : 2;
+        const Nramas_der = estDer ? estDer.ramas : 2;
+
+        const a_neg_izq = Calc.calc_a_c(As_sup_izq_req, fy, fc, b, beta1).a;
+        const a_pos_cen = Calc.calc_a_c(As_inf_cen_req, fy, fc, b, beta1).a;
+        const a_neg_der = Calc.calc_a_c(As_sup_der_req, fy, fc, b, beta1).a;
+
+        const Mpr_izq = Calc.calcularMpr(As_sup_izq_req, fy, fc, b, d, alpha);
+        const Mpr_der = Calc.calcularMpr(As_sup_der_req, fy, fc, b, d, alpha);
+        const Vp = (Mpr_izq + Mpr_der) / Ln_i;
+        const Ve_izq = Vg_i + Vp;
+        const Ve_der = Vg_i - Vp;
+        const Vd_izq = Math.max(Math.abs(Ve_izq), Math.abs(Vu_izq_i));
+        const Vd_der = Math.max(Math.abs(Ve_der), Math.abs(Vu_der_i));
+
+        const resIzq = Calc.verificarVc(Vp, Vd_izq, Pu, Ag, fc);
+        const Vc_izq = resIzq.aplicarVc ? Calc.calcularVc(Pu, Ag, fc, b, d) : 0;
+        const Vs_izq = Math.max((Vd_izq / phi_v) - Vc_izq, 0);
+
+        const resDer = Calc.verificarVc(Vp, Vd_der, Pu, Ag, fc);
+        const Vc_der = resDer.aplicarVc ? Calc.calcularVc(Pu, Ag, fc, b, d) : 0;
+        const Vs_der = Math.max((Vd_der / phi_v) - Vc_der, 0);
+
+        const area_estribo_izq = Math.PI/4 * Math.pow(diam_izq/10, 2);
+        const Av_izq = Nramas_izq * area_estribo_izq;
+        const Sreq_izq = Calc.calcularSreq(Av_izq, fy, d, Vs_izq);
+
+        const area_estribo_der = Math.PI/4 * Math.pow(diam_der/10, 2);
+        const Av_der = Nramas_der * area_estribo_der;
+        const Sreq_der = Calc.calcularSreq(Av_der, fy, d, Vs_der);
+
+        const s1 = d/4, s2 = 6*db_long, s3 = 15;
+        const smax_norma = Math.min(s1, s2, s3);
+        const Sdef_izq = Math.min(Sreq_izq, smax_norma);
+        const Sdef_der = Math.min(Sreq_der, smax_norma);
+
+        const Lconf_izq = Math.max(2*h, 40);
+        const Lconf_der = Math.max(2*h, 40);
+
+        resultadosTramos.push({
+            tramo:i, Ln:Ln_i,
+            M_neg_izq:M_neg_apoyo[apoyoIzqIdx], M_pos_izq:M_pos_apoyo[apoyoIzqIdx],
+            M_neg_cen:M_neg_centro[centroIdx], M_pos_cen:M_pos_centro[centroIdx],
+            M_neg_der:M_neg_apoyo[apoyoDerIdx], M_pos_der:M_pos_apoyo[apoyoDerIdx],
+            As_sup_izq:As_sup_izq_req, As_inf_izq:As_inf_izq_req,
+            As_sup_cen:As_sup_cen_req, As_inf_cen:As_inf_cen_req,
+            As_sup_der:As_sup_der_req, As_inf_der:As_inf_der_req,
+            a_neg_izq, a_pos_cen, a_neg_der,
+            Mpr_izq, Mpr_der, Vp, Ve_izq, Ve_der, Vd_izq, Vd_der,
+            Vc_izq, Vc_der, Vs_izq, Vs_der, Sreq_izq, Sreq_der, Sdef_izq, Sdef_der,
+            Lconf_izq, Lconf_der,
+            Ra_izq:resIzq.Ra, Rb_izq:resIzq.Rb, Ra_der:resDer.Ra, Rb_der:resDer.Rb,
+            diam_izq, diam_der, Nramas_izq, Nramas_der, smax_norma,
+            Vg:Vg_i, Vu_izq:Vu_izq_i, Vu_der:Vu_der_i
+        });
+    }
+
+    ultimoResultadosTramos = resultadosTramos;
+    ultimoBH = {b, h};
+    ultimoResumen = {
+        h, b, r, d_sup, fc, fy, n, d, Ag, As_min,
+        phi_b, phi_v, alpha, beta1,
+        proyecto: document.getElementById('proyNombre').value || '—',
+        elemento: document.getElementById('proyElemento').value || '—',
+        norma: document.getElementById('proyNorma').value || 'ACI 318 · SMF',
+        ubicacion: document.getElementById('proyUbicacion').value || '—'
+    };
+
+    renderResultados(resultadosTramos, ultimoResumen);
+    dibujarEsquemaViga('esquemaVigaCanvas', resultadosTramos, b, h);
+    const ev = document.getElementById('esquemaVacio');
+    if (ev) ev.style.display = 'none';
+    actualizarBarraEstado(true);
+    switchTab('resultados');
+}
+
+function renderResultados(rt, S){
+    const container = document.getElementById('resultadosContainer');
+    document.getElementById('resultadosVacio').style.display = 'none';
+    const As_min = S.As_min, d = S.d;
+    let html = '';
+
+    html += `<div class="card"><div class="card-head"><h2><span class="idx">R</span> Resumen — acero longitudinal final (cm²)</h2><span class="tag">Síntesis</span></div><div class="card-body">`;
+    html += `<table class="tbl"><thead><tr><th>Tramo</th><th>Neg. Izq</th><th>Pos. Izq</th><th>Neg. Cen</th><th>Pos. Cen</th><th>Neg. Der</th><th>Pos. Der</th></tr></thead><tbody>`;
+    rt.forEach(r => {
+        html += `<tr><td class="left">T${r.tramo}</td>` +
+            [r.As_sup_izq, r.As_inf_izq, r.As_sup_cen, r.As_inf_cen, r.As_sup_der, r.As_inf_der]
+            .map(v => `<td>${v.toFixed(3)}</td>`).join('') + `</tr>`;
+    });
+    html += `<tr class="total"><td class="left">As mín</td><td colspan="6">${As_min.toFixed(3)}</td></tr>`;
+    html += `</tbody></table></div></div>`;
+
+    html += `<div class="card"><div class="card-head"><h2><span class="idx">E</span> Estribos — zonas de confinamiento</h2><span class="tag">Corte</span></div><div class="card-body">`;
+    html += `<table class="tbl"><thead><tr><th>Tramo</th><th>Extremo</th><th>S req (cm)</th><th>S def (cm)</th><th>Estribos</th></tr></thead><tbody>`;
+    rt.forEach(r => {
+        html += `<tr><td rowspan="2" class="left">T${r.tramo}</td><td>Izq</td><td>${r.Sreq_izq === Infinity ? '∞' : r.Sreq_izq.toFixed(2)}</td><td>${r.Sdef_izq.toFixed(2)}</td><td class="left">Ø${r.diam_izq} @ ${r.Sdef_izq.toFixed(0)} cm (${r.Nramas_izq} ramas)</td></tr>`;
+        html += `<tr><td>Der</td><td>${r.Sreq_der === Infinity ? '∞' : r.Sreq_der.toFixed(2)}</td><td>${r.Sdef_der.toFixed(2)}</td><td class="left">Ø${r.diam_der} @ ${r.Sdef_der.toFixed(0)} cm (${r.Nramas_der} ramas)</td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+
+    html += `<div class="card"><div class="card-head"><h2><span class="idx">D</span> Cálculos y resultados — detalle por tramo</h2><span class="tag">Flexión y corte</span></div><div class="card-body">`;
+    rt.forEach(r => {
+        html += `<h3 style="font-size:12px;color:var(--accent-dark);margin:10px 0 6px;">Tramo ${r.tramo} · Ln = ${r.Ln.toFixed(2)} m</h3>`;
+        html += `<div style="font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;">Flexión</div>`;
+        html += `<table class="tbl"><thead><tr><th>Ubicación</th><th>Mu (t·m)</th><th>As req (cm²)</th><th>As final (cm²)</th></tr></thead><tbody>`;
+        [['Negativo Izq', r.M_neg_izq, r.As_sup_izq],['Positivo Izq', r.M_pos_izq, r.As_inf_izq],
+         ['Negativo Cen', r.M_neg_cen, r.As_sup_cen],['Positivo Cen', r.M_pos_cen, r.As_inf_cen],
+         ['Negativo Der', r.M_neg_der, r.As_sup_der],['Positivo Der', r.M_pos_der, r.As_inf_der]]
+        .forEach(x => html += `<tr><td class="left">${x[0]}</td><td>${x[1].toFixed(2)}</td><td>${x[2].toFixed(3)}</td><td>${x[2].toFixed(3)}</td></tr>`);
+        html += `<tr class="total"><td class="left">As mín</td><td>–</td><td>–</td><td>${As_min.toFixed(3)}</td></tr>`;
+        html += `</tbody></table>`;
+
+        html += `<div style="font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin:9px 0 3px;">Corte</div>`;
+        html += `<div class="grid-2">`;
+        [['Izquierdo','izq'],['Derecho','der']].forEach(([ttl, sfx]) => {
+            const Vg = r.Vg, Vp = r.Vp, Ve = sfx==='izq'?r.Ve_izq:r.Ve_der,
+                  Vuan = sfx==='izq'?r.Vu_izq:r.Vu_der, Vd = sfx==='izq'?r.Vd_izq:r.Vd_der,
+                  Ra = sfx==='izq'?r.Ra_izq:r.Ra_der, Rb = sfx==='izq'?r.Rb_izq:r.Rb_der,
+                  Vc = sfx==='izq'?r.Vc_izq:r.Vc_der, Vs = sfx==='izq'?r.Vs_izq:r.Vs_der,
+                  Sreq = sfx==='izq'?r.Sreq_izq:r.Sreq_der, Sdef = sfx==='izq'?r.Sdef_izq:r.Sdef_der,
+                  Lc = sfx==='izq'?r.Lconf_izq:r.Lconf_der,
+                  di = sfx==='izq'?r.diam_izq:r.diam_der, nr = sfx==='izq'?r.Nramas_izq:r.Nramas_der;
+            const vals = [['Vg',Vg],['Vp',Vp],['Ve',Ve],['Vu análisis',Vuan],['V diseño',Vd],
+                          ['Ra',Ra],['Rb',Rb],['Vc',Vc],['Vs',Vs],
+                          ['S req',Sreq===Infinity?'∞':Sreq.toFixed(2)],['S def',Sdef.toFixed(2)],['L conf',Lc.toFixed(0)]];
+            html += `<div class="detalle"><h5>Extremo ${ttl}</h5><div class="kv">` +
+                vals.map(v => `<div><span class="k">${v[0]}:</span> ${v[1]}</div>`).join('') +
+                `<div style="grid-column:1/-1;">Estribos: Ø${di} @ ${Sdef.toFixed(0)} cm (${nr} ramas)</div></div></div>`;
+        });
+        html += `</div>`;
+    });
+    html += `</div></div>`;
+
+    html += `<div class="card"><div class="card-head"><h2><span class="idx">V</span> Revisiones dimensionales</h2><span class="tag">Chequeo normativo</span></div><div class="card-body">`;
+    html += `<table class="tbl"><thead><tr><th>Tramo</th><th>Ln (m)</th><th>4·d (m)</th><th>Verificación</th></tr></thead><tbody>`;
+    rt.forEach(r => {
+        const Ln_min = 4 * d / 100, cumple = r.Ln >= Ln_min;
+        html += `<tr><td>T${r.tramo}</td><td>${r.Ln.toFixed(2)}</td><td>${Ln_min.toFixed(2)}</td><td>${cumple ? '<span class="badge ok">Cumple</span>' : '<span class="badge fail">No cumple</span>'}</td></tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+
+    container.innerHTML = html;
+}
+
+function hoyTexto(){
+    return new Date().toLocaleDateString('es-BO', {year:'numeric', month:'long', day:'numeric'});
+}
+
+function generarInforme(imprimir){
+    if (!ultimoResultadosTramos || !ultimoResumen){
+        alert('Primero calcule el diseño.');
+        return;
+    }
+    const S = ultimoResumen, rt = ultimoResultadosTramos;
+    const totalLength = rt.reduce((a, r) => a + r.Ln, 0);
+    const hoja = document.getElementById('reporte');
+
+    const caratula = `
+    <div class="report-page">
+        <div class="caratula">
+            <div class="c-top">
+                <span class="c-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#16222e" stroke-width="1.6">
+                        <path d="M3 20h18"/><path d="M5 20V9l7-5 7 5v11"/>
+                        <line x1="9" y1="20" x2="9" y2="13"/><line x1="15" y1="20" x2="15" y2="13"/>
+                    </svg>
+                </span>
+                <div>
+                    <div class="c-org">Memoria de cálculo estructural</div>
+                    <div class="c-sub">Diseño de vigas continuas · Pórtico especial resistente a momento</div>
+                </div>
+            </div>
+            <div class="c-body">
+                <div class="c-kicker">Informe técnico de diseño</div>
+                <h1 class="c-title">Diseño de Vigas Continuas<small>Pórtico especial (SMF) · Elementos a flexión y corte</small></h1>
+                <div class="c-rule"></div>
+                <div class="c-meta">
+                    <table>
+                        <tr><td class="k">Proyecto</td><td>${esc(S.proyecto)}</td></tr>
+                        <tr><td class="k">Elemento</td><td>${esc(S.elemento)}</td></tr>
+                        <tr><td class="k">Norma</td><td>${esc(S.norma)}</td></tr>
+                        <tr><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="c-foot">
+                <span>SMF-Beam Design</span>
+                <span>Documento generado automáticamente</span>
+            </div>
+        </div>
+    </div>`;
+
+    let memoria = `<div class="report-page">
+        <div class="r-head">
+            <h1>Memoria de cálculo</h1>
+            <div class="r-sub">Diseño de vigas continuas · Pórtico especial (SMF) · ${esc(S.norma)}</div>
+        </div>
+
+        <div class="r-section">
+            <h2>1. Datos generales</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Proyecto</td><td>${esc(S.proyecto)}</td><td class="k">Elemento</td><td>${esc(S.elemento)}</td></tr>
+                <tr><td class="k">Norma</td><td>${esc(S.norma)}</td><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+                <tr><td class="k">Sección b × h</td><td>${S.b} × ${S.h} cm</td><td class="k">f'c</td><td>${S.fc} kgf/cm²</td></tr>
+                <tr><td class="k">fy</td><td>${S.fy} kgf/cm²</td><td class="k">Peralte efectivo d</td><td>${S.d.toFixed(2)} cm</td></tr>
+                <tr><td class="k">As mínimo</td><td>${S.As_min.toFixed(3)} cm²</td><td class="k">n tramos</td><td>${S.n}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>2. Geometría de tramos</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Tramo</th>${rt.map(r => `<th>T${r.tramo}</th>`).join('')}</tr></thead>
+                <tbody><tr><td class="left">Ln (m)</td>${rt.map(r => `<td>${r.Ln.toFixed(2)}</td>`).join('')}</tr></tbody>
+            </table>
+            <div class="r-note">Longitud total de la viga: ${totalLength.toFixed(2)} m.</div>
+        </div>
+
+        <div class="r-section">
+            <h2>3. Esquema estructural</h2>
+            <div class="r-schema"><canvas id="reporteSchema"></canvas></div>
+        </div>
+
+        <div class="r-section">
+            <h2>4. Acero longitudinal final (cm²)</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Tramo</th><th>Neg. Izq</th><th>Pos. Izq</th><th>Neg. Cen</th><th>Pos. Cen</th><th>Neg. Der</th><th>Pos. Der</th></tr></thead>
+                <tbody>
+                ${rt.map(r => `<tr><td>T${r.tramo}</td>${[r.As_sup_izq,r.As_inf_izq,r.As_sup_cen,r.As_inf_cen,r.As_sup_der,r.As_inf_der].map(v=>`<td>${v.toFixed(3)}</td>`).join('')}</tr>`).join('')}
+                <tr><td class="left"><b>As mín</b></td><td colspan="6">${S.As_min.toFixed(3)}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>5. Estribos — zonas de confinamiento</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Tramo</th><th>Extremo</th><th>S req (cm)</th><th>S def (cm)</th><th>Estribos adoptados</th></tr></thead>
+                <tbody>
+                ${rt.map(r => `
+                    <tr><td rowspan="2">T${r.tramo}</td><td>Izq</td><td>${r.Sreq_izq===Infinity?'∞':r.Sreq_izq.toFixed(2)}</td><td>${r.Sdef_izq.toFixed(2)}</td><td class="left">Ø${r.diam_izq} @ ${r.Sdef_izq.toFixed(0)} cm (${r.Nramas_izq} ramas)</td></tr>
+                    <tr><td>Der</td><td>${r.Sreq_der===Infinity?'∞':r.Sreq_der.toFixed(2)}</td><td>${r.Sdef_der.toFixed(2)}</td><td class="left">Ø${r.diam_der} @ ${r.Sdef_der.toFixed(0)} cm (${r.Nramas_der} ramas)</td></tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-foot"><span>${esc(S.elemento)}</span><span>Página 2</span></div>
+    </div>`;
+
+    let anexo = `<div class="report-page">
+        <div class="r-head"><h1>Anexo — Detalle por tramo</h1><div class="r-sub">Flexión y corte · Verificación normativa</div></div>`;
+    rt.forEach(r => {
+        anexo += `<div class="r-section">
+            <h2>Tramo ${r.tramo} · Ln = ${r.Ln.toFixed(2)} m</h2>
+            <table class="r-tbl" style="margin-bottom:7px;">
+                <thead><tr><th>Flexión</th><th>Mu (t·m)</th><th>As req (cm²)</th><th>As final (cm²)</th></tr></thead>
+                <tbody>
+                ${[['Negativo Izq',r.M_neg_izq,r.As_sup_izq],['Positivo Izq',r.M_pos_izq,r.As_inf_izq],
+                   ['Negativo Cen',r.M_neg_cen,r.As_sup_cen],['Positivo Cen',r.M_pos_cen,r.As_inf_cen],
+                   ['Negativo Der',r.M_neg_der,r.As_sup_der],['Positivo Der',r.M_pos_der,r.As_inf_der]]
+                  .map(x=>`<tr><td class="left">${x[0]}</td><td>${x[1].toFixed(2)}</td><td>${x[2].toFixed(3)}</td><td>${x[2].toFixed(3)}</td></tr>`).join('')}
+                </tbody>
+            </table>
+            <table class="r-tbl">
+                <thead><tr><th>Corte</th><th>Vg</th><th>Vp</th><th>Ve</th><th>Vu anál.</th><th>V diseño</th><th>Ra</th><th>Rb</th><th>Vc</th><th>Vs</th><th>S req</th><th>S def</th><th>L conf</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">Extremo Izq</td><td>${r.Vg}</td><td>${r.Vp.toFixed(2)}</td><td>${r.Ve_izq.toFixed(2)}</td><td>${r.Vu_izq}</td><td>${r.Vd_izq.toFixed(2)}</td><td>${r.Ra_izq}</td><td>${r.Rb_izq}</td><td>${r.Vc_izq.toFixed(2)}</td><td>${r.Vs_izq.toFixed(2)}</td><td>${r.Sreq_izq===Infinity?'∞':r.Sreq_izq.toFixed(2)}</td><td>${r.Sdef_izq.toFixed(2)}</td><td>${r.Lconf_izq.toFixed(0)}</td></tr>
+                    <tr><td class="left">Extremo Der</td><td>${r.Vg}</td><td>${r.Vp.toFixed(2)}</td><td>${r.Ve_der.toFixed(2)}</td><td>${r.Vu_der}</td><td>${r.Vd_der.toFixed(2)}</td><td>${r.Ra_der}</td><td>${r.Rb_der}</td><td>${r.Vc_der.toFixed(2)}</td><td>${r.Vs_der.toFixed(2)}</td><td>${r.Sreq_der===Infinity?'∞':r.Sreq_der.toFixed(2)}</td><td>${r.Sdef_der.toFixed(2)}</td><td>${r.Lconf_der.toFixed(0)}</td></tr>
+                </tbody>
+            </table>
+        </div>`;
+    });
+
+    anexo += `<div class="r-section">
+            <h2>Revisiones dimensionales</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Tramo</th><th>Ln (m)</th><th>4·d (m)</th><th>Verificación</th></tr></thead>
+                <tbody>${rt.map(r => {
+                    const Ln_min = 4 * S.d / 100, cumple = r.Ln >= Ln_min;
+                    return `<tr><td>T${r.tramo}</td><td>${r.Ln.toFixed(2)}</td><td>${Ln_min.toFixed(2)}</td><td>${cumple ? 'Cumple' : 'No cumple'}</td></tr>`;
+                }).join('')}</tbody>
+            </table>
+        </div>
+        <div class="page-foot"><span>${esc(S.elemento)}</span><span>Página 3</span></div>
+    </div>`;
+
+    hoja.innerHTML = caratula + memoria + anexo;
+
+    const cv = document.getElementById('reporteSchema');
+    if (cv){
+        const nested = document.createElement('canvas');
+        nested.id = 'tmpSchema';
+        document.body.appendChild(nested);
+        dibujarEsquemaViga('tmpSchema', rt, S.b, S.h);
+        const src = document.getElementById('tmpSchema');
+        cv.width = src.width; cv.height = src.height;
+        cv.getContext('2d').drawImage(src, 0, 0);
+        nested.remove();
+    }
+
+    document.getElementById('rtSub').textContent = `${S.norma} · ${S.elemento}`;
+    document.getElementById('reportOverlay').classList.add('open');
+    if (imprimir) setTimeout(imprimirInforme, 150);
+}
+
+function cerrarInforme(){
+    document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function imprimirInforme(){
+    window.print();
+}
+
+function esc(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    generarCamposTramos();
+    actualizarBarraEstado(false);
+    ['h','b','r','d_sup','fc','fy','proyNorma'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => actualizarBarraEstado(false));
+    });
+});
+</script>
+
+</body>
+</html>

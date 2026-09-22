@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMF-Beam Design · Optimizador Inteligente de Vigas</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+    :root{
+        --bg:#dfe3e7; --panel:#ffffff; --panel-alt:#f4f6f8; --panel-head:#eaeef1;
+        --line:#c4ccd4; --line-soft:#dde3e8; --ink:#1b2733; --ink-soft:#586673;
+        --ink-faint:#8a95a0; --accent:#0e6cb3; --accent-dark:#0a4d80; --accent-soft:#e6f1fb;
+        --ok:#12803f; --ok-bg:#e3f4e9; --fail:#bf2a2a; --fail-bg:#fae7e7;
+        --warn:#97600a; --warn-bg:#faf0dc; --radius:3px;
+    }
+    *{box-sizing:border-box;}
+    html,body{height:100%;margin:0;}
+    body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased;}
+    .mono{font-family:'IBM Plex Mono',monospace;}
+    .app{display:grid;grid-template-rows:42px 30px 1fr 22px;height:100vh;}
+    .toolbar{display:flex;align-items:center;gap:4px;background:linear-gradient(#f3f6f7,#e9edf0);border-bottom:1px solid var(--line);padding:0 8px;}
+    .tb-group{display:flex;align-items:center;gap:2px;padding:0 7px;height:100%;}
+    .tb-group + .tb-group{border-left:1px solid var(--line-soft);}
+    .tbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:52px;height:36px;padding:2px 7px;border:1px solid transparent;border-radius:var(--radius);background:transparent;cursor:pointer;color:var(--ink);font-size:10px;font-family:'IBM Plex Sans',sans-serif;}
+    .tbtn svg{width:17px;height:17px;}
+    .tbtn:hover{background:var(--accent-soft);border-color:#bcd8ef;}
+    .tbtn:active{background:#d6e8f7;}
+    .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+    .tbtn.primary:hover{background:var(--accent-dark);}
+    .tbtn.primary svg{stroke:#fff;}
+    .tbtn[disabled]{opacity:.45;cursor:default;}
+    .toolbar .spacer{flex:1;}
+    .toolbar-select{display:flex;align-items:center;gap:6px;padding:0 8px;font-size:11px;}
+    .toolbar-select label{font-size:9.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+    .toolbar-select select{padding:3px 8px;border:1px solid var(--line);border-radius:2px;background:var(--panel);font-size:11px;font-family:'IBM Plex Sans',sans-serif;color:var(--ink);cursor:pointer;outline:none;}
+    .toolbar-select select:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+    .tabs{display:flex;align-items:flex-end;gap:1px;background:var(--panel-head);border-bottom:1px solid var(--line);padding:0 8px;}
+    .tab{border:1px solid var(--line);border-bottom:none;background:linear-gradient(#eef1f3,#e3e7ea);color:var(--ink-soft);font-size:11.5px;font-weight:500;padding:5px 16px 4px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px;}
+    .tab:hover{color:var(--ink);}
+    .tab.active{background:var(--panel);color:var(--accent-dark);font-weight:600;top:1px;box-shadow:0 -2px 0 var(--accent) inset;}
+    .tabs .spacer{flex:1;padding:4px 8px 0;font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+    .content{overflow-y:auto;overflow-x:hidden;padding:12px;}
+    .view{display:none;}
+    .view.active{display:block;}
+    .statusbar{display:flex;align-items:center;gap:16px;background:linear-gradient(#eef1f3,#e5e9ec);border-top:1px solid var(--line);font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);padding:0 10px;overflow:hidden;white-space:nowrap;}
+    .status-cell{display:flex;align-items:center;gap:5px;}
+    .status-cell.name{background:var(--panel);border:1px solid var(--line-soft);border-radius:2px;padding:1px 8px;}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:#a9b3bd;flex:none;}
+    .status-dot.ok{background:#2ea35a;}
+    .status-dot.pending{background:#d69a2d;}
+    .status-dot.fail{background:#d04545;}
+    .statusbar .spacer{flex:1;}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;}
+    .card-head{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(#f7f9fa,#eef1f3);border-bottom:1px solid var(--line);padding:5px 10px;}
+    .card-head h2{font-size:12px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px;color:var(--ink);}
+    .card-head h2 .idx{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:var(--accent);border-radius:2px;padding:0 5px;line-height:16px;}
+    .card-head .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+    .card-body{padding:10px;}
+    .grid-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+    .field label{display:block;font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+    .field input,.field select{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:2px;background:var(--panel-alt);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink);}
+    .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+    .diametros-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;}
+    .checkbox-item{display:flex;align-items:center;gap:6px;background:var(--panel-alt);border:1px solid var(--line-soft);border-radius:2px;padding:6px 8px;cursor:pointer;transition:background-color .1s;}
+    .checkbox-item:hover{background:var(--accent-soft);border-color:#bcd8ef;}
+    .checkbox-item input[type="checkbox"]{cursor:pointer;accent-color:var(--accent);}
+    .checkbox-item span{cursor:pointer;margin:0;font-weight:500;font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+    .tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+    .tbl th{background:var(--panel-head);color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;text-align:center;border:1px solid var(--line);padding:3px 5px;}
+    .tbl td{border:1px solid var(--line-soft);padding:2px 4px;text-align:center;}
+    .tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+    .tbl tbody tr:nth-child(even){background:#fafbfc;}
+    .tbl tbody tr:hover{background:var(--accent-soft);}
+    .tbl tr.optimo{background:var(--ok-bg) !important;font-weight:600;}
+    .tbl tr.optimo td{border-color:#b8dfc5;}
+    .btn{font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;border-radius:var(--radius);border:1px solid var(--line);padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(#fbfcfd,#eef1f3);color:var(--ink);}
+    .btn:hover{background:var(--accent-soft);border-color:#bcd8ef;}
+    .btn svg{width:13px;height:13px;}
+    .btn.accent{background:var(--accent);border-color:var(--accent-dark);color:#fff;}
+    .btn.accent:hover{background:var(--accent-dark);}
+    .btn.sm{padding:2px 8px;font-size:10.5px;}
+    .btn[disabled]{opacity:.45;cursor:default;}
+    .btn-seleccionar{background:transparent;border:1px solid var(--line);color:var(--accent);padding:2px 10px;border-radius:2px;cursor:pointer;font-weight:600;font-size:10.5px;font-family:'IBM Plex Sans',sans-serif;transition:background-color .1s, color .1s;}
+    .btn-seleccionar:hover{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+    .btn-seleccionar.seleccionado{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+    .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+    .badge.ok{background:var(--ok-bg);color:var(--ok);}
+    .badge.fail{background:var(--fail-bg);color:var(--fail);}
+    .summary-box{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:10px;}
+    .summary-item{background:var(--panel-alt);border:1px solid var(--line-soft);border-radius:var(--radius);padding:9px 11px;}
+    .summary-item-label{font-size:9.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+    .summary-item-value{font-size:16px;font-weight:700;color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+    .summary-item-meta{font-size:10.5px;color:var(--ink-soft);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+    .summary-item.marcado{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
+    .empty{text-align:center;color:var(--ink-faint);padding:44px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);}
+    .empty svg{width:30px;height:30px;margin-bottom:8px;opacity:.5;}
+    .hint{font-size:10.5px;color:var(--ink-faint);margin:6px 0 0;}
+    .diag-box{background:var(--fail-bg);border-left:4px solid var(--fail);padding:14px;border-radius:var(--radius);}
+    .diag-box h3{margin-top:0;color:var(--fail);font-size:14px;}
+    .diag-sugerencia{background:#fff;border:1px solid var(--line);border-radius:2px;padding:10px 12px;margin:10px 0;font-size:11.5px;}
+    .diag-detail{font-size:10.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;margin-top:6px;}
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;position:relative;height:380px;}
+    .chart-card canvas{max-height:340px;}
+    @media (max-width: 900px){.charts-row{grid-template-columns:1fr;}}
+
+    /* ================= REPORT OVERLAY ================= */
+    #reportOverlay{position:fixed;inset:0;z-index:1000;background:#5a6570;display:none;flex-direction:column;}
+    #reportOverlay.open{display:flex;}
+    .report-toolbar{display:flex;align-items:center;gap:10px;background:linear-gradient(#f4f6f8,#e7ebee);border-bottom:1px solid #aab3bb;padding:7px 12px;flex:none;}
+    .report-toolbar .rt-title{font-weight:600;font-size:12.5px;color:var(--ink);}
+    .report-toolbar .rt-sub{font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+    .report-toolbar .spacer{flex:1;}
+    .report-scroll{flex:1;overflow:auto;padding:20px 10px 60px;background:#7c858f;}
+    .report-page{width:210mm;min-height:297mm;background:#fff;color:#1b2733;padding:16mm 14mm;margin:0 auto 14px;box-shadow:0 2px 10px rgba(0,0,0,.35);position:relative;font-size:11px;}
+    .report-page .page-foot{position:absolute;bottom:8mm;left:14mm;right:14mm;border-top:1px solid #c4ccd4;padding-top:3px;display:flex;justify-content:space-between;font-size:9px;color:#6b7681;font-family:'IBM Plex Mono',monospace;}
+    .caratula{display:flex;flex-direction:column;height:100%;}
+    .caratula .c-top{border:2px solid #16222e;border-bottom:none;padding:14px 18px;display:flex;align-items:center;gap:14px;}
+    .caratula .c-logo{width:52px;height:52px;flex:none;}
+    .caratula .c-org{font-size:13px;font-weight:700;letter-spacing:.02em;line-height:1.25;text-transform:uppercase;}
+    .caratula .c-sub{font-size:10px;color:#5a6874;margin-top:2px;}
+    .caratula .c-body{flex:1;border:2px solid #16222e;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px 24px;}
+    .caratula .c-kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#0e6cb3;font-weight:600;margin-bottom:10px;}
+    .caratula .c-title{font-size:30px;font-weight:700;line-height:1.15;margin:0 0 6px;}
+    .caratula .c-title small{display:block;font-size:14px;font-weight:500;color:#586673;margin-top:8px;letter-spacing:.01em;}
+    .caratula .c-rule{width:90px;height:4px;background:#0e6cb3;margin:20px auto;}
+    .caratula .c-meta{margin-top:8px;width:100%;max-width:420px;}
+    .caratula .c-meta table{width:100%;border-collapse:collapse;font-size:12px;}
+    .caratula .c-meta td{padding:6px 8px;border-bottom:1px solid #dde3e8;text-align:left;}
+    .caratula .c-meta td.k{color:#586673;width:38%;font-weight:600;text-transform:uppercase;font-size:9.5px;letter-spacing:.04em;}
+    .caratula .c-foot{border:2px solid #16222e;border-top:none;padding:8px 18px;display:flex;justify-content:space-between;font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+    .r-head{border-bottom:2px solid #16222e;padding-bottom:8px;margin-bottom:12px;}
+    .r-head h1{font-size:17px;margin:0 0 3px;}
+    .r-head .r-sub{font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+    .r-section{margin-bottom:16px;break-inside:avoid;}
+    .r-section h2{font-size:12.5px;margin:0 0 7px;padding:4px 8px;background:#eef1f3;border-left:3px solid #0e6cb3;text-transform:uppercase;letter-spacing:.03em;}
+    .r-tbl{width:100%;border-collapse:collapse;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+    .r-tbl th{background:#eef1f3;border:1px solid #c4ccd4;padding:3px 5px;font-family:'IBM Plex Sans',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.03em;text-align:center;}
+    .r-tbl td{border:1px solid #dde3e8;padding:2px 5px;text-align:center;}
+    .r-tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+    .r-tbl tr.optimo{background:#e3f4e9;font-weight:600;}
+    .r-meta-tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:10px;}
+    .r-meta-tbl td{padding:4px 6px;border:1px solid #dde3e8;}
+    .r-meta-tbl td.k{background:#f4f6f8;color:#586673;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.04em;width:22%;}
+    .r-note{font-size:9.5px;color:#6b7681;margin-top:6px;font-style:italic;}
+    .r-charts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}
+    .r-charts img{width:100%;border:1px solid #c4ccd4;border-radius:3px;background:#fff;}
+    .r-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;}
+    .r-kpi-box{background:#f4f6f8;border:1px solid #dde3e8;border-radius:3px;padding:6px 8px;text-align:center;}
+    .r-kpi-box .k{font-size:8.5px;color:#586673;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+    .r-kpi-box .v{font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+    @page{size:A4 portrait;margin:14mm 12mm;}
+    @media print{
+        body{background:#fff;}
+        .app,#reportOverlay .report-toolbar{display:none !important;}
+        #reportOverlay{position:static;display:block !important;background:#fff;}
+        #reportOverlay:not(.open){display:none !important;}
+        .report-scroll{overflow:visible;padding:0;background:#fff;}
+        .report-page{width:auto;min-height:auto;margin:0;padding:0;box-shadow:none;page-break-after:always;}
+        .report-page:last-child{page-break-after:auto;}
+        .report-page .page-foot{position:static;margin-top:14px;}
+        .caratula{min-height:265mm;}
+    }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <div class="toolbar">
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('parametros')" title="Ir a parámetros">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+                Parámetros
+            </button>
+            <button class="tbtn" onclick="limpiarTodo()" title="Reiniciar valores">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                Reiniciar
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn primary" onclick="calcular()" title="Ejecutar la optimización">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                Calcular
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('resultados')" title="Ver resultados">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                Resultados
+            </button>
+            <button class="tbtn" onclick="switchTab('graficos')" title="Ver gráficos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-7"/></svg>
+                Gráficos
+            </button>
+        </div>
+        <div class="tb-group">
+            <button class="tbtn" id="btnInforme" onclick="generarInforme(false)" disabled title="Ver informe con carátula">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+                Informe
+            </button>
+            <button class="tbtn" id="btnPDF" onclick="generarInforme(true)" disabled title="Imprimir / Guardar PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                PDF
+            </button>
+        </div>
+        <div class="spacer"></div>
+        <div class="toolbar-select">
+            <label for="criterioSelector">🎯 Optimizar por:</label>
+            <select id="criterioSelector" onchange="cambiarCriterio(this.value)">
+                <option value="optimal">🎯 Costo mínimo</option>
+                <option value="economic">💰 Económica + Robusta</option>
+                <option value="robust">🏗️ Máxima robustez</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" id="tab-parametros" onclick="switchTab('parametros')">01 · Parámetros</button>
+        <button class="tab" id="tab-resultados" onclick="switchTab('resultados')">02 · Resultados</button>
+        <button class="tab" id="tab-graficos" onclick="switchTab('graficos')">03 · Gráficos</button>
+        <div class="spacer" id="tabsInfo">Sin calcular</div>
+    </div>
+
+    <div class="content">
+
+        <div class="view active" id="view-parametros">
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">00</span> Identificación del proyecto</h2>
+                    <span class="tag">Encabezado del informe</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Proyecto</label><input type="text" id="proyNombre" value="Edificio — Diseño estructural" /></div>
+                        <div class="field"><label>Elemento</label><input type="text" id="proyElemento" value="Viga principal — Nivel 3" /></div>
+                        <div class="field"><label>Norma</label><input type="text" id="proyNorma" value="ACI 318" /></div>
+                        <div class="field"><label>Ubicación</label><input type="text" id="proyUbicacion" value="—" /></div>
+                        <div class="field"><label>Responsable</label><input type="text" id="proyResponsable" value="—" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">01</span> Cargas y geometría</h2>
+                    <span class="tag">Solicitación y luz</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Momento último Mu (kN·m)</label><input type="number" id="Mu" value="50" min="1" step="1"></div>
+                        <div class="field"><label>Luz de viga L (m)</label><input type="number" id="L" value="8" min="1" max="30" step="0.5"></div>
+                        <div class="field"><label>Recubrimiento (cm)</label><input type="number" id="rec" value="5" min="2" max="10" step="0.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">02</span> Materiales</h2>
+                    <span class="tag">Resistencias características</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>f'c (MPa)</label>
+                            <select id="fck"><option value="21">21</option><option value="28" selected>28</option><option value="35">35</option><option value="42">42</option></select>
+                        </div>
+                        <div class="field"><label>fy (MPa)</label>
+                            <select id="fy"><option value="280">280</option><option value="420" selected>420</option><option value="500">500</option></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">03</span> Costos unitarios</h2>
+                    <span class="tag">USD</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Costo hormigón (USD/m³)</label><input type="number" id="costH" value="180" min="50" step="10"></div>
+                        <div class="field"><label>Costo acero (USD/kg)</label><input type="number" id="costA" value="1.2" min="0.5" step="0.1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">04</span> Rango de búsqueda de secciones</h2>
+                    <span class="tag">Barrido b × h</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>b mínimo (cm)</label><input type="number" id="bMin" value="20" min="10"></div>
+                        <div class="field"><label>b máximo (cm)</label><input type="number" id="bMax" value="50" min="10"></div>
+                        <div class="field"><label>h mínimo (cm)</label><input type="number" id="hMin" value="30" min="10"></div>
+                        <div class="field"><label>h máximo (cm)</label><input type="number" id="hMax" value="100" min="10"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">05</span> Diámetros de barra disponibles</h2>
+                    <span class="tag">φ (mm)</span>
+                </div>
+                <div class="card-body">
+                    <div class="diametros-grid">
+                        <label class="checkbox-item"><input type="checkbox" id="diam6"  value="6">  <span>φ6</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam8"  value="8" checked> <span>φ8</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam10" value="10" checked> <span>φ10</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam12" value="12" checked> <span>φ12</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam16" value="16" checked> <span>φ16</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam20" value="20" checked> <span>φ20</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="diam25" value="25"> <span>φ25</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="btn accent" onclick="calcular()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    Optimizar sección
+                </button>
+                <p class="hint" style="align-self:center;">Al terminar podrás ver el informe con carátula desde «Informe».</p>
+            </div>
+        </div>
+
+        <div class="view" id="view-resultados">
+            <div id="resultadosContainer"></div>
+            <div id="resultadosVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                <div style="font-size:12.5px;">Aún no se ha optimizado.</div>
+                <div style="font-size:11px;margin-top:2px;">Completa los parámetros y presiona «Calcular».</div>
+            </div>
+        </div>
+
+        <div class="view" id="view-graficos">
+            <div class="charts-row" id="chartsSection" style="display:none;">
+                <div class="chart-card"><canvas id="costChart"></canvas></div>
+                <div class="chart-card"><canvas id="costPieChart"></canvas></div>
+            </div>
+            <div id="chartsVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-7"/></svg>
+                <div style="font-size:12.5px;">Los gráficos aparecen luego de calcular.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="statusbar">
+        <div class="status-cell name"><span class="status-dot pending" id="statusDot"></span><span id="statusTexto">Listo</span></div>
+        <div class="status-cell" id="statusSeccion">b×h: — × — cm</div>
+        <div class="status-cell" id="statusMu">Mu: — kN·m</div>
+        <div class="status-cell" id="statusMateriales">f'c: — · fy: —</div>
+        <div class="spacer"></div>
+        <div class="status-cell" id="statusCriterio">Criterio: Costo mínimo</div>
+    </div>
+
+</div>
+
+<!-- ================= REPORT OVERLAY ================= -->
+<div id="reportOverlay">
+    <div class="report-toolbar">
+        <button class="btn" onclick="cerrarInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Volver
+        </button>
+        <span class="rt-title">Memoria de cálculo — Vista previa</span>
+        <span class="rt-sub" id="rtSub">ACI 318</span>
+        <div class="spacer"></div>
+        <button class="btn accent" onclick="imprimirInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+            Imprimir / Guardar PDF
+        </button>
+    </div>
+    <div class="report-scroll" id="reportScroll">
+        <div id="reporte"></div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+let criterioActual = 'optimal';
+let chartScatter = null;
+let chartPie = null;
+let ultimoResultado = null;
+
+/* Chart.js: fondo blanco para que el export a imagen se vea bien */
+const whiteBgPlugin = {
+    id: 'whiteBg',
+    beforeDraw: (chart) => {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+    }
+};
+
+function switchTab(tab){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const view = document.getElementById('view-' + tab);
+    const tabEl = document.getElementById('tab-' + tab);
+    if (view) view.classList.add('active');
+    if (tabEl) tabEl.classList.add('active');
+}
+
+function setStatus(msg, tipo){
+    document.getElementById('statusTexto').textContent = msg;
+    const dot = document.getElementById('statusDot');
+    dot.classList.remove('ok', 'pending', 'fail');
+    if (tipo === 'ok') dot.classList.add('ok');
+    else if (tipo === 'fail') dot.classList.add('fail');
+    else dot.classList.add('pending');
+}
+
+function actualizarStatusInfo(){
+    const Mu = document.getElementById('Mu').value || '—';
+    const fc = document.getElementById('fck').value || '—';
+    const fy = document.getElementById('fy').value || '—';
+    document.getElementById('statusMu').textContent = `Mu: ${Mu} kN·m`;
+    document.getElementById('statusMateriales').textContent = `f'c: ${fc} MPa · fy: ${fy} MPa`;
+    const map = {optimal:'Costo mínimo', economic:'Económica + Robusta', robust:'Máxima robustez'};
+    document.getElementById('statusCriterio').textContent = `Criterio: ${map[criterioActual] || '—'}`;
+}
+
+/* ================================================================
+   CÁLCULO DE ACERO
+   ================================================================ */
+function calcularAcero(Mu_kN, b, h, fck, fy, rec = 5) {
+    const d = h - rec;
+    if (d <= 0) return { As: 0, rho: 0, a: 0, d, valida: false, mensaje: 'd<=0' };
+    const fck_mpa = parseFloat(fck);
+    const fy_mpa = parseFloat(fy);
+    const fck_kNcm2 = fck_mpa / 10;
+    const fy_kNcm2 = fy_mpa / 10;
+    const Mu_kNcm = Mu_kN * 100;
+    const phi = 0.9;
+    const beta1 = (fck_mpa <= 28) ? 0.85 : Math.max(0.65, 0.85 - 0.05 * (fck_mpa - 28) / 7);
+    const A = (phi * fy_kNcm2 * fy_kNcm2) / (2 * 0.85 * fck_kNcm2 * b);
+    const B = -(phi * fy_kNcm2 * d);
+    const C = Mu_kNcm;
+    const disc = B * B - 4 * A * C;
+    if (disc < 0) return { As: 0, rho: 0, a: 0, d, valida: false, mensaje: 'disc<0' };
+    const As1 = (-B + Math.sqrt(disc)) / (2 * A);
+    const As2 = (-B - Math.sqrt(disc)) / (2 * A);
+    let As = (As1 > 0 && As1 < As2) ? As1 : As2;
+    if (As <= 0) As = (As1 > 0) ? As1 : As2;
+    const a = (As * fy_kNcm2) / (0.85 * fck_kNcm2 * b);
+    if (a > 0.85 * beta1 * d) return { As, rho: As / (b * d), a, d, valida: false, mensaje: 'sobrearmado' };
+    const rho = As / (b * d);
+    const rho_min = Math.max(0.25 * Math.sqrt(fck_mpa) / fy_mpa, 1.4 / fy_mpa);
+    const rho_max = 0.75 * (0.85 * fck_mpa * beta1 * 0.003) / (fy_mpa * (0.003 + 0.005));
+    let valida = true, mensaje = 'OK';
+    if (rho < rho_min) { valida = false; mensaje = `rho<rho_min`; }
+    else if (rho > rho_max) { valida = false; mensaje = `rho>rho_max`; }
+    return { As, rho, a, d, valida, mensaje, rho_min, rho_max };
+}
+
+/* ================================================================
+   ÁREAS DE BARRAS (φ6, φ8, φ10, φ12, φ16, φ20, φ25)
+   ================================================================ */
+const areaBarras = {
+    6: 0.283,
+    8: 0.503,
+    10: 0.785,
+    12: 1.131,
+    16: 2.011,
+    20: 3.142,
+    25: 4.909
+};
+
+function generarCombinaciones(AsRequerido, diametros, limite = 10) {
+    if (!Number.isFinite(AsRequerido) || AsRequerido <= 0 ||
+        !Array.isArray(diametros) || diametros.length === 0 ||
+        diametros.some(d => !Object.hasOwn(areaBarras, d)) ||
+        !Number.isInteger(limite) || limite <= 0) return [];
+    const diametrosUnicos = [...new Set(diametros.map(Number))].sort((a, b) => a - b);
+    const areas = diametrosUnicos.map(d => Math.round(areaBarras[d] * 1000));
+    const requerido = Math.ceil(AsRequerido * 1000);
+    if (!Number.isSafeInteger(requerido)) return [];
+    const maxArea = Math.max(Math.ceil(requerido * 1.3), requerido + Math.max(...areas));
+    const combinaciones = [];
+    const cantidades = new Array(areas.length).fill(0);
+    let visitados = 0;
+    const maxVisitados = 25000;
+    function buscar(areaAcumulada, indiceActual) {
+        if (++visitados > maxVisitados || combinaciones.length >= limite) return;
+        if (areaAcumulada >= requerido) {
+            const detalle = diametrosUnicos.flatMap((diametro, i) => cantidades[i] > 0
+                ? [{ diametro, cantidad: cantidades[i], area: cantidades[i] * areas[i] / 1000 }]
+                : []);
+            const areaTotal = areaAcumulada / 1000;
+            combinaciones.push({
+                areaTotal,
+                totalBarras: detalle.reduce((t, it) => t + it.cantidad, 0),
+                excesoPorc: (areaTotal - AsRequerido) / AsRequerido * 100,
+                combinacion: detalle
+            });
+            return;
+        }
+        if (indiceActual >= areas.length) return;
+        const maxBarras = Math.floor((maxArea - areaAcumulada) / areas[indiceActual]);
+        for (let n = 0; n <= maxBarras && visitados < maxVisitados && combinaciones.length < limite; n++) {
+            cantidades[indiceActual] = n;
+            buscar(areaAcumulada + n * areas[indiceActual], indiceActual + 1);
+        }
+        cantidades[indiceActual] = 0;
+    }
+    buscar(0, 0);
+    return combinaciones.sort((a, b) => a.areaTotal - b.areaTotal || a.totalBarras - b.totalBarras);
+}
+
+/* ================================================================
+   OPTIMIZACIÓN CON PARETO
+   ================================================================ */
+function optimizar() {
+    const Mu_kN = parseFloat(document.getElementById('Mu').value);
+    const L = parseFloat(document.getElementById('L').value);
+    const fck = document.getElementById('fck').value;
+    const fy = document.getElementById('fy').value;
+    const costoHormigon = parseFloat(document.getElementById('costH').value);
+    const costoAcero = parseFloat(document.getElementById('costA').value);
+    const rec = parseFloat(document.getElementById('rec').value);
+    const bMin = parseFloat(document.getElementById('bMin').value);
+    const bMax = parseFloat(document.getElementById('bMax').value);
+    const hMin = parseFloat(document.getElementById('hMin').value);
+    const hMax = parseFloat(document.getElementById('hMax').value);
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked');
+    const diametros = Array.from(checkboxes).map(cb => parseInt(cb.value)).sort((a, b) => a - b);
+
+    const valoresPositivos = [Mu_kN, L, Number(fck), Number(fy), bMin, bMax, hMin, hMax, rec];
+    let error = '';
+    if (valoresPositivos.some(v => !Number.isFinite(v) || v <= 0) ||
+        [costoHormigon, costoAcero].some(v => !Number.isFinite(v) || v < 0)) {
+        error = 'Completa los parámetros con números válidos.';
+    } else if (bMin > bMax || hMin > hMax) {
+        error = 'El mínimo de cada rango debe ser ≤ al máximo.';
+    } else if (rec >= hMin) {
+        error = 'El recubrimiento debe ser menor que la altura mínima.';
+    } else if ((Math.floor(bMax - bMin) + 1) * (Math.floor((hMax - hMin) / 2) + 1) > 5000) {
+        error = 'Reduce los rangos (máx. 5000 secciones).';
+    } else if (diametros.length === 0) {
+        error = 'Selecciona al menos un diámetro de barra.';
+    }
+    if (error) return { puntosValidos: [], mejor: null, error };
+
+    let candidatos = [];
+    let motivos = { dNegativo: 0, discNegativo: 0, sobrearmado: 0, rhoMin: 0, rhoMax: 0 };
+    let peorRho = null;
+
+    for (let b = bMin; b <= bMax; b += 1) {
+        for (let h = hMin; h <= hMax; h += 2) {
+            const r = calcularAcero(Mu_kN, b, h, fck, fy, rec);
+            if (!r.valida) {
+                if (r.mensaje === 'd<=0') motivos.dNegativo++;
+                else if (r.mensaje === 'disc<0') motivos.discNegativo++;
+                else if (r.mensaje === 'sobrearmado') motivos.sobrearmado++;
+                else if (r.mensaje.startsWith('rho<rho_min')) {
+                    motivos.rhoMin++;
+                    if (!peorRho || r.rho > peorRho.rho) peorRho = { b, h, rho: r.rho, rho_min: r.rho_min, As: r.As };
+                } else if (r.mensaje.startsWith('rho>rho_max')) motivos.rhoMax++;
+                continue;
+            }
+            const { As, rho, a, d } = r;
+            const Vol = (b * h / 10000) * L;
+            const pesoAcero = (As / 10000) * L * 7850;
+            const costoConcreto = Vol * costoHormigon;
+            const costoAceroMat = pesoAcero * costoAcero;
+            const costoTotal = costoConcreto + costoAceroMat;
+            const robustez = Math.max(0, Math.min(1, (r.rho_max - rho) / (r.rho_max - r.rho_min)));
+            candidatos.push({
+                b, h, d, As, rho, a,
+                costoConcreto, costoAceroMat, costo: costoTotal,
+                peso: pesoAcero, robustez, Vol, valida: true,
+                rho_min: r.rho_min, rho_max: r.rho_max
+            });
+        }
+    }
+
+    if (candidatos.length === 0) {
+        mostrarDiagnostico(motivos, peorRho, { bMin, bMax, hMin, hMax, Mu_kN });
+        return { puntosValidos: [], mejor: null };
+    }
+
+    let paretoOptimos = [];
+    for (let c1 of candidatos) {
+        let dominado = candidatos.some(c2 =>
+            c2.costo <= c1.costo && c2.robustez >= c1.robustez &&
+            (c2.costo < c1.costo || c2.robustez > c1.robustez));
+        if (!dominado) paretoOptimos.push(c1);
+    }
+    const optima_costo = candidatos.reduce((a, b) => a.costo < b.costo ? a : b);
+    const optima_economica = paretoOptimos.reduce((best, curr) => {
+        const sc = curr.costo * (1 - 0.25 * curr.robustez);
+        const sb = best.costo * (1 - 0.25 * best.robustez);
+        return sc < sb ? curr : best;
+    });
+    const optima_robusta = paretoOptimos.reduce((a, b) =>
+        a.robustez > b.robustez ? a : (a.robustez === b.robustez && a.costo < b.costo ? a : b));
+
+    let mejor;
+    if (criterioActual === 'optimal') mejor = optima_costo;
+    else if (criterioActual === 'economic') mejor = optima_economica;
+    else mejor = optima_robusta;
+
+    const top10 = [...candidatos].sort((a, b) => a.costo - b.costo).slice(0, 10);
+
+    return {
+        puntosValidos: candidatos, mejor,
+        optima_costo, optima_economica, optima_robusta,
+        top10, paretoOptimos,
+        params: { Mu_kN, L, fck, fy, costoHormigon, costoAcero, rec,
+                  bMin, bMax, hMin, hMax, diametros }
+    };
+}
+
+/* ================================================================
+   DIAGNÓSTICO
+   ================================================================ */
+function mostrarDiagnostico(motivos, peorRho, params) {
+    const total = motivos.dNegativo + motivos.discNegativo + motivos.sobrearmado + motivos.rhoMin + motivos.rhoMax;
+    let causaPrincipal = Object.entries(motivos).sort((a, b) => b[1] - a[1])[0];
+    let mensaje = '', sugerencia = '';
+    if (causaPrincipal[0] === 'rhoMin' && motivos.rhoMin === total) {
+        mensaje = `Con Mu = ${params.Mu_kN} kN·m, todas las secciones están <strong>sobredimensionadas</strong>.`;
+        sugerencia = peorRho ? `Prueba reduciendo h_max a ~${Math.max(20, Math.round(peorRho.h * Math.sqrt(peorRho.rho_min / peorRho.rho)))} cm.` : `Reduce h_max a 20-40 cm.`;
+    } else if (causaPrincipal[0] === 'rhoMax' && motivos.rhoMax === total) {
+        mensaje = `Todas las secciones están <strong>subdimensionadas</strong> (cuantía máxima superada).`;
+        sugerencia = `Aumenta b_max y h_max, o sube f'c.`;
+    } else if (causaPrincipal[0] === 'sobrearmado' && motivos.sobrearmado === total) {
+        mensaje = `Todas las secciones resultan <strong>sobrearmadas</strong>.`;
+        sugerencia = `Aumenta el ancho b o el peralte h.`;
+    } else if (causaPrincipal[0] === 'dNegativo' && motivos.dNegativo === total) {
+        mensaje = `El peralte efectivo d = h − rec es muy pequeño.`;
+        sugerencia = `Aumenta h_min.`;
+    } else {
+        mensaje = `No se encontraron secciones válidas.`;
+        sugerencia = `Amplía el rango de b y h.`;
+    }
+    const html = `
+        <div class="diag-box">
+            <h3>⚠️ No se encontraron secciones válidas</h3>
+            <p style="margin-bottom: 10px;">${mensaje}</p>
+            <div class="diag-sugerencia"><strong>💡 Sugerencia:</strong> ${sugerencia}</div>
+            <div class="diag-detail">${total} combinaciones — ${motivos.rhoMin} bajo cuantía mín., ${motivos.rhoMax} sobre cuantía máx., ${motivos.sobrearmado} sobrearmadas, ${motivos.dNegativo} peralte inválido, ${motivos.discNegativo} sección insuficiente.</div>
+        </div>`;
+    document.getElementById('resultadosContainer').innerHTML = html;
+    document.getElementById('resultadosContainer').style.display = 'block';
+    document.getElementById('resultadosVacio').style.display = 'none';
+    document.getElementById('chartsSection').style.display = 'none';
+    document.getElementById('chartsVacio').style.display = 'block';
+    document.getElementById('statusSeccion').textContent = 'b×h: — × — cm';
+    setStatus('Sin secciones válidas — ver diagnóstico', 'fail');
+    document.getElementById('tabsInfo').textContent = 'Sin secciones';
+    switchTab('resultados');
+}
+
+/* ================================================================
+   RENDERIZAR RESULTADOS
+   ================================================================ */
+function renderizarResultados(resultado) {
+    if (!resultado.mejor) return;
+    const m = resultado.mejor;
+    const oc = resultado.optima_costo;
+    const oe = resultado.optima_economica;
+    const or_ = resultado.optima_robusta;
+    const L = parseFloat(document.getElementById('L').value);
+    const costoAcero = parseFloat(document.getElementById('costA').value);
+
+    const marcador = (crit) => criterioActual === crit ? ' class="summary-item marcado"' : ' class="summary-item"';
+    const dif = c => oc.costo > 0 ? `${((c / oc.costo - 1) * 100).toFixed(1)}% vs óptima` : '—';
+
+    let html = '';
+
+    html += `
+        <div class="card">
+            <div class="card-head">
+                <h2><span class="idx">R1</span> Comparativa de criterios de optimización</h2>
+                <span class="tag">Frontera de Pareto</span>
+            </div>
+            <div class="card-body">
+                <div class="summary-box">
+                    <div${marcador('optimal')}>
+                        <div class="summary-item-label">🎯 Óptima (costo mínimo)</div>
+                        <div class="summary-item-value">${oc.b}×${oc.h} cm</div>
+                        <div class="summary-item-meta">Costo: $${oc.costo.toFixed(2)}<br>Robustez: ${(oc.robustez*100).toFixed(0)}%</div>
+                    </div>
+                    <div${marcador('economic')}>
+                        <div class="summary-item-label">💰 Económica + Robusta</div>
+                        <div class="summary-item-value">${oe.b}×${oe.h} cm</div>
+                        <div class="summary-item-meta">Costo: $${oe.costo.toFixed(2)} (${dif(oe.costo)})<br>Robustez: ${(oe.robustez*100).toFixed(0)}%</div>
+                    </div>
+                    <div${marcador('robust')}>
+                        <div class="summary-item-label">🏗️ Máxima Robustez</div>
+                        <div class="summary-item-value">${or_.b}×${or_.h} cm</div>
+                        <div class="summary-item-meta">Costo: $${or_.costo.toFixed(2)} (${dif(or_.costo)})<br>Robustez: ${(or_.robustez*100).toFixed(0)}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    html += `
+        <div class="card">
+            <div class="card-head">
+                <h2><span class="idx">R2</span> Sección seleccionada</h2>
+                <span class="tag">Criterio activo</span>
+            </div>
+            <div class="card-body">
+                <div class="summary-box">
+                    <div class="summary-item"><div class="summary-item-label">Base (b)</div><div class="summary-item-value">${m.b} cm</div></div>
+                    <div class="summary-item"><div class="summary-item-label">Peralte (h)</div><div class="summary-item-value">${m.h} cm</div></div>
+                    <div class="summary-item"><div class="summary-item-label">d efectivo</div><div class="summary-item-value">${m.d.toFixed(1)} cm</div></div>
+                    <div class="summary-item"><div class="summary-item-label">As requerido</div><div class="summary-item-value">${m.As.toFixed(2)} cm²</div></div>
+                    <div class="summary-item"><div class="summary-item-label">Cuantía ρ</div><div class="summary-item-value">${(m.rho * 100).toFixed(2)} %</div></div>
+                    <div class="summary-item"><div class="summary-item-label">Costo teórico</div><div class="summary-item-value">$${m.costo.toFixed(2)}</div></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    html += `
+        <div class="card">
+            <div class="card-head">
+                <h2><span class="idx">R3</span> Combinaciones propuestas de barras</h2>
+                <span class="tag">Hasta 10 alternativas</span>
+            </div>
+            <div class="card-body">
+    `;
+
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked');
+    const diametros = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    const combinaciones = generarCombinaciones(m.As, diametros, 10);
+
+    if (combinaciones.length === 0) {
+        html += '<p style="color:var(--fail);">No se encontraron combinaciones válidas con los diámetros seleccionados.</p>';
+    } else {
+        html += `<div style="overflow-x:auto;"><table class="tbl"><thead><tr>
+            <th>#</th><th>Armado</th><th>As real (cm²)</th><th>Exceso (%)</th><th>N° barras</th><th>Costo acero (USD)</th><th>Acción</th>
+        </tr></thead><tbody>`;
+        combinaciones.forEach((comb, idx) => {
+            const armadoStr = comb.combinacion.filter(i => i.cantidad > 0).map(i => `${i.cantidad}φ${i.diametro}`).join(' + ');
+            const pesoReal = (comb.areaTotal / 10000) * L * 7850;
+            const costoAceroReal = pesoReal * costoAcero;
+            html += `<tr ${idx === 0 ? 'class="optimo"' : ''}>
+                <td>${idx + 1}</td>
+                <td class="left"><strong>${armadoStr}</strong></td>
+                <td>${comb.areaTotal.toFixed(2)}</td>
+                <td>${comb.excesoPorc.toFixed(1)}%</td>
+                <td>${comb.totalBarras}</td>
+                <td>$${costoAceroReal.toFixed(2)}</td>
+                <td><button class="btn-seleccionar" data-idx="${idx}">Seleccionar</button></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div><p class="hint">✅ Haz clic en «Seleccionar» para elegir el armado.</p>`;
+    }
+    html += `</div></div>`;
+
+    document.getElementById('resultadosContainer').innerHTML = html;
+    document.getElementById('resultadosContainer').style.display = 'block';
+    document.getElementById('resultadosVacio').style.display = 'none';
+    document.getElementById('chartsSection').style.display = 'grid';
+    document.getElementById('chartsVacio').style.display = 'none';
+
+    document.getElementById('statusSeccion').textContent = `b×h: ${m.b} × ${m.h} cm`;
+    document.getElementById('tabsInfo').textContent = `Óptimo: ${m.b}×${m.h} cm · $${m.costo.toFixed(0)}`;
+    setStatus('Optimización completada', 'ok');
+    actualizarStatusInfo();
+
+    renderCharts(resultado.puntosValidos, m, resultado.paretoOptimos, resultado);
+
+    document.querySelectorAll('.btn-seleccionar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-seleccionar').forEach(b => b.classList.remove('seleccionado'));
+            this.classList.add('seleccionado');
+        });
+    });
+    const firstBtn = document.querySelector('.btn-seleccionar');
+    if (firstBtn) firstBtn.classList.add('seleccionado');
+
+    // Habilitar botones de informe
+    document.getElementById('btnInforme').disabled = false;
+    document.getElementById('btnPDF').disabled = false;
+}
+
+/* ================================================================
+   GRÁFICOS
+   ================================================================ */
+function renderCharts(puntos, mejor, paretoOptimos, resultado) {
+    const ctxScatter = document.getElementById('costChart').getContext('2d');
+    if (chartScatter) chartScatter.destroy();
+
+    const bValues = puntos.map(p => p.b);
+    const minB = Math.min(...bValues);
+    const maxB = Math.max(...bValues);
+    const rangeB = (maxB - minB) || 1;
+
+    const scatterData = puntos.map(p => ({ x: p.h, y: p.costo, b: p.b }));
+    const colores = scatterData.map(p => {
+        const ratio = (p.b - minB) / rangeB;
+        const r = Math.round(50 + 205 * ratio);
+        const bl = Math.round(255 - 205 * ratio);
+        return `rgba(${r}, 80, ${bl}, 0.5)`;
+    });
+
+    const datasets = [{
+        label: 'Secciones válidas',
+        data: scatterData,
+        backgroundColor: colores,
+        borderColor: colores.map(c => c.replace('0.5', '1')),
+        pointRadius: 4, pointHoverRadius: 7,
+    }];
+
+    if (paretoOptimos && paretoOptimos.length > 0) {
+        datasets.push({
+            label: '◆ Frontera Pareto',
+            data: paretoOptimos.map(p => ({ x: p.h, y: p.costo })),
+            backgroundColor: 'rgba(14, 108, 179, 0.3)',
+            borderColor: 'rgba(14, 108, 179, 1)',
+            pointRadius: 6, pointBorderWidth: 2, pointBorderColor: '#fff',
+            showLine: false,
+        });
+    }
+    if (resultado && resultado.optima_costo) {
+        datasets.push({ label: '🎯 Óptima (costo)', data: [{ x: resultado.optima_costo.h, y: resultado.optima_costo.costo }], backgroundColor: 'rgba(18, 128, 63, 0.9)', borderColor: 'rgba(18, 128, 63, 1)', pointRadius: 10, pointHoverRadius: 14, pointBorderColor: 'white', pointBorderWidth: 2, pointStyle: 'triangle' });
+        datasets.push({ label: '💰 Económica + Robusta', data: [{ x: resultado.optima_economica.h, y: resultado.optima_economica.costo }], backgroundColor: 'rgba(151, 96, 10, 0.9)', borderColor: 'rgba(151, 96, 10, 1)', pointRadius: 10, pointHoverRadius: 14, pointBorderColor: 'white', pointBorderWidth: 2, pointStyle: 'rectRot' });
+        datasets.push({ label: '🏗️ Máxima Robustez', data: [{ x: resultado.optima_robusta.h, y: resultado.optima_robusta.costo }], backgroundColor: 'rgba(14, 108, 179, 0.9)', borderColor: 'rgba(14, 108, 179, 1)', pointRadius: 10, pointHoverRadius: 14, pointBorderColor: 'white', pointBorderWidth: 2, pointStyle: 'rect' });
+    }
+    if (mejor) {
+        datasets.push({ label: '★ Seleccionada', data: [{ x: mejor.h, y: mejor.costo }], backgroundColor: 'rgba(0,0,0,0)', borderColor: 'rgba(191, 42, 42, 1)', pointRadius: 18, pointHoverRadius: 20, pointBorderWidth: 3 });
+    }
+
+    chartScatter = new Chart(ctxScatter, {
+        type: 'scatter',
+        data: { datasets },
+        plugins: [whiteBgPlugin],
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true, labels: { usePointStyle: true, padding: 12, font: { size: 10 } } },
+                tooltip: { callbacks: { label: ctx => { const r = ctx.raw; if (r.b !== undefined) return `b=${r.b}cm, h=${r.x}cm, $${r.y.toFixed(0)}`; return `h=${r.x}cm, $${r.y.toFixed(0)}`; } } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Peralte (h) [cm]', font: { weight: 'bold', size: 11 } } },
+                y: { title: { display: true, text: 'Costo Total (USD)', font: { weight: 'bold', size: 11 } } }
+            }
+        }
+    });
+
+    const ctxPie = document.getElementById('costPieChart').getContext('2d');
+    if (chartPie) chartPie.destroy();
+    chartPie = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Hormigón', 'Acero'],
+            datasets: [{
+                data: [mejor.costoConcreto, mejor.costoAceroMat],
+                backgroundColor: ['#3b82f6', '#f59e0b'],
+                borderColor: ['#1e40af', '#b45309'],
+                borderWidth: 2
+            }]
+        },
+        plugins: [whiteBgPlugin],
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, font: { size: 11 } } },
+                tooltip: { callbacks: { label: ctx => { const total = ctx.dataset.data.reduce((a, b) => a + b, 0); if (total === 0) return `${ctx.label}: $0`; const pct = ((ctx.parsed / total) * 100).toFixed(1); return `${ctx.label}: $${ctx.parsed.toFixed(0)} (${pct}%)`; } } }
+            }
+        }
+    });
+}
+
+/* ================================================================
+   CONTROLES
+   ================================================================ */
+function cambiarCriterio(valor) {
+    criterioActual = valor;
+    actualizarStatusInfo();
+    if (document.getElementById('resultadosContainer').style.display !== 'none' &&
+        document.getElementById('resultadosContainer').innerHTML.trim() !== '') {
+        calcular();
+    }
+}
+
+function calcular() {
+    setStatus('Optimizando...', '');
+    setTimeout(() => {
+        const resultado = optimizar();
+        if (resultado.error) {
+            const c = document.getElementById('resultadosContainer');
+            c.innerHTML = `<div class="diag-box"><h3>⚠️ Parámetros incorrectos</h3><p>${resultado.error}</p></div>`;
+            c.style.display = 'block';
+            document.getElementById('resultadosVacio').style.display = 'none';
+            document.getElementById('chartsSection').style.display = 'none';
+            document.getElementById('chartsVacio').style.display = 'block';
+            setStatus('Revisa los parámetros', 'fail');
+            switchTab('resultados');
+            return;
+        }
+        if (!resultado.mejor) return;
+        ultimoResultado = resultado;
+        renderizarResultados(resultado);
+        switchTab('resultados');
+    }, 100);
+}
+
+function limpiarTodo() {
+    document.getElementById('Mu').value = 50;
+    document.getElementById('L').value = 8;
+    document.getElementById('fck').value = 28;
+    document.getElementById('fy').value = 420;
+    document.getElementById('costH').value = 180;
+    document.getElementById('costA').value = 1.2;
+    document.getElementById('rec').value = 5;
+    document.getElementById('bMin').value = 20;
+    document.getElementById('bMax').value = 50;
+    document.getElementById('hMin').value = 30;
+    document.getElementById('hMax').value = 100;
+    document.getElementById('diam6').checked = false;
+    document.getElementById('diam8').checked = true;
+    document.getElementById('diam10').checked = true;
+    document.getElementById('diam12').checked = true;
+    document.getElementById('diam16').checked = true;
+    document.getElementById('diam20').checked = true;
+    document.getElementById('diam25').checked = false;
+    document.getElementById('resultadosContainer').innerHTML = '';
+    document.getElementById('resultadosContainer').style.display = 'none';
+    document.getElementById('resultadosVacio').style.display = 'block';
+    document.getElementById('chartsSection').style.display = 'none';
+    document.getElementById('chartsVacio').style.display = 'block';
+    document.getElementById('statusSeccion').textContent = 'b×h: — × — cm';
+    document.getElementById('tabsInfo').textContent = 'Sin calcular';
+    document.getElementById('btnInforme').disabled = true;
+    document.getElementById('btnPDF').disabled = true;
+    ultimoResultado = null;
+    setStatus('Listo', '');
+    actualizarStatusInfo();
+    switchTab('parametros');
+}
+
+/* ================================================================
+   INFORME CON CARÁTULA
+   ================================================================ */
+function hoyTexto(){
+    return new Date().toLocaleDateString('es-BO', { year:'numeric', month:'long', day:'numeric' });
+}
+
+function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function generarInforme(imprimir){
+    if (!ultimoResultado || !ultimoResultado.mejor){
+        alert('Primero optimiza una sección.');
+        return;
+    }
+    const R = ultimoResultado;
+    const m = R.mejor;
+    const oc = R.optima_costo;
+    const oe = R.optima_economica;
+    const or_ = R.optima_robusta;
+    const P = R.params;
+
+    const proyecto = document.getElementById('proyNombre').value || '—';
+    const elemento = document.getElementById('proyElemento').value || '—';
+    const norma = document.getElementById('proyNorma').value || 'ACI 318';
+    const ubicacion = document.getElementById('proyUbicacion').value || '—';
+    const responsable = document.getElementById('proyResponsable').value || '—';
+
+    const L = P.L;
+    const costoAcero = P.costoAcero;
+    const combinaciones = generarCombinaciones(m.As, P.diametros, 10);
+    const mapCriterio = {optimal:'Costo mínimo', economic:'Económica + Robusta', robust:'Máxima robustez'};
+    const criterioNombre = mapCriterio[criterioActual] || '—';
+
+    /* Imágenes de gráficos */
+    const imgScatter = chartScatter ? chartScatter.toBase64Image('image/png', 1) : '';
+    const imgPie = chartPie ? chartPie.toBase64Image('image/png', 1) : '';
+
+    /* --- CARÁTULA --- */
+    const caratula = `
+    <div class="report-page">
+        <div class="caratula">
+            <div class="c-top">
+                <span class="c-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#16222e" stroke-width="1.6">
+                        <path d="M3 20h18"/><path d="M5 20V9l7-5 7 5v11"/>
+                        <line x1="9" y1="20" x2="9" y2="13"/><line x1="15" y1="20" x2="15" y2="13"/>
+                    </svg>
+                </span>
+                <div>
+                    <div class="c-org">Memoria de cálculo estructural</div>
+                    <div class="c-sub">Optimización de sección de viga · Diseño a flexión</div>
+                </div>
+            </div>
+            <div class="c-body">
+                <div class="c-kicker">Informe técnico de diseño</div>
+                <h1 class="c-title">Optimización de Viga a Flexión<small>Búsqueda de sección óptima · Criterios costo-robustez</small></h1>
+                <div class="c-rule"></div>
+                <div class="c-meta">
+                    <table>
+                        <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td></tr>
+                        <tr><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                        <tr><td class="k">Norma</td><td>${esc(norma)}</td></tr>
+                        <tr><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                        <tr><td class="k">Responsable</td><td>${esc(responsable)}</td></tr>
+                        <tr><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="c-foot">
+                <span>SMF-Beam Design · Optimizador</span>
+                <span>Documento generado automáticamente</span>
+            </div>
+        </div>
+    </div>`;
+
+    /* --- MEMORIA --- */
+    const memoria = `
+    <div class="report-page">
+        <div class="r-head">
+            <h1>Memoria de cálculo</h1>
+            <div class="r-sub">Optimización de sección · ${esc(norma)} · ${esc(hoyTexto())}</div>
+        </div>
+
+        <div class="r-section">
+            <h2>1. Datos generales</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                <tr><td class="k">Norma</td><td>${esc(norma)}</td><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                <tr><td class="k">Responsable</td><td>${esc(responsable)}</td><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>2. Parámetros de diseño</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Momento último Mu</td><td>${P.Mu_kN} kN·m</td><td class="k">Luz L</td><td>${P.L} m</td></tr>
+                <tr><td class="k">f'c</td><td>${P.fck} MPa</td><td class="k">fy</td><td>${P.fy} MPa</td></tr>
+                <tr><td class="k">Recubrimiento</td><td>${P.rec} cm</td><td class="k">Criterio activo</td><td>${criterioNombre}</td></tr>
+                <tr><td class="k">Costo hormigón</td><td>${P.costoHormigon} USD/m³</td><td class="k">Costo acero</td><td>${P.costoAcero} USD/kg</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>3. Rango de búsqueda</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">b (cm)</td><td>${P.bMin} — ${P.bMax}</td><td class="k">h (cm)</td><td>${P.hMin} — ${P.hMax}</td></tr>
+                <tr><td class="k">Diámetros φ (mm)</td><td colspan="3">${P.diametros.join(', ')}</td></tr>
+            </table>
+            <div class="r-note">Se evaluaron ${R.puntosValidos.length} secciones válidas. La frontera de Pareto contiene ${R.paretoOptimos.length} secciones no dominadas.</div>
+        </div>
+
+        <div class="r-section">
+            <h2>4. Comparativa de criterios — secciones óptimas</h2>
+            <table class="r-tbl">
+                <thead>
+                    <tr><th>Criterio</th><th>b (cm)</th><th>h (cm)</th><th>As (cm²)</th><th>ρ (%)</th><th>Robustez (%)</th><th>Costo (USD)</th><th>Δ costo</th></tr>
+                </thead>
+                <tbody>
+                    <tr${criterioActual==='optimal'?' class="optimo"':''}><td class="left">🎯 Costo mínimo</td><td>${oc.b}</td><td>${oc.h}</td><td>${oc.As.toFixed(2)}</td><td>${(oc.rho*100).toFixed(2)}</td><td>${(oc.robustez*100).toFixed(0)}</td><td>$${oc.costo.toFixed(2)}</td><td>—</td></tr>
+                    <tr${criterioActual==='economic'?' class="optimo"':''}><td class="left">💰 Económica + Robusta</td><td>${oe.b}</td><td>${oe.h}</td><td>${oe.As.toFixed(2)}</td><td>${(oe.rho*100).toFixed(2)}</td><td>${(oe.robustez*100).toFixed(0)}</td><td>$${oe.costo.toFixed(2)}</td><td>${oc.costo>0?((oe.costo/oc.costo-1)*100).toFixed(1)+'%':'—'}</td></tr>
+                    <tr${criterioActual==='robust'?' class="optimo"':''}><td class="left">🏗️ Máxima robustez</td><td>${or_.b}</td><td>${or_.h}</td><td>${or_.As.toFixed(2)}</td><td>${(or_.rho*100).toFixed(2)}</td><td>${(or_.robustez*100).toFixed(0)}</td><td>$${or_.costo.toFixed(2)}</td><td>${oc.costo>0?((or_.costo/oc.costo-1)*100).toFixed(1)+'%':'—'}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>5. Sección seleccionada y armado propuesto</h2>
+            <div class="r-kpi">
+                <div class="r-kpi-box"><div class="k">Sección</div><div class="v">${m.b} × ${m.h} cm</div></div>
+                <div class="r-kpi-box"><div class="k">Peralte efectivo d</div><div class="v">${m.d.toFixed(1)} cm</div></div>
+                <div class="r-kpi-box"><div class="k">As requerido</div><div class="v">${m.As.toFixed(2)} cm²</div></div>
+            </div>
+            <div class="r-kpi">
+                <div class="r-kpi-box"><div class="k">Cuantía ρ</div><div class="v">${(m.rho*100).toFixed(2)} %</div></div>
+                <div class="r-kpi-box"><div class="k">Robustez</div><div class="v">${(m.robustez*100).toFixed(0)} %</div></div>
+                <div class="r-kpi-box"><div class="k">Costo teórico</div><div class="v">$${m.costo.toFixed(2)}</div></div>
+            </div>
+            ${combinaciones.length > 0 ? `
+                <p style="font-size:10.5px;color:#586673;margin:8px 0 4px;">Armado propuesto (primera alternativa, menor exceso de área):</p>
+                <table class="r-tbl">
+                    <thead><tr><th>Armado</th><th>As real (cm²)</th><th>Exceso</th><th>N° barras</th><th>Costo acero (USD)</th></tr></thead>
+                    <tbody>
+                        <tr class="optimo">
+                            <td class="left"><strong>${combinaciones[0].combinacion.filter(i=>i.cantidad>0).map(i=>`${i.cantidad}φ${i.diametro}`).join(' + ')}</strong></td>
+                            <td>${combinaciones[0].areaTotal.toFixed(2)}</td>
+                            <td>${combinaciones[0].excesoPorc.toFixed(1)}%</td>
+                            <td>${combinaciones[0].totalBarras}</td>
+                            <td>$${((combinaciones[0].areaTotal/10000)*L*7850*costoAcero).toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            ` : '<p style="color:#bf2a2a;font-size:10.5px;">No se pudieron generar combinaciones de barras con los diámetros seleccionados.</p>'}
+        </div>
+
+        <div class="page-foot"><span>${esc(elemento)}</span><span>Página 2</span></div>
+    </div>`;
+
+    /* --- ANEXO --- */
+    let anexo = `
+    <div class="report-page">
+        <div class="r-head"><h1>Anexo — Alternativas y análisis gráfico</h1><div class="r-sub">Combinaciones de barras y resultados de optimización</div></div>
+
+        <div class="r-section">
+            <h2>6. Alternativas de armado</h2>
+            ${combinaciones.length > 0 ? `
+                <table class="r-tbl">
+                    <thead><tr><th>#</th><th>Armado</th><th>As real (cm²)</th><th>Exceso (%)</th><th>N° barras</th><th>Costo acero (USD)</th></tr></thead>
+                    <tbody>
+                        ${combinaciones.map((c, idx) => {
+                            const arm = c.combinacion.filter(i=>i.cantidad>0).map(i=>`${i.cantidad}φ${i.diametro}`).join(' + ');
+                            const costoReal = (c.areaTotal/10000)*L*7850*costoAcero;
+                            return `<tr${idx===0?' class="optimo"':''}><td>${idx+1}</td><td class="left"><strong>${arm}</strong></td><td>${c.areaTotal.toFixed(2)}</td><td>${c.excesoPorc.toFixed(1)}%</td><td>${c.totalBarras}</td><td>$${costoReal.toFixed(2)}</td></tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div class="r-note">El armado resaltado corresponde a la menor área total que cumple el As requerido. Verificar separación libre entre barras y disposición física antes de adoptar.</div>
+            ` : '<p style="font-size:10.5px;">Sin combinaciones disponibles.</p>'}
+        </div>
+
+        <div class="r-section">
+            <h2>7. Análisis gráfico</h2>
+            <div class="r-charts">
+                <div><p style="font-size:9.5px;color:#586673;margin:0 0 4px;">Costo vs. peralte — frontera de Pareto</p>${imgScatter?`<img src="${imgScatter}" alt="Scatter">`:''}</div>
+                <div><p style="font-size:9.5px;color:#586673;margin:0 0 4px;">Distribución de costos — sección seleccionada</p>${imgPie?`<img src="${imgPie}" alt="Pie">`:''}</div>
+            </div>
+        </div>
+
+        <div class="r-section">
+            <h2>8. Notas y observaciones</h2>
+            <ul style="font-size:10.5px;color:#586673;margin:0;padding-left:18px;line-height:1.5;">
+                <li>Los costos presentados son teóricos de materiales (hormigón + acero) según los valores unitarios introducidos.</li>
+                <li>La <b>robustez</b> se define como el margen normalizado entre ρ y ρ_max; mayor valor indica mayor reserva de ductilidad.</li>
+                <li>La <b>frontera de Pareto</b> agrupa secciones donde ninguna otra mejora simultáneamente en costo y robustez.</li>
+                <li>El armado propuesto es orientativo; verificar cuantías mínimas/máximas, separación entre barras y recubrimientos según norma.</li>
+                <li>Los gráficos corresponden a la sección evaluada al momento de generar este informe.</li>
+            </ul>
+        </div>
+
+        <div class="page-foot"><span>${esc(elemento)}</span><span>Página 3</span></div>
+    </div>`;
+
+    document.getElementById('reporte').innerHTML = caratula + memoria + anexo;
+    document.getElementById('rtSub').textContent = `${norma} · ${elemento}`;
+    document.getElementById('reportOverlay').classList.add('open');
+    if (imprimir) setTimeout(() => window.print(), 200);
+}
+
+function cerrarInforme(){
+    document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function imprimirInforme(){
+    window.print();
+}
+
+/* ================================================================
+   INICIO
+   ================================================================ */
+window.addEventListener('DOMContentLoaded', function(){
+    setStatus('Listo', '');
+    actualizarStatusInfo();
+    ['Mu','L','fck','fy','costH','costA','rec','bMin','bMax','hMin','hMax'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.addEventListener('input', actualizarStatusInfo); el.addEventListener('change', actualizarStatusInfo); }
+    });
+    setTimeout(calcular, 500);
+});
+</script>
+
+</body>
+</html>

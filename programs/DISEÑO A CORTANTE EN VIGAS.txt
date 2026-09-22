@@ -1,0 +1,1065 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symmetrica Ingeniería | Diseño de Estribos en Vigas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiI+PHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTMiIGZpbGw9IiMxNTI3MzMiLz48ZyBzdHJva2U9IiNmZmYiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTE1IDE1aDQydjQySDE1VjE1Wm0wIDI2aDE4djE2Ii8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik0xMSAxMWg4djhoLTh6bTQyIDBoOHY4aC04ek0xMSA1M2g4djhoLTh6bTQyIDBoOHY4aC04eiIvPjwvZz48L3N2Zz4=">
+
+    <style>
+        :root{
+            --bg:#dfe3e7; --panel:#ffffff; --panel-alt:#f4f6f8; --panel-head:#eaeef1;
+            --line:#c4ccd4; --line-soft:#dde3e8; --ink:#1b2733; --ink-soft:#586673;
+            --ink-faint:#8a95a0; --accent:#152733; --accent-dark:#0a1820; --accent-soft:#e6ecf0;
+            --symmetrica-red:#ca244b;
+            --ok:#12803f; --ok-bg:#e3f4e9; --fail:#bf2a2a; --fail-bg:#fae7e7;
+            --warn:#97600a; --warn-bg:#faf0dc; --radius:3px;
+        }
+        *{box-sizing:border-box;}
+        html,body{height:100%;margin:0;}
+        body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);font-size:12.5px;-webkit-font-smoothing:antialiased;}
+        .mono{font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== LAYOUT ====== */
+        .app{display:grid;grid-template-rows:46px 30px 1fr 22px;height:100vh;}
+
+        /* ====== TOOLBAR ====== */
+        .toolbar{
+            display:flex;align-items:center;gap:4px;
+            background:linear-gradient(#f3f6f7,#e9edf0);
+            border-bottom:1px solid var(--line);
+            padding:0 8px;
+        }
+        .tb-brand{
+            display:flex;align-items:center;gap:10px;
+            padding:0 14px 0 6px;
+            border-right:1px solid var(--line-soft);
+            height:100%;
+            text-decoration:none;
+            color:var(--accent);
+        }
+        .tb-brand svg{width:30px;height:31px;flex:none;}
+        .tb-brand-text{display:flex;flex-direction:column;line-height:1;}
+        .tb-brand-text .name{
+            font-size:14px;font-weight:300;letter-spacing:1.5px;
+            display:flex;align-items:center;color:var(--accent);
+        }
+        .tb-brand-text .name .axis{
+            height:14px;border-left:2px dashed var(--symmetrica-red);
+            margin:0 2px;
+        }
+        .tb-brand-text .sub{
+            font-size:9px;color:var(--ink-faint);letter-spacing:.08em;
+            text-transform:uppercase;margin-top:3px;font-weight:500;
+        }
+
+        .tb-group{display:flex;align-items:center;gap:2px;padding:0 7px;height:100%;}
+        .tb-group + .tb-group{border-left:1px solid var(--line-soft);}
+        .tbtn{
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+            min-width:52px;height:38px;padding:2px 7px;border:1px solid transparent;border-radius:var(--radius);
+            background:transparent;cursor:pointer;color:var(--ink);font-size:10px;font-family:'IBM Plex Sans',sans-serif;
+        }
+        .tbtn svg{width:17px;height:17px;}
+        .tbtn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .tbtn:active{background:#d6e2ea;}
+        .tbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+        .tbtn.primary:hover{background:var(--accent-dark);}
+        .tbtn.primary svg{stroke:#fff;}
+        .tbtn[disabled]{opacity:.45;cursor:default;}
+        .toolbar .spacer{flex:1;}
+
+        /* ====== TABS ====== */
+        .tabs{display:flex;align-items:flex-end;gap:1px;background:var(--panel-head);border-bottom:1px solid var(--line);padding:0 8px;}
+        .tab{
+            border:1px solid var(--line);border-bottom:none;
+            background:linear-gradient(#eef1f3,#e3e7ea);
+            color:var(--ink-soft);font-size:11.5px;font-weight:500;
+            padding:5px 16px 4px;cursor:pointer;border-radius:3px 3px 0 0;position:relative;top:1px;
+        }
+        .tab:hover{color:var(--ink);}
+        .tab.active{background:var(--panel);color:var(--accent-dark);font-weight:600;top:1px;box-shadow:0 -2px 0 var(--accent) inset;}
+        .tabs .spacer{flex:1;padding:4px 8px 0;font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+
+        /* ====== CONTENT ====== */
+        .content{overflow-y:auto;overflow-x:hidden;padding:12px;}
+        .view{display:none;}
+        .view.active{display:block;}
+
+        /* ====== STATUS ====== */
+        .statusbar{
+            display:flex;align-items:center;gap:16px;
+            background:linear-gradient(#eef1f3,#e5e9ec);
+            border-top:1px solid var(--line);
+            font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);
+            padding:0 10px;overflow:hidden;white-space:nowrap;
+        }
+        .status-cell{display:flex;align-items:center;gap:5px;}
+        .status-cell.name{background:var(--panel);border:1px solid var(--line-soft);border-radius:2px;padding:1px 8px;}
+        .status-dot{width:7px;height:7px;border-radius:50%;background:#a9b3bd;flex:none;}
+        .status-dot.ok{background:#2ea35a;}
+        .status-dot.pending{background:#d69a2d;}
+        .status-dot.fail{background:#d04545;}
+        .statusbar .spacer{flex:1;}
+
+        /* ====== CARDS ====== */
+        .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;}
+        .card-head{
+            display:flex;align-items:center;justify-content:space-between;
+            background:linear-gradient(#f7f9fa,#eef1f3);
+            border-bottom:1px solid var(--line);padding:5px 10px;
+        }
+        .card-head h2{font-size:12px;font-weight:600;margin:0;display:flex;align-items:center;gap:7px;color:var(--ink);}
+        .card-head h2 .idx{
+            font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;background:var(--accent);
+            border-radius:2px;padding:0 5px;line-height:16px;
+        }
+        .card-head .tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+        .card-body{padding:10px;}
+
+        .grid-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+        .field label{display:block;font-size:10px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+        .field input,.field select{
+            width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:2px;
+            background:var(--panel-alt);font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ink);
+        }
+        .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-soft);}
+
+        /* ====== TABLES ====== */
+        .tbl{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+        .tbl th{
+            background:var(--panel-head);color:var(--ink-soft);font-family:'IBM Plex Sans',sans-serif;font-weight:600;
+            font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;text-align:center;
+            border:1px solid var(--line);padding:3px 5px;
+        }
+        .tbl td{border:1px solid var(--line-soft);padding:2px 4px;text-align:center;}
+        .tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+        .tbl tbody tr:nth-child(even){background:#fafbfc;}
+        .tbl tbody tr:hover{background:var(--accent-soft);}
+        .tbl tr.total{background:#f1f4f6 !important;font-weight:600;}
+
+        /* ====== BUTTONS ====== */
+        .btn{
+            font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;border-radius:var(--radius);
+            border:1px solid var(--line);padding:4px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+            background:linear-gradient(#fbfcfd,#eef1f3);color:var(--ink);
+        }
+        .btn:hover{background:var(--accent-soft);border-color:#bcd0dc;}
+        .btn svg{width:13px;height:13px;}
+        .btn.accent{background:var(--accent);border-color:var(--accent-dark);color:#fff;}
+        .btn.accent:hover{background:var(--accent-dark);}
+        .btn.sm{padding:2px 8px;font-size:10.5px;}
+        .btn[disabled]{opacity:.45;cursor:default;}
+
+        /* ====== BADGES ====== */
+        .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+        .badge.ok{background:var(--ok-bg);color:var(--ok);}
+        .badge.fail{background:var(--fail-bg);color:var(--fail);}
+        .badge.warn{background:var(--warn-bg);color:var(--warn);}
+        .badge.info{background:#dbeafe;color:#1e40af;}
+
+        .empty{text-align:center;color:var(--ink-faint);padding:44px 20px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);}
+        .empty svg{width:30px;height:30px;margin-bottom:8px;opacity:.5;}
+        .esquema-wrap{width:100%;overflow-x:auto;background:#fbfcfd;border:1px solid var(--line-soft);border-radius:var(--radius);}
+        .esquema-canvas{display:block;}
+        .hint{font-size:10.5px;color:var(--ink-faint);margin:6px 0 0;}
+
+        /* Recomendación final del estribo */
+        .stirrup-recom{
+            display:flex;align-items:center;gap:12px;margin-top:10px;
+            border:1px solid var(--line);border-radius:var(--radius);
+            background:linear-gradient(#f7f9fa,#eef1f3);padding:8px 12px;
+        }
+        .stirrup-recom .big{
+            font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:var(--accent);
+            letter-spacing:.02em;white-space:nowrap;
+        }
+        .stirrup-recom .lbl{font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+
+        /* ====== REPORT OVERLAY ====== */
+        #reportOverlay{position:fixed;inset:0;z-index:1000;background:#5a6570;display:none;flex-direction:column;}
+        #reportOverlay.open{display:flex;}
+        .report-toolbar{display:flex;align-items:center;gap:10px;background:linear-gradient(#f4f6f8,#e7ebee);border-bottom:1px solid #aab3bb;padding:7px 12px;flex:none;}
+        .report-toolbar .rt-title{font-weight:600;font-size:12.5px;color:var(--ink);}
+        .report-toolbar .rt-sub{font-size:10.5px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+        .report-toolbar .spacer{flex:1;}
+        .report-scroll{flex:1;overflow:auto;padding:20px 10px 60px;background:#7c858f;}
+        .report-page{
+            width:210mm;min-height:297mm;background:#fff;color:#1b2733;
+            padding:16mm 14mm;margin:0 auto 14px;box-shadow:0 2px 10px rgba(0,0,0,.35);
+            position:relative;font-size:11px;
+        }
+        .report-page .page-foot{
+            position:absolute;bottom:8mm;left:14mm;right:14mm;
+            border-top:1px solid #c4ccd4;padding-top:3px;
+            display:flex;justify-content:space-between;font-size:9px;color:#6b7681;
+            font-family:'IBM Plex Mono',monospace;
+        }
+
+        /* ====== CARÁTULA ====== */
+        .caratula{display:flex;flex-direction:column;height:100%;}
+        .caratula .c-top{
+            border:2px solid #16222e;border-bottom:none;padding:14px 18px;
+            display:flex;align-items:center;gap:14px;
+        }
+        .caratula .c-logo{
+            width:62px;height:62px;flex:none;
+            display:flex;align-items:center;justify-content:center;
+        }
+        .caratula .c-sub{font-size:10px;color:#5a6874;margin-top:2px;}
+        .caratula .c-brand{display:flex;flex-direction:column;line-height:1;}
+        .caratula .c-brand .c-name{
+            font-size:20px;font-weight:300;letter-spacing:1.8px;
+            display:flex;align-items:center;color:#16222e;
+        }
+        .caratula .c-brand .c-name .c-axis{
+            height:18px;border-left:2px dashed var(--symmetrica-red);
+            margin:0 3px;
+        }
+        .caratula .c-body{
+            flex:1;border:2px solid #16222e;
+            display:flex;flex-direction:column;justify-content:center;align-items:center;
+            text-align:center;padding:30px 24px;
+        }
+        .caratula .c-kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#ca244b;font-weight:600;margin-bottom:10px;}
+        .caratula .c-title{font-size:30px;font-weight:700;line-height:1.15;margin:0 0 6px;}
+        .caratula .c-title small{display:block;font-size:14px;font-weight:500;color:#586673;margin-top:8px;letter-spacing:.01em;}
+        .caratula .c-rule{width:90px;height:4px;background:#16222e;margin:20px auto;}
+        .caratula .c-meta{margin-top:8px;width:100%;max-width:420px;}
+        .caratula .c-meta table{width:100%;border-collapse:collapse;font-size:12px;}
+        .caratula .c-meta td{padding:6px 8px;border-bottom:1px solid #dde3e8;text-align:left;}
+        .caratula .c-meta td.k{color:#586673;width:38%;font-weight:600;text-transform:uppercase;font-size:9.5px;letter-spacing:.04em;}
+        .caratula .c-foot{
+            border:2px solid #16222e;border-top:none;padding:8px 18px;
+            display:flex;justify-content:space-between;font-size:10px;color:#586673;
+            font-family:'IBM Plex Mono',monospace;
+        }
+
+        /* ====== REPORT ====== */
+        .r-head{border-bottom:2px solid #16222e;padding-bottom:8px;margin-bottom:12px;}
+        .r-head h1{font-size:17px;margin:0 0 3px;}
+        .r-head .r-sub{font-size:10px;color:#586673;font-family:'IBM Plex Mono',monospace;}
+        .r-section{margin-bottom:16px;break-inside:avoid;}
+        .r-section h2{font-size:12.5px;margin:0 0 7px;padding:4px 8px;background:#eef1f3;border-left:3px solid #16222e;text-transform:uppercase;letter-spacing:.03em;}
+        .r-tbl{width:100%;border-collapse:collapse;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+        .r-tbl th{background:#eef1f3;border:1px solid #c4ccd4;padding:3px 5px;font-family:'IBM Plex Sans',sans-serif;font-size:9px;text-transform:uppercase;letter-spacing:.03em;text-align:center;}
+        .r-tbl td{border:1px solid #dde3e8;padding:2px 5px;text-align:center;}
+        .r-tbl td.left{text-align:left;font-family:'IBM Plex Sans',sans-serif;}
+        .r-meta-tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:10px;}
+        .r-meta-tbl td{padding:4px 6px;border:1px solid #dde3e8;}
+        .r-meta-tbl td.k{background:#f4f6f8;color:#586673;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.04em;width:22%;}
+        .r-note{font-size:9.5px;color:#6b7681;margin-top:6px;font-style:italic;}
+        .r-schema{border:1px solid #c4ccd4;border-radius:3px;padding:6px;background:#fbfcfd;text-align:center;}
+        .r-schema canvas{max-width:100%;height:auto;}
+        .r-graficos{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-top:4px;}
+        .r-graficos figure{margin:0;border:1px solid #dde3e8;border-radius:4px;background:#fff;padding:8px;text-align:center;}
+        .r-graficos figcaption{font-size:9px;color:#586673;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:6px;font-family:'IBM Plex Sans',sans-serif;}
+        .r-graficos img{max-width:100%;height:auto;display:inline-block;}
+        .r-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;}
+        .r-kpi-box{background:#f4f6f8;border:1px solid #dde3e8;border-radius:3px;padding:6px 8px;text-align:center;}
+        .r-kpi-box .k{font-size:8.5px;color:#586673;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+        .r-kpi-box .v{font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+
+        @page{size:A4 portrait;margin:14mm 12mm;}
+        @media print{
+            body{background:#fff;}
+            .app,#reportOverlay .report-toolbar{display:none !important;}
+            #reportOverlay{position:static;display:block !important;background:#fff;}
+            #reportOverlay:not(.open){display:none !important;}
+            .report-scroll{overflow:visible;padding:0;background:#fff;}
+            .report-page{width:auto;min-height:auto;margin:0;padding:0;box-shadow:none;page-break-after:always;}
+            .report-page:last-child{page-break-after:auto;}
+            .report-page .page-foot{position:static;margin-top:14px;}
+            .caratula{min-height:265mm;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- ================= TOOLBAR ================= -->
+    <div class="toolbar">
+        <a class="tb-brand" href="#" onclick="return false;" title="Symmetrica Ingeniería">
+            <svg viewBox="0 0 68 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M6 6H62V64H6V6ZM6 40H30V64" stroke="currentColor" stroke-width="1.65"/>
+                <g fill="currentColor">
+                    <rect x="2.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="2.8" width="6.4" height="6.4"/>
+                    <rect x="2.8" y="60.8" width="6.4" height="6.4"/>
+                    <rect x="58.8" y="60.8" width="6.4" height="6.4"/>
+                </g>
+            </svg>
+            <span class="tb-brand-text">
+                <span class="name">SYM<span class="axis" aria-hidden="true"></span>METRICA</span>
+                <span class="sub">Estribos en Vigas</span>
+            </span>
+        </a>
+
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('datos')" title="Ir a datos de entrada">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+                Datos
+            </button>
+            <button class="tbtn" onclick="limpiarTodo()" title="Reiniciar valores">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                Reiniciar
+            </button>
+        </div>
+
+        <div class="tb-group">
+            <button class="tbtn primary" onclick="calcularTodo()" title="Ejecutar el cálculo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                Calcular
+            </button>
+        </div>
+
+        <div class="tb-group">
+            <button class="tbtn" onclick="switchTab('resultados')" title="Ver resultados">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                Resultados
+            </button>
+            <button class="tbtn" id="btnInforme" onclick="generarInforme()" disabled title="Generar informe con carátula">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+                Informe
+            </button>
+            <button class="tbtn" id="btnPDF" onclick="imprimirInforme()" disabled title="Imprimir / Guardar PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                PDF
+            </button>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="tb-group">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--ink-faint);letter-spacing:.04em;">ACI 318 · ESTRIBOS EN VIGAS</span>
+        </div>
+    </div>
+
+    <!-- ================= TABS ================= -->
+    <div class="tabs">
+        <button class="tab active" id="tab-datos" onclick="switchTab('datos')">01 · Datos de entrada</button>
+        <button class="tab" id="tab-resultados" onclick="switchTab('resultados')">02 · Resultados del diseño</button>
+        <div class="spacer" id="tabsInfo">Sin calcular</div>
+    </div>
+
+    <!-- ================= CONTENT ================= -->
+    <div class="content">
+
+        <!-- ---------- VISTA DATOS ---------- -->
+        <div class="view active" id="view-datos">
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">00</span> Identificación del proyecto</h2>
+                    <span class="tag">Encabezado del informe</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Proyecto</label><input type="text" id="proyNombre" value="Edificio — Diseño estructural" /></div>
+                        <div class="field"><label>Elemento</label><input type="text" id="proyElemento" value="Viga tramo crítico" /></div>
+                        <div class="field"><label>Norma</label><input type="text" id="proyNorma" value="ACI 318" /></div>
+                        <div class="field"><label>Ubicación</label><input type="text" id="proyUbicacion" value="—" /></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">01</span> Geometría de la sección</h2>
+                    <span class="tag">Dimensiones</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Ancho del alma · b (cm)</label><input type="number" id="b" value="30" step="1" /></div>
+                        <div class="field"><label>Altura total · h (cm)</label><input type="number" id="h" value="50" step="1" /></div>
+                        <div class="field"><label>Recubrimiento al eje · r (cm)</label><input type="number" id="recub" value="6" step="0.5" /></div>
+                    </div>
+                    <p class="hint">Altura efectiva: d = h − r.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">02</span> Materiales</h2>
+                    <span class="tag">Resistencias</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>f'c (MPa)</label><input type="number" id="fc" value="25" step="1" /></div>
+                        <div class="field"><label>fy (MPa)</label><input type="number" id="fy" value="420" step="10" /></div>
+                    </div>
+                    <p class="hint">fy se limita a 420 MPa para el diseño de refuerzo transversal.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2><span class="idx">03</span> Solicitación y estribos</h2>
+                    <span class="tag">Cortante y refuerzo transversal</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-fields">
+                        <div class="field"><label>Cortante mayorado · Vu (kN)</label><input type="number" id="Vu" value="150" step="1" /></div>
+                        <div class="field">
+                            <label>Diámetro del estribo</label>
+                            <select id="diamEstribo">
+                                <option value="6">6 mm</option>
+                                <option value="8" selected>8 mm</option>
+                                <option value="10">10 mm</option>
+                                <option value="12">12 mm</option>
+                                <option value="16">16 mm</option>
+                                <option value="20">20 mm</option>
+                                <option value="25">25 mm</option>
+                                <option value="32">32 mm</option>
+                                <option value="6.4">#2 · 1/4"</option>
+                                <option value="9.5">#3 · 3/8"</option>
+                                <option value="12.7">#4 · 1/2"</option>
+                                <option value="15.9">#5 · 5/8"</option>
+                                <option value="19.1">#6 · 3/4"</option>
+                                <option value="22.2">#7 · 7/8"</option>
+                                <option value="25.4">#8 · 1"</option>
+                            </select>
+                        </div>
+                        <div class="field"><label>Número de ramales</label><input type="number" id="ramales" value="2" step="1" min="1" /></div>
+                    </div>
+                    <p class="hint">Estribos cerrados: 2 ramales → cerco simple; 4 ramales → doble cerco. Use secciones anchas o Vu alto con más ramales.</p>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+                <button class="btn accent" onclick="calcularTodo()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>
+                    Calcular diseño
+                </button>
+                <p class="hint" style="align-self:center;">Los resultados se muestran en «Resultados del diseño».</p>
+            </div>
+        </div>
+
+        <!-- ---------- VISTA RESULTADOS ---------- -->
+        <div class="view" id="view-resultados">
+            <div id="resultadosContainer"></div>
+            <div id="resultadosVacio" class="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V10"/><path d="M11 19V5"/><path d="M18 19v-7"/><line x1="3" y1="19" x2="21" y2="19"/></svg>
+                <div style="font-size:12.5px;">Aún no se ha calculado el diseño.</div>
+                <div style="font-size:11px;margin-top:2px;">Complete los datos y presione «Calcular diseño».</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= STATUS BAR ================= -->
+    <div class="statusbar">
+        <div class="status-cell name"><span class="status-dot pending" id="statusDot"></span><span id="statusTexto">Sin calcular</span></div>
+        <div class="status-cell" id="statusSeccion">Sección: — × — cm</div>
+        <div class="status-cell" id="statusMateriales">f'c: — · fy: —</div>
+        <div class="status-cell" id="statusNorma">ACI 318</div>
+        <div class="spacer"></div>
+        <div class="status-cell" id="statusHora">—</div>
+    </div>
+
+</div>
+
+<!-- ================= REPORT OVERLAY ================= -->
+<div id="reportOverlay">
+    <div class="report-toolbar">
+        <button class="btn" onclick="cerrarInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            Volver
+        </button>
+        <span class="rt-title">Memoria de cálculo — Estribos en vigas</span>
+        <span class="rt-sub" id="rtSub">ACI 318</span>
+        <div class="spacer"></div>
+        <button class="btn accent" onclick="imprimirInforme()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+            Imprimir / Guardar PDF
+        </button>
+    </div>
+    <div class="report-scroll" id="reportScroll">
+        <div id="reporte"></div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+/* ================================================================
+   NAVEGACIÓN
+   ================================================================ */
+function switchTab(tab){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    const t = document.getElementById('tab-' + tab);
+    if (t) t.classList.add('active');
+}
+
+/* ================================================================
+   BARRA DE ESTADO
+   ================================================================ */
+function actualizarBarraEstado(calculado){
+    const b = document.getElementById('b').value;
+    const h = document.getElementById('h').value;
+    const fc = document.getElementById('fc').value;
+    const fy = document.getElementById('fy').value;
+    document.getElementById('statusSeccion').textContent = `Sección: ${b} × ${h} cm`;
+    document.getElementById('statusMateriales').textContent = `f'c: ${fc} MPa · fy: ${fy} MPa`;
+    document.getElementById('statusNorma').textContent = document.getElementById('proyNorma').value || 'ACI 318';
+
+    const dot = document.getElementById('statusDot');
+    const texto = document.getElementById('statusTexto');
+    if (calculado){
+        dot.classList.add('ok'); dot.classList.remove('pending');
+        texto.textContent = 'Diseño calculado ✓';
+        document.getElementById('statusHora').textContent = 'Últ. actualización: ' +
+            new Date().toLocaleTimeString('es-BO', {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('tabsInfo').textContent = 'Diseño calculado';
+    } else {
+        dot.classList.add('pending'); dot.classList.remove('ok');
+        texto.textContent = 'Sin calcular';
+        document.getElementById('statusHora').textContent = '—';
+        document.getElementById('tabsInfo').textContent = 'Sin calcular';
+    }
+}
+
+/* ================================================================
+   DIBUJOS EN CANVAS
+   ================================================================ */
+
+/* Sección transversal con el estribo (énfasis en el refuerzo transversal) */
+function dibujarSeccionEstribo(canvas, b_cm, h_cm, recub_cm, diamEst, nRam, sCm, d_cm, estado) {
+    if (typeof canvas === 'string') canvas = document.getElementById(canvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const escala = 7;
+    const mSup = 72, mInf = 60, mIzq = 55, mDer = 55;
+    const ancho = b_cm * escala + mIzq + mDer;
+    const alto = h_cm * escala + mSup + mInf;
+    canvas.width = ancho;
+    canvas.height = alto;
+    canvas.style.width = ancho + 'px';
+    canvas.style.height = alto + 'px';
+    ctx.clearRect(0, 0, ancho, alto);
+
+    const x0 = mIzq, y0 = mSup;
+    const fw = b_cm * escala, fh = h_cm * escala;
+
+    // Encabezado
+    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 13px IBM Plex Sans'; ctx.textAlign = 'center';
+    ctx.fillText('SECCIÓN TRANSVERSAL · REFUERZO CORTANTE', ancho/2, 24);
+    ctx.font = '10px IBM Plex Mono'; ctx.fillStyle = '#5c6b7a';
+    ctx.fillText(`b = ${b_cm} cm × h = ${h_cm} cm · r = ${recub_cm} cm`, ancho/2, 40);
+
+    // Fondo de la sección
+    ctx.fillStyle = '#f2f5f8';
+    ctx.fillRect(x0, y0, fw, fh);
+    ctx.strokeStyle = '#6d7a88'; ctx.lineWidth = 2;
+    ctx.strokeRect(x0, y0, fw, fh);
+
+    // Líneas guía del recubrimiento
+    const rPix = recub_cm * escala;
+    ctx.strokeStyle = '#c8d1d8'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+    ctx.strokeRect(x0 + rPix, y0 + rPix, fw - 2*rPix, fh - 2*rPix);
+    ctx.setLineDash([]);
+
+    // Barras longitudinales esquemáticas en las esquinas del estribo
+    ctx.fillStyle = '#0e6cb3';
+    const dbPix = 5;
+    [[x0+rPix, y0+rPix],[x0+fw-rPix, y0+rPix],[x0+rPix, y0+fh-rPix],[x0+fw-rPix, y0+fh-rPix]].forEach(p => {
+        ctx.beginPath(); ctx.arc(p[0], p[1], dbPix, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Estribo cerrado (perímetro del recubrimiento): ganchos 135°
+    ctx.strokeStyle = '#ca244b'; ctx.lineWidth = 3;
+    ctx.strokeRect(x0 + rPix, y0 + rPix, fw - 2*rPix, fh - 2*rPix);
+    // Gancho en una esquina (135°)
+    ctx.strokeStyle = '#ca244b'; ctx.lineWidth = 3;
+    const gx = x0 + fw - rPix, gy = y0 + rPix;
+    ctx.beginPath();
+    ctx.moveTo(gx - 10, gy);
+    ctx.lineTo(gx, gy - 9 + 16);
+    ctx.stroke();
+    ctx.font = 'bold 9px IBM Plex Mono'; ctx.fillStyle = '#ca244b';
+    ctx.fillText('135°', gx - 40, gy - 14);
+
+    // Ramales verticales del estribo (2, 4 o más)
+    const nR = Math.max(1, Math.min(nRam, 6));
+    ctx.strokeStyle = '#ca244b'; ctx.lineWidth = 3;
+    for (let i = 1; i < nR; i++){
+        const rel = i / nR;
+        const rx = x0 + rPix + rel * (fw - 2*rPix);
+        ctx.beginPath(); ctx.moveTo(rx, y0 + rPix); ctx.lineTo(rx, y0 + fh - rPix); ctx.stroke();
+    }
+    // Rótulo de ramales (parte superior entre ramal exterior)
+    ctx.fillStyle = '#33404d'; ctx.font = 'bold 10px IBM Plex Mono';
+    ctx.fillText(`${nR} ramales · φ${diamEst} mm`, x0 + rPix + 4, y0 - 10);
+
+    // Cota de ancho b
+    ctx.strokeStyle = '#596775'; ctx.fillStyle = '#3f4c59'; ctx.lineWidth = 1;
+    ctx.font = '10px IBM Plex Mono'; ctx.textAlign = 'center';
+    ctx.beginPath();
+    ctx.moveTo(x0, y0 + fh + 24);
+    ctx.lineTo(x0 + fw, y0 + fh + 24);
+    ctx.stroke();
+    dibujarFlecha(ctx, x0, y0+fh+24, x0+fw, y0+fh+24);
+    ctx.fillText(`b = ${b_cm} cm`, x0 + fw/2, y0 + fh + 38);
+
+    // Cota de altura h (lado derecho)
+    const dirM = Math.max(nR,2);
+    const cxRight = x0 + fw + 26;
+    ctx.beginPath(); ctx.moveTo(cxRight, y0); ctx.lineTo(cxRight, y0+fh); ctx.stroke();
+    ctx.save(); ctx.translate(cxRight + 16, y0 + fh/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText(`h = ${h_cm} cm`, 0, 0); ctx.restore();
+
+    // Cota de altura efectiva d (lado izquierdo, desde abajo)
+    const cxLeft = x0 - 26;
+    const dPix = (h_cm - recub_cm) * escala;
+    ctx.beginPath(); ctx.moveTo(cxLeft, y0 + fh - dPix); ctx.lineTo(cxLeft, y0+fh); ctx.stroke();
+    ctx.save(); ctx.translate(cxLeft - 16, y0 + fh - dPix/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText(`d = ${d_cm.toFixed(1)} cm`, 0, 0); ctx.restore();
+
+    // Leyenda inferior
+    const estadoColor = estado === 'ok' ? '#12803f' : estado === 'fail' ? '#bf2a2a' : estado === 'warn' ? '#97600a' : '#1e40af';
+    ctx.fillStyle = estadoColor; ctx.font = 'bold 10px IBM Plex Mono'; ctx.textAlign = 'left';
+    ctx.fillText(`● Estribo φ${diamEst} mm @ ${sCm}`, x0, y0 + fh + 52);
+    ctx.font = '9.5px IBM Plex Mono'; ctx.fillStyle = '#33404d';
+    ctx.fillText('Cerco cerrado con ganchos a 135° según ACI 318', x0, y0 + fh + 66);
+}
+
+function dibujarFlecha(ctx, x1, y1, x2, y2){
+    const ang = Math.atan2(y2-y1, x2-x1), s = 7;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2 - s*Math.cos(ang-0.4), y2 - s*Math.sin(ang-0.4));
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2 - s*Math.cos(ang+0.4), y2 - s*Math.sin(ang+0.4));
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1,y1);
+    ctx.lineTo(x1 + s*Math.cos(ang-0.4), y1 + s*Math.sin(ang-0.4));
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x1 + s*Math.cos(ang+0.4), y1 + s*Math.sin(ang+0.4));
+    ctx.stroke();
+}
+
+/* Diagrama de capacidades vs demanda (barras horizontales) */
+function dibujarDiagramaCapacidades(canvas, opts) {
+    if (typeof canvas === 'string') canvas = document.getElementById(canvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = 680, h = 250;
+    canvas.width = w; canvas.height = h;
+    if (canvas.style.width) { canvas.style.width = 'auto'; canvas.style.height = 'auto'; }
+    ctx.clearRect(0, 0, w, h);
+
+    const vals = [
+        { label: '0.5·φVc', v: opts.medioFiVc, color: '#8a95a0' },
+        { label: 'φVc',      v: opts.fiVc,      color: '#0e9f8f' },
+        { label: 'φVn, máx', v: opts.fiVnMax,   color: '#1c72c4' },
+        { label: 'Vu',       v: opts.Vu,        color: '#ca244b' }
+    ];
+    const maxV = Math.max(opts.fiVnMax, opts.Vu) * 1.15 || 1;
+
+    const mIzq = 92, mSup = 30, mInf = 30, mDer = 30;
+    const fw = w - mIzq - mDer;
+    const rowH = 34;
+
+    ctx.font = 'bold 13px IBM Plex Sans'; ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center';
+    ctx.fillText('DEMANDA DE CORTANTE vs CAPACIDADES', w/2, 20);
+
+    ctx.font = '10px IBM Plex Mono'; ctx.textAlign = 'right';
+    for (let i = 0; i < vals.length; i++){
+        const y = mSup + i*rowH + 18;
+        ctx.fillStyle = '#33404d';
+        ctx.fillText(vals[i].label, mIzq - 8, y);
+        const bw = (vals[i].v / maxV) * fw;
+        ctx.fillStyle = vals[i].color;
+        const bx = mIzq, by = y - 10;
+        ctx.fillRect(bx, by, Math.max(bw, 3), 15);
+        ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, Math.max(bw, 3), 15);
+        ctx.fillStyle = '#1b2733'; ctx.textAlign = 'left';
+        ctx.fillText(`${vals[i].v.toFixed(1)} kN`, bx + Math.max(bw,3) + 6, y);
+    }
+
+    // Escala superior
+    ctx.strokeStyle = '#c4ccd4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(mIzq, mSup - 6); ctx.lineTo(mIzq + fw, mSup - 6); ctx.stroke();
+    ctx.fillStyle = '#8a95a0'; ctx.font = '9px IBM Plex Mono'; ctx.textAlign = 'center';
+    for (let t = 0; t <= 4; t++){
+        const tx = mIzq + (t/4)*fw;
+        ctx.beginPath(); ctx.moveTo(tx, mSup - 6); ctx.lineTo(tx, mSup - 3); ctx.stroke();
+        ctx.fillText(Math.round((t/4)*maxV), tx, mSup - 10);
+    }
+    ctx.fillText('kN', mIzq + fw/2, mInf + 4);
+}
+
+/* ================================================================
+   CÁLCULO PRINCIPAL
+   ================================================================ */
+let ultimoResultado = null;
+
+function calcularTodo() {
+    const b_cm = parseFloat(document.getElementById('b').value) || 30;
+    const h_cm = parseFloat(document.getElementById('h').value) || 50;
+    const recub_cm = parseFloat(document.getElementById('recub').value) || 6;
+    const fc = parseFloat(document.getElementById('fc').value) || 25;
+    let fy = parseFloat(document.getElementById('fy').value) || 420;
+    const VuKN = parseFloat(document.getElementById('Vu').value) || 0;
+    const fimm = parseFloat(document.getElementById('diamEstribo').value) || 8;
+    const noRamales = parseInt(document.getElementById('ramales').value) || 2;
+
+    if ([b_cm, h_cm, recub_cm, fc, fy, VuKN].some(isNaN)) {
+        alert('Complete todos los campos.');
+        return;
+    }
+    if (fy > 420) fy = 420;
+
+    const b = b_cm/100, h = h_cm/100, recub_eje = recub_cm/100;
+    const d = h - recub_eje;
+    const Av = noRamales * (Math.PI * (fimm/1000)**2 / 4);
+    const Av1ramal = Math.PI * (fimm/1000)**2 / 4;
+
+    // Capacidades (MN)
+    const Vc = Math.sqrt(fc) * b * d / 6;
+    const fiVc = 0.75 * Vc;
+    const VsLimite = (2/3) * Math.sqrt(fc) * b * d;
+    const fiVnMax = 0.75 * (Vc + VsLimite);
+
+    const Vu = VuKN / 1000;
+    const sMaxBaseCm = Math.floor(d/2*100);
+    const sConstCm = 60;
+
+    let estado = '', mensaje = '', sFinalCm = '-', avMinCm = '-', noRamalesReq = noRamales;
+    let detalleExtra = '', vsReq = 0, sCalcCm = 0, sMaxLocal = 0, avReq = 0, sCalc = 0;
+
+    if (Vu > fiVnMax) {
+        estado = 'fail';
+        mensaje = 'La sección es insuficiente incluso con estribos. Aumente dimensiones o f\'c.';
+    } else if (Vu < 0.5*fiVc) {
+        estado = 'info';
+        mensaje = 'No se requieren estribos por cálculo. Colocar refuerzo constructivo.';
+        sFinalCm = sConstCm + ' cm';
+    } else if (Vu < fiVc) {
+        estado = 'warn';
+        const sMax = sMaxBaseCm/100;
+        const AvMin = Math.max(0.062*Math.sqrt(fc)*b*sMax/fy, 0.35*b*sMax/fy);
+        avMinCm = (AvMin*10000).toFixed(2);
+        avReq = AvMin*10000;
+        const ramalesNecesarios = Math.ceil(AvMin/Av1ramal);
+        noRamalesReq = Math.max(noRamales, ramalesNecesarios);
+        sFinalCm = sMaxBaseCm + ' cm (máx.)';
+        mensaje = 'Vu < φVc → requiere estribos mínimos.';
+        detalleExtra = `A<sub>v, mín</sub> = ${avMinCm} cm² → ${noRamalesReq} ramales de φ${fimm} mm.`;
+    } else {
+        estado = 'ok';
+        const limite = (1/3)*Math.sqrt(fc)*b*d;
+        const Vs = (Vu - fiVc)/0.75;
+        vsReq = Vs*1000;
+        sCalc = (0.75*Av*fy*d)/(Vu - fiVc);
+        sCalcCm = Math.floor(sCalc*100);
+        sMaxLocal = (Vs > limite) ? Math.floor(d/4*100) : Math.floor(d/2*100);
+        const sCm = Math.min(sCalcCm, sMaxLocal);
+        const s = sCm/100;
+        const fiVs = 0.75*Av*fy*d/s;
+        sFinalCm = sCm + ' cm';
+        mensaje = 'Diseño de estribos por demanda de cortante.';
+        detalleExtra = `φV<sub>n</sub> = ${(fiVc*1000).toFixed(0)} + ${(fiVs*1000).toFixed(0)} = ${((fiVc+fiVs)*1000).toFixed(0)} kN`;
+        if (sCalcCm > sMaxLocal){
+            detalleExtra += ` · s limitada a ${sMaxLocal} cm (d/${Vs > limite ? '4' : '2'})`;
+        }
+    }
+
+    const ultimoResultado = {
+        b_cm, h_cm, recub_cm, fc, fy, VuKN, fimm, noRamales,
+        d_cm: d*100, Av_cm: Av*10000, avReq, avMinCm, noRamalesReq,
+        fiVc_kN: fiVc*1000, medioFiVc_kN: 0.5*fiVc*1000, fiVnMax_kN: fiVnMax*1000,
+        sMaxBaseCm, sFinalCm, estado, mensaje, detalleExtra, sCalcCm, vsReq, sMaxLocal
+    };
+
+    renderizarResultados(ultimoResultado);
+    actualizarBarraEstado(true);
+    document.getElementById('btnInforme').disabled = false;
+    document.getElementById('btnPDF').disabled = false;
+    switchTab('resultados');
+}
+
+/* ================================================================
+   RENDERIZAR RESULTADOS
+   ================================================================ */
+function renderizarResultados(R) {
+    const container = document.getElementById('resultadosContainer');
+    document.getElementById('resultadosVacio').style.display = 'none';
+
+    const badgeMap = {
+        'ok':   '<span class="badge ok">CUMPLE</span>',
+        'fail': '<span class="badge fail">NO CUMPLE</span>',
+        'warn': '<span class="badge warn">ATENCIÓN</span>',
+        'info': '<span class="badge info">INFORMATIVO</span>'
+    };
+
+    let html = '';
+
+    // R1 — Verificación por cortante
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R1</span> Verificación por cortante</h2><span class="tag">ACI 318</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Límite</th><th>Verificación</th></tr></thead><tbody>
+        <tr><td class="left">Cortante mayorado Vu</td><td>${R.VuKN.toFixed(1)} kN</td><td>φVn máx = ${R.fiVnMax_kN.toFixed(1)} kN</td><td><span class="badge ${R.VuKN/1000 > R.fiVnMax_kN/1000 ? 'fail' : 'ok'}">${R.VuKN/1000 <= R.fiVnMax_kN/1000 ? 'CUMPLE' : 'FALLA'}</span></td></tr>
+        <tr><td class="left">Cortante del concreto φVc</td><td>${R.fiVc_kN.toFixed(1)} kN</td><td>—</td><td><span class="badge ${R.VuKN/1000 >= R.fiVc_kN/1000 ? 'warn' : 'ok'}">${R.VuKN/1000 >= R.fiVc_kN/1000 ? 'Vu ≥ φVc → estribos' : 'Vu < φVc → mínimos'}</span></td></tr>
+        <tr><td class="left">Límite sin estribos 0.5·φVc</td><td>${R.medioFiVc_kN.toFixed(1)} kN</td><td>—</td><td><span class="badge ${R.VuKN/1000 < R.medioFiVc_kN/1000 ? 'ok' : 'warn'}">${R.VuKN/1000 < R.medioFiVc_kN/1000 ? 'No requiere' : 'Requiere'}</span></td></tr>
+        </tbody></table>
+        <div class="stirrup-recom">
+            <div><div class="lbl">Estado del diseño</div></div>
+            <span class="big">${R.mensaje}</span>
+            <span>${badgeMap[R.estado]}</span>
+        </div>
+        </div></div>`;
+
+    // R2 — Diseño de estribos
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R2</span> Diseño de estribos</h2><span class="tag">Refuerzo transversal</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Observación</th></tr></thead><tbody>
+        <tr><td class="left">Altura efectiva d</td><td>${R.d_cm.toFixed(1)} cm</td><td>h − r</td></tr>
+        <tr><td class="left">Av disponible</td><td>${R.Av_cm.toFixed(2)} cm²</td><td>${R.noRamales} ramales × φ${R.fimm} mm</td></tr>
+        ${R.avReq > 0 ? `<tr><td class="left">Av mínima requerida</td><td>${R.avMinCm} cm²</td><td>${R.noRamalesReq} ramales → φ${R.fimm} mm</td></tr>` : ''}
+        ${R.sCalcCm > 0 ? `<tr><td class="left">Separación calculada</td><td>${R.sCalcCm} cm</td><td>${R.vsReq.toFixed(0)} kN (Vs requerido)</td></tr>` : ''}
+        <tr><td class="left">Separación máxima normativa</td><td>${R.sMaxBaseCm} cm</td><td>d/2</td></tr>
+        </tbody></table>
+        <div class="stirrup-recom">
+            <div><div class="lbl">Estribo propuesto</div></div>
+            <span class="big">φ${R.fimm} mm @ ${R.sFinalCm}</span>
+            <span class="badge ${R.estado === 'fail' ? 'fail' : R.estado === 'warn' ? 'warn' : R.estado === 'info' ? 'info' : 'ok'}">${badgeMap[R.estado].replace(/<[^>]+>/g,'')}</span>
+        </div>
+        ${R.detalleExtra ? `<p class="hint" style="margin-top:8px;">${R.detalleExtra}</p>` : ''}
+        </div></div>`;
+
+    // R3 — Datos del estribo
+    html += `<div class="card">
+        <div class="card-head"><h2><span class="idx">R3</span> Datos del estribo</h2><span class="tag">Resumen</span></div>
+        <div class="card-body">
+        <table class="tbl"><thead><tr><th>Diámetro</th><th>Ramales</th><th>Av</th><th>Separación final</th><th>Recomendación</th></tr></thead><tbody>
+        <tr>
+            <td>φ${R.fimm} mm</td>
+            <td>${R.noRamalesReq}</td>
+            <td>${R.Av_cm.toFixed(2)} cm²</td>
+            <td>${R.sFinalCm}</td>
+            <td class="left">${R.mensaje}</td>
+        </tr>
+        </tbody></table>
+        </div></div>`;
+
+    container.innerHTML = html;
+}
+
+/* ================================================================
+   REINICIAR
+   ================================================================ */
+function limpiarTodo() {
+    document.getElementById('b').value = 30;
+    document.getElementById('h').value = 50;
+    document.getElementById('recub').value = 6;
+    document.getElementById('fc').value = 25;
+    document.getElementById('fy').value = 420;
+    document.getElementById('Vu').value = 150;
+    document.getElementById('ramales').value = 2;
+    document.getElementById('diamEstribo').value = '8';
+    document.getElementById('resultadosContainer').innerHTML = '';
+    document.getElementById('resultadosVacio').style.display = 'block';
+    ultimoResultado = null;
+    actualizarBarraEstado(false);
+    document.getElementById('btnInforme').disabled = true;
+    document.getElementById('btnPDF').disabled = true;
+    switchTab('datos');
+}
+
+/* ================================================================
+   INFORME
+   ================================================================ */
+function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function hoyTexto(){
+    return new Date().toLocaleDateString('es-BO', { day:'2-digit', month:'long', year:'numeric' });
+}
+
+function generarInforme(){
+    if (!ultimoResultado) {
+        alert('Primero calcule el diseño.');
+        return;
+    }
+    const R = ultimoResultado;
+    const proyecto = document.getElementById('proyNombre').value || '—';
+    const elemento = document.getElementById('proyElemento').value || '—';
+    const norma = document.getElementById('proyNorma').value || 'ACI 318';
+    const ubicacion = document.getElementById('proyUbicacion').value || '—';
+
+    const estadoTxt = R.estado === 'ok' ? 'CUMPLE' : R.estado === 'fail' ? 'NO CUMPLE' : R.estado === 'warn' ? 'ATENCIÓN' : 'INFORMATIVO';
+
+    const cvSec = document.createElement('canvas');
+    cvSec.width = 720; cvSec.height = 460;
+    dibujarSeccionEstribo(cvSec, R.b_cm, R.h_cm, R.recub_cm, R.fimm, R.noRamalesReq, R.sFinalCm, R.d_cm, R.estado);
+    const imgSec = cvSec.toDataURL('image/png');
+
+    const cvCap = document.createElement('canvas');
+    dibujarDiagramaCapacidades(cvCap, {
+        Vu: R.VuKN, fiVc: R.fiVc_kN, medioFiVc: R.medioFiVc_kN, fiVnMax: R.fiVnMax_kN
+    });
+    const imgCap = cvCap.toDataURL('image/png');
+
+    const caratula = `
+    <div class="report-page">
+        <div class="caratula">
+            <div class="c-top">
+                <span class="c-logo">
+                    <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" width="62" height="62" aria-hidden="true">
+                        <rect width="72" height="72" rx="13" fill="#152733"/>
+                        <g stroke="#fff" fill="none" stroke-width="2">
+                            <path d="M15 15h42v42H15V15Zm0 26h18v16"/>
+                        </g>
+                        <g fill="#fff">
+                            <path d="M11 11h8v8h-8zm42 0h8v8h-8zM11 53h8v8h-8zm42 0h8v8h-8z"/>
+                        </g>
+                    </svg>
+                </span>
+                <div class="c-brand">
+                    <span class="c-name">SYM<span class="c-axis" aria-hidden="true"></span>METRICA</span>
+                    <div class="c-sub" style="margin-top:5px;">Diseño de estribos en vigas · ACI 318</div>
+                </div>
+            </div>
+            <div class="c-body">
+                <div class="c-kicker">Informe técnico de diseño</div>
+                <h1 class="c-title">Diseño de Estribos<small>Refuerzo transversal por cortante en vigas · ACI 318</small></h1>
+                <div class="c-rule"></div>
+                <div class="c-meta">
+                    <table>
+                        <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td></tr>
+                        <tr><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                        <tr><td class="k">Norma</td><td>${esc(norma)}</td></tr>
+                        <tr><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                        <tr><td class="k">Fecha</td><td>${esc(hoyTexto())}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="c-foot">
+                <span>Symmetrica Ingeniería</span>
+                <span>Documento generado automáticamente</span>
+            </div>
+        </div>
+    </div>`;
+
+    const memoria = `
+    <div class="report-page">
+        <div class="r-head">
+            <h1>Memoria de cálculo</h1>
+            <div class="r-sub">Diseño de estribos por cortante · ${esc(norma)} · ${esc(hoyTexto())}</div>
+        </div>
+
+        <div class="r-section">
+            <h2>1. Datos generales</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Proyecto</td><td>${esc(proyecto)}</td><td class="k">Elemento</td><td>${esc(elemento)}</td></tr>
+                <tr><td class="k">Norma</td><td>${esc(norma)}</td><td class="k">Ubicación</td><td>${esc(ubicacion)}</td></tr>
+                <tr><td class="k">Fecha</td><td colspan="3">${esc(hoyTexto())}</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>2. Geometría y materiales</h2>
+            <table class="r-meta-tbl">
+                <tr><td class="k">Ancho del alma b</td><td>${R.b_cm} cm</td><td class="k">Altura total h</td><td>${R.h_cm} cm</td></tr>
+                <tr><td class="k">Recubrimiento al eje r</td><td>${R.recub_cm} cm</td><td class="k">Altura efectiva d</td><td>${R.d_cm.toFixed(1)} cm</td></tr>
+                <tr><td class="k">f'c</td><td>${R.fc} MPa</td><td class="k">fy</td><td>${R.fy} MPa</td></tr>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>3. Solicitación</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Cortante mayorado Vu</th><th>φVc</th><th>0.5·φVc</th><th>φVn máx</th></tr></thead>
+                <tbody>
+                    <tr><td>${R.VuKN.toFixed(1)} kN</td><td>${R.fiVc_kN.toFixed(1)} kN</td><td>${R.medioFiVc_kN.toFixed(1)} kN</td><td>${R.fiVnMax_kN.toFixed(1)} kN</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>4. Verificación por cortante</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Parámetro</th><th>Valor</th><th>Verificación</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">Vu vs φVn máx</td><td>${R.VuKN.toFixed(1)} kN ≤ ${R.fiVnMax_kN.toFixed(1)} kN</td><td>${R.VuKN/1000 <= R.fiVnMax_kN/1000 ? 'CUMPLE' : 'FALLA'}</td></tr>
+                    <tr><td class="left">Vu vs φVc</td><td>${R.VuKN.toFixed(1)} kN vs ${R.fiVc_kN.toFixed(1)} kN</td><td>${R.VuKN/1000 >= R.fiVc_kN/1000 ? 'Requiere estribos por demanda' : 'Solo estribos mínimos'}</td></tr>
+                    <tr><td class="left">Vu vs 0.5·φVc</td><td>${R.VuKN.toFixed(1)} kN vs ${R.medioFiVc_kN.toFixed(1)} kN</td><td>${R.VuKN/1000 < R.medioFiVc_kN/1000 ? 'No requiere estribos' : 'Requiere refuerzo'}</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="r-section">
+            <h2>5. Diseño de estribos</h2>
+            <table class="r-tbl">
+                <thead><tr><th>Parámetro</th><th>Valor</th><th>Observación</th></tr></thead>
+                <tbody>
+                    <tr><td class="left">Estribo adoptado</td><td>φ${R.fimm} mm</td><td>${R.noRamalesReq} ramales</td></tr>
+                    <tr><td class="left">Av disponible</td><td>${R.Av_cm.toFixed(2)} cm²</td><td>—</td></tr>
+                    ${R.avReq > 0 ? `<tr><td class="left">Av mínima requerida</td><td>${R.avMinCm} cm²</td><td>—</td></tr>` : ''}
+                    ${R.sCalcCm > 0 ? `<tr><td class="left">Separación calculada</td><td>${R.sCalcCm} cm</td><td>—</td></tr>` : ''}
+                    <tr><td class="left">Separación final</td><td>${R.sFinalCm}</td><td>Estado: ${estadoTxt}</td></tr>
+                </tbody>
+            </table>
+            <p class="r-note">${R.mensaje} ${R.detalleExtra.replace(/<br ?\/?>/g, ' · ').replace(/<[^>]+>/g,'')}</p>
+        </div>
+
+        <div class="r-section">
+            <h2>6. Resultados gráficos</h2>
+            <div class="r-graficos">
+                <figure>
+                    <figcaption>A. Demanda vs capacidades</figcaption>
+                    <img src="${imgCap}" alt="Capacidades vs demanda"/>
+                </figure>
+                <figure>
+                    <figcaption>B. Sección transversal con estribos</figcaption>
+                    <img src="${imgSec}" alt="Sección con estribos"/>
+                </figure>
+            </div>
+        </div>
+
+        <div class="page-foot"><span>${esc(elemento)}</span><span>Página 2</span></div>
+    </div>`;
+
+    document.getElementById('reporte').innerHTML = caratula + memoria;
+    document.getElementById('rtSub').textContent = `${norma} · ${elemento}`;
+    document.getElementById('reportOverlay').classList.add('open');
+}
+
+function cerrarInforme(){
+    document.getElementById('reportOverlay').classList.remove('open');
+}
+
+function imprimirInforme(){
+    window.print();
+}
+
+/* ================================================================
+   INICIO
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarBarraEstado(false);
+
+    document.getElementById('diamEstribo').addEventListener('change', function(){
+        if (ultimoResultado) calcularTodo();
+    });
+    document.getElementById('ramales').addEventListener('change', function(){
+        if (ultimoResultado) calcularTodo();
+    });
+});
+</script>
+
+</body>
+</html>

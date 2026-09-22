@@ -1,5 +1,9 @@
 // ============================================================
-// DEMO LOCK — envuelve el HTML de un programa en "modo prueba"
+// DEMO LOCK — legado, no usar para proteger contenido
+// ============================================================
+// @deprecated Esta función envuelve el HTML completo y por eso expone el
+// código fuente al visitante. Se conserva solo para referencia histórica.
+// Usa `buildSafeDemoHtml` para una vista pública sin el motor de cálculo.
 // ============================================================
 // No necesita saber nada de cada calculadora en particular. En vez
 // de pedirle al admin que configure "datos de ejemplo" por cada
