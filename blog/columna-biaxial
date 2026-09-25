@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora de Columnas Biaxiales — Diseño ACI 318-19 | Symmetrica</title>
+<meta name="description" content="Guía práctica: cómo usar la calculadora de columnas biaxiales de Symmetrica para verificar flexo-compresión según ACI 318-19. Tutorial paso a paso con ejemplos reales." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#f4f6f8;--panel:#fff;--line:#c4ccd4;--line-soft:#dde3e8;
+  --ink:#1b2733;--ink-soft:#586673;--ink-faint:#8a95a0;
+  --accent:#152733;--accent-dark:#0a1820;--accent-soft:#e6ecf0;--red:#ca244b;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:15px;}
+.wrap{max-width:780px;margin:0 auto;padding:0 20px 60px;}
+header.top{background:var(--accent);color:#fff;padding:22px 20px;}
+.brand{display:flex;align-items:center;gap:10px;max-width:780px;margin:0 auto;}
+.brand svg{width:30px;height:31px;flex:none;}
+.brand .name{font-size:15px;font-weight:300;letter-spacing:1.5px;display:flex;align-items:center;}
+.brand .name .axis{height:14px;border-left:2px dashed var(--red);margin:0 3px;}
+.crumb{max-width:780px;margin:14px auto 0;font-size:12px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+.crumb a{color:var(--ink-soft);text-decoration:none;}
+h1{font-size:30px;line-height:1.25;margin:14px 0 6px;color:var(--ink);}
+.subtitle{font-size:15px;color:var(--ink-soft);margin:0 0 10px;}
+.meta{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-faint);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding:8px 0;margin-bottom:24px;}
+h2{font-size:19px;margin:34px 0 10px;padding:6px 10px;background:var(--accent-soft);border-left:3px solid var(--accent);color:var(--accent-dark);}
+h3{font-size:15.5px;margin:20px 0 6px;color:var(--ink);}
+p{margin:0 0 12px;}
+strong{color:var(--ink);}
+code{font-family:'IBM Plex Mono',monospace;background:var(--accent-soft);padding:1px 5px;border-radius:2px;font-size:.92em;}
+ul,ol{margin:0 0 14px;padding-left:22px;}
+li{margin-bottom:5px;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 16px;}
+th{background:var(--accent-soft);border:1px solid var(--line);padding:6px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+td{border:1px solid var(--line-soft);padding:6px 8px;}
+.callout{background:#fff;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:3px;padding:12px 14px;margin:14px 0;font-size:13.5px;}
+.callout.note{border-left-color:var(--accent);}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin:14px 0;}
+.checklist{list-style:none;padding-left:0;}
+.checklist li{padding-left:22px;position:relative;}
+.checklist li::before{content:"✓";position:absolute;left:0;color:var(--ok,#12803f);font-weight:700;}
+.cta{background:var(--accent);color:#fff;border-radius:6px;padding:26px 24px;text-align:center;margin:36px 0 20px;}
+.cta h3{color:#fff;margin-top:0;font-size:18px;}
+.cta p{color:#c8d2da;font-size:13px;}
+.cta a.btn{display:inline-block;margin-top:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:600;padding:10px 22px;border-radius:4px;font-size:14px;}
+footer{font-size:12px;color:var(--ink-faint);border-top:1px solid var(--line-soft);padding-top:16px;margin-top:30px;text-align:center;}
+footer a{color:var(--ink-soft);}
+.formula{font-family:'IBM Plex Mono',monospace;background:var(--accent-soft);border-radius:3px;padding:10px 12px;font-size:13px;margin:8px 0 14px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 68 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M6 6H62V64H6V6ZM6 40H30V64" stroke="currentColor" stroke-width="1.65"/>
+      <g fill="currentColor"><rect x="2.8" y="2.8" width="6.4" height="6.4"/><rect x="58.8" y="2.8" width="6.4" height="6.4"/><rect x="2.8" y="60.8" width="6.4" height="6.4"/><rect x="58.8" y="60.8" width="6.4" height="6.4"/></g>
+    </svg>
+    <span class="name">SYM<span class="axis"></span>METRICA</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="crumb"><a href="https://symmetrica-ingenieria.vercel.app/">Inicio</a> &gt; Blog &gt; Calculadora de Columnas Biaxiales</div>
+
+  <h1>Calculadora de Columnas Biaxiales: verificación de flexo-compresión según ACI 318-19</h1>
+  <p class="subtitle">Tutorial práctico — de la geometría de la sección a la superficie de interacción 3D y el informe técnico</p>
+  <div class="meta">📅 Publicado: septiembre 2026 &nbsp;|&nbsp; ✍️ Symmetrica Ingeniería &nbsp;|&nbsp; ⏱️ Lectura: 9 min &nbsp;|&nbsp; 🔧 Herramienta disponible</div>
+
+  <h2>Introducción: por qué una columna necesita más que un solo diagrama P–M</h2>
+  <p>ETABS y SAP2000 te entregan las solicitaciones <strong>P<sub>u</sub>, M<sub>u2</sub> y M<sub>u3</sub></strong> de cada combinación de carga. Eso está resuelto. Lo que esos modelos <strong>no</strong> te muestran de forma directa es la <strong>superficie de interacción biaxial completa</strong> de la sección: el volumen tridimensional dentro del cual cualquier combinación (P, M2, M3) es resistida por el concreto y el acero dispuestos.</p>
+  <p>Verificar a mano una columna en flexo-compresión biaxial exige iterar sobre el eje neutro en múltiples ángulos, aplicar compatibilidad de deformaciones barra por barra, y repetir esto decenas de miles de veces para trazar la superficie completa. Es exactamente el tipo de cálculo que un software especializado hace en segundos y una persona no debería intentar reproducir a mano.</p>
+  <p>Por eso desarrollamos esta calculadora: <strong>no reemplaza tu análisis estructural</strong>, lo complementa generando la superficie de interacción P–M2–M3 real de tu sección, verificando cada combinación de carga contra ella y produciendo un informe técnico auditable.</p>
+
+  <h2>Paso 1: Geometría, materiales y configuración</h2>
+  <p>En la pestaña <strong>01 · Datos de entrada</strong>, define la sección:</p>
+  <table>
+    <tr><th>Campo</th><th>Descripción</th></tr>
+    <tr><td><code>b, h</code></td><td>Dimensiones de la sección rectangular (cm)</td></tr>
+    <tr><td><code>f'c</code></td><td>Resistencia del concreto (kgf/cm²) — típico 210–280 en Bolivia</td></tr>
+    <tr><td><code>fy</code></td><td>Fluencia del acero (kgf/cm²) — grado 60 ≈ 4200–5100</td></tr>
+    <tr><td><code>Configuración</code></td><td>Estribos (φ<sub>c</sub>=0.65) o espiral (φ<sub>c</sub>=0.75)</td></tr>
+  </table>
+  <p>La casilla <strong>«Aplicar factor φ según ACI 318-19»</strong> controla si la superficie se calcula con resistencias nominales o de diseño. Actívala para verificación real de proyecto.</p>
+
+  <h2>Paso 2: Armado longitudinal</h2>
+  <p>La calculadora arma automáticamente barras de esquina y barras intermedias en ambas caras, a partir de:</p>
+  <ul>
+    <li><strong>Recubrimiento</strong> y <strong>Ø del estribo</strong>, que definen la posición efectiva del acero</li>
+    <li><strong>Ø de esquina</strong> y <strong>Ø intermedio</strong>, que pueden diferir</li>
+    <li><strong>N° de barras por lado b</strong> y <strong>por lado h</strong>, distribuidas uniformemente</li>
+  </ul>
+  <div class="callout note">La herramienta valida automáticamente que recubrimiento + estribo + Ø/2 no exceda la mitad de la sección, y limita la cuantía práctica a un máximo de 400 barras para mantener el cálculo eficiente.</div>
+
+  <h2>Paso 3: Discretización de la superficie</h2>
+  <p>Dos parámetros controlan la precisión y el costo computacional:</p>
+  <ul>
+    <li><strong>Δθ (°):</strong> paso angular del barrido del eje neutro alrededor de la sección (10° es un buen balance; 5° para verificación fina)</li>
+    <li><strong>N° divisiones de a:</strong> resolución de la profundidad del bloque de compresión en cada ángulo</li>
+  </ul>
+  <p>Internamente, para cada ángulo θ la calculadora recorta el polígono de la sección con la línea del eje neutro, calcula el área comprimida por integración geométrica exacta del polígono resultante, y evalúa la deformación y el esfuerzo de cada barra por compatibilidad de deformaciones (ε = 0.003 en la fibra extrema). El resultado es una nube de miles de puntos (P<sub>n</sub>, M<sub>x</sub>, M<sub>y</sub>) que conforman la superficie tridimensional.</p>
+  <div class="formula">φ se interpola automáticamente entre φ<sub>c</sub> (compresión controlada) y 0.90 (tracción controlada) según ε<sub>t</sub>, siguiendo ACI 318-19 §21.2.2.</div>
+
+  <h2>Paso 4: Combinaciones de carga</h2>
+  <p>En la tabla de combinaciones, ingresa directamente las solicitaciones últimas de tu modelo (convención: <strong>P<sub>u</sub> positivo = compresión</strong>):</p>
+  <table>
+    <tr><th>Campo</th><th>Fuente</th></tr>
+    <tr><td>P<sub>u</sub> (tonf)</td><td>Carga axial última de la combinación</td></tr>
+    <tr><td>M<sub>u2</sub>, M<sub>u3</sub> (tonf·m)</td><td>Momentos últimos en ambas direcciones principales</td></tr>
+  </table>
+  <p>No hay amplificaciones adicionales que aplicar aquí: las combinaciones ya deben incluir los factores de carga de tu criterio de diseño (1.2D+1.6L, 1.2D+1.0E+L, etc.).</p>
+
+  <h2>Paso 5: Calcular y verificar</h2>
+  <p>Presiona <strong>«Calcular superficie de interacción»</strong> (o F5). En el navegador, la herramienta:</p>
+  <ol>
+    <li>Genera la malla completa de puntos (P, M2, M3) sobre toda la superficie</li>
+    <li>Triangula la superficie para poder lanzar rayos desde el origen hacia cada combinación de carga</li>
+    <li>Calcula el <strong>ratio de demanda/capacidad</strong> de cada combo como la razón entre la distancia al punto de carga y la distancia a la superficie a lo largo de esa misma dirección</li>
+    <li>Marca cada combinación como <span style="color:#12803f;font-weight:600;">OK</span> (ratio ≤ 1) o <span style="color:#bf2a2a;font-weight:600;">FALLA</span> (ratio &gt; 1)</li>
+  </ol>
+  <div class="callout">Un ratio de 0.85, por ejemplo, significa que la combinación está al 85% de la capacidad de la sección en esa dirección exacta de carga — no una aproximación por componentes separados, sino la superficie biaxial real.</div>
+
+  <h2>Paso 6: Leer los resultados</h2>
+  <p>La pestaña <strong>02 · Resultados</strong> muestra:</p>
+  <ul class="checklist">
+    <li>Sección transversal dibujada a escala con la distribución real de barras</li>
+    <li>Propiedades: A<sub>g</sub>, A<sub>s</sub>, cuantía ρ y verificación del rango 1%–8% de ACI</li>
+    <li>Resistencias características: P<sub>0</sub>, φP<sub>n,máx</sub> (limitado al 80% de P<sub>0</sub> según ACI 318-19 §22.4.2), β₁</li>
+    <li>Tabla de verificación por combinación, incluyendo los momentos mínimos por excentricidad accidental (§6.6.4.5.4)</li>
+  </ul>
+
+  <h2>Paso 7: Explorar los gráficos</h2>
+  <p>La pestaña <strong>03 · Gráficos</strong> ofrece tres vistas interactivas (Plotly):</p>
+  <table>
+    <tr><th>Vista</th><th>Qué muestra</th></tr>
+    <tr><td>Superficie 3D</td><td>La superficie completa P–M2–M3, coloreada por nivel de carga axial, con las combinaciones marcadas como diamantes</td></tr>
+    <tr><td>Curvas P–M</td><td>Cortes uniaxiales en θ = 0°, 45° y 90° — equivalentes a los diagramas de interacción clásicos</td></tr>
+    <tr><td>Contorno M2–M3</td><td>Proyección en planta de toda la nube de puntos, útil para visualizar la forma del dominio a un nivel de carga dado</td></tr>
+  </table>
+
+  <h2>Paso 8: Generar el informe técnico</h2>
+  <p>El botón <strong>Informe</strong> (o F7) compila una memoria de cálculo lista para imprimir:</p>
+  <ul>
+    <li>Carátula con proyecto, elemento, norma y fecha</li>
+    <li>Propiedades de sección, materiales y armado longitudinal</li>
+    <li>Tabla de verificación de todas las combinaciones con su ratio y estado</li>
+    <li>Imágenes de la sección, las curvas P–M en las tres direcciones y la superficie 3D con el contorno</li>
+  </ul>
+  <p>Presiona <strong>Ctrl+P</strong> (o Cmd+P) para exportar directamente a PDF. También puedes exportar la superficie completa a CSV para auditoría o post-proceso externo.</p>
+
+  <h2>Requisitos ACI 318-19 que se verifican automáticamente</h2>
+  <table>
+    <tr><th>Requisito</th><th>Qué verifica</th></tr>
+    <tr><td>Cuantía longitudinal</td><td>1% ≤ ρ ≤ 8% (§10.6.1.1)</td></tr>
+    <tr><td>Resistencia axial máxima</td><td>φP<sub>n,máx</sub> limitado al 80% de φP₀ (§22.4.2)</td></tr>
+    <tr><td>Factor φ variable</td><td>Interpolación entre φ<sub>c</sub> y 0.90 según ε<sub>t</sub> (§21.2.2)</td></tr>
+    <tr><td>Momento mínimo por excentricidad</td><td>M<sub>mín</sub> = P<sub>u</sub>·(15 + 0.03·h)/1000 (§6.6.4.5.4)</td></tr>
+    <tr><td>β₁ variable con f'c</td><td>Cálculo automático según §22.2.2.4.3</td></tr>
+  </table>
+
+  <h2>Conclusión</h2>
+  <p>El diseño biaxial de columnas exige combinar geometría, armado, compatibilidad de deformaciones y decenas de miles de puntos de cálculo para verificar correctamente una sola combinación de carga — y una columna real suele tener varias. La calculadora de Symmetrica hace ese trabajo en segundos, muestra la superficie completa en 3D, y entrega un informe técnico auditable listo para presentar.</p>
+
+  <div class="cta">
+    <h3>Prueba la calculadora de columnas biaxiales</h3>
+    <p>Acceso inmediato. Ingresa tu geometría, armado y combinaciones, y obtén la superficie de interacción y el informe en minutos.</p>
+    <a class="btn" href="https://symmetrica-ingenieria.vercel.app/">Abrir calculadora</a>
+  </div>
+
+  <footer>
+    <strong>Symmetrica Ingeniería</strong> — consultora de ingeniería estructural y sismorresistente, La Paz, Bolivia<br/>
+    📧 <a href="mailto:info@symmetrica.com">info@symmetrica.com</a> · 📱 <a href="tel:+59169737901">+591 69737901</a><br/>
+    <a href="https://www.instagram.com/symmetrica_ingenieria">Instagram</a> · <a href="https://www.facebook.com/profile.php?id=61575207414654">Facebook</a>
+  </footer>
+</div>
+
+</body>
+</html>
