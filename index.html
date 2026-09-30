@@ -1574,6 +1574,14 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
 /* Evita texto blanco en el botón Cancelar de los cuadros de administración. */
 .glass-card .btn-outline{color:#273f4d;border-color:#cbd5dc}
 
+/* Oferta de planes: acento coral y alto contraste junto al encabezado de precios. */
+.sy-offer{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:28px;margin:-28px auto 42px;padding:26px 30px;border:1px solid #f3a193;border-radius:18px;background:radial-gradient(ellipse at 90% 0%,rgba(255,157,84,.28),transparent 38%),linear-gradient(115deg,#172a35 0%,#253b45 62%,#3d2930 100%);color:#fff;box-shadow:0 18px 40px rgba(33,42,48,.16)}
+.sy-offer:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(#ffb14a,#ff5c55)}
+.sy-offer-copy,.sy-offer-clock{position:relative;z-index:1}.sy-offer-kicker{display:inline-flex;align-items:center;gap:9px;margin-bottom:10px;color:#ffc66e;font-size:11px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase}.sy-offer-kicker:before{content:"";width:8px;height:8px;border-radius:50%;background:#ff715e;box-shadow:0 0 0 5px rgba(255,113,94,.15);animation:sy-offer-pulse 1.7s infinite}.sy-offer h2{margin:0 0 7px;color:#fff;font-size:clamp(23px,3vw,34px);font-weight:750;letter-spacing:-1.1px;line-height:1.12}.sy-offer-copy p{max-width:590px;margin:0;color:#d3dde1;font-size:14px;line-height:1.55}.sy-offer-clock{min-width:310px}.sy-offer-clock-label{margin:0 0 9px;color:#e1e8eb;font-size:10px;font-weight:700;letter-spacing:1.7px;text-align:center;text-transform:uppercase}.sy-offer-units{display:grid;grid-template-columns:repeat(4,minmax(54px,1fr));gap:7px}.sy-offer-unit{display:grid;justify-items:center;gap:4px;padding:10px 7px 8px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.09);backdrop-filter:blur(8px)}.sy-offer-unit strong{font-variant-numeric:tabular-nums;color:#fff;font-size:clamp(22px,2.4vw,31px);font-weight:800;letter-spacing:-1px;line-height:1}.sy-offer-unit span{color:#c8d4da;font-size:8px;font-weight:700;letter-spacing:1.25px}.sy-offer-state{min-height:15px;margin:8px 0 0;color:#ffd58e;font-size:10px;font-weight:650;text-align:center;letter-spacing:.15px}.sy-price-old{margin:0 0 4px;color:#8b9299;font-size:13px}.sy-price-old s{text-decoration-thickness:1.5px}.sy-sale-label{display:inline-flex;align-items:center;gap:6px;margin:0 0 8px;padding:5px 9px;border:1px solid #ffd8a0;border-radius:99px;background:#fff4e4;color:#9a461c;font-size:9px;font-weight:850;letter-spacing:1px;text-transform:uppercase}.sy-pack-label{align-self:flex-start;margin-bottom:10px;padding:5px 9px;border-radius:99px;background:#fff0e7;color:#a54824;font-size:9px;font-weight:850;letter-spacing:1px;text-transform:uppercase}
+@keyframes sy-offer-pulse{50%{box-shadow:0 0 0 8px rgba(255,113,94,0)}}
+@media(max-width:720px){.sy-offer{grid-template-columns:1fr;gap:18px;margin:-22px auto 32px;padding:22px 20px}.sy-offer-clock{min-width:0}.sy-offer h2{font-size:27px}.sy-offer-copy p{font-size:13px}.sy-offer-units{max-width:380px;margin:auto}.sy-offer-unit{padding:9px 5px 7px}}
+@media(prefers-reduced-motion:reduce){.sy-offer-kicker:before{animation:none}}
+
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MiA3MiI+PHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTMiIGZpbGw9IiMxNTI3MzMiLz48ZyBzdHJva2U9IiNmZmYiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMiI+PHBhdGggZD0iTTE1IDE1aDQydjQySDE1VjE1Wm0wIDI2aDE4djE2Ii8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik0xMSAxMWg4djhoLTh6bTQyIDBoOHY4aC04ek0xMSA1M2g4djhoLTh6bTQyIDBoOHY4aC04eiIvPjwvZz48L3N2Zz4=">
 </head>
@@ -1958,6 +1966,24 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
                         </p>
                     </div>
 
+                    <section id="sy-offer-banner" class="sy-offer" aria-labelledby="sy-offer-title">
+                        <div class="sy-offer-copy">
+                            <span class="sy-offer-kicker">Tiempo limitado · Symmetrica Pro</span>
+                            <h2 id="sy-offer-title">Más herramientas. Mejor precio.</h2>
+                            <p>Activa tu acceso con el precio especial del plan anual o ahorra con el pack completo. La oferta vuelve automáticamente después de cada pausa.</p>
+                        </div>
+                        <div class="sy-offer-clock" role="timer" aria-live="off" aria-label="Tiempo restante de la oferta">
+                            <p class="sy-offer-clock-label" data-offer-clock-label>La oferta se actualiza en</p>
+                            <div class="sy-offer-units" aria-hidden="true">
+                                <div class="sy-offer-unit"><strong data-offer-days>00</strong><span>DÍAS</span></div>
+                                <div class="sy-offer-unit"><strong data-offer-hours>00</strong><span>HORAS</span></div>
+                                <div class="sy-offer-unit"><strong data-offer-minutes>00</strong><span>MIN</span></div>
+                                <div class="sy-offer-unit"><strong data-offer-seconds>00</strong><span>SEG</span></div>
+                            </div>
+                            <p class="sy-offer-state" data-offer-state>La promoción está activa</p>
+                        </div>
+                    </section>
+
                     <!-- Tarjetas de planes -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                         
@@ -1983,6 +2009,7 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
                             <p class="text-sm text-gray-500 mb-4 flex-grow">
                                 Accede a todos los programas y actualizaciones disponibles actualmente en Symmetrica por un precio especial.
                             </p>
+                            <span v-if="packDiscount > 0" class="sy-pack-label">Ahorro en el pack</span>
                             <div class="mb-4">
                                 <p class="text-xs text-gray-400 line-through">Bs {{ totalIndividualPrice }}</p>
                                 <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.packPrice }}</p>
@@ -2003,6 +2030,8 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
                                 Accede a todo el catálogo durante 1 año, incluidos los nuevos programas que se publiquen en ese período. No se renueva automáticamente: al finalizar puedes solicitar otro año por WhatsApp.
                             </p>
                             <div class="mb-4">
+                                <span class="sy-sale-label">Precio especial</span>
+                                <p class="sy-price-old">Precio regular <s>Bs {{ (Number(allPricing.annualPrice || 0) * 1.15).toFixed(2) }}</s></p>
                                 <p class="text-3xl font-bold text-blue-600">Bs {{ allPricing.annualPrice }} <span class="text-lg text-gray-500">/año</span></p>
                             </div>
                             <button @click="showSubModal = true" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Suscribirme</button>
@@ -2565,7 +2594,9 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col">
                         <h3 class="font-bold text-gray-800 text-lg">📅 Anual</h3>
-                        <p class="text-3xl font-bold text-blue-600 mt-2">{{ allPricing.annualPrice }} Bs</p>
+                        <span class="sy-sale-label mt-3 self-start">Precio especial</span>
+                        <p class="sy-price-old">Precio regular <s>Bs {{ (Number(allPricing.annualPrice || 0) * 1.15).toFixed(2) }}</s></p>
+                        <p class="text-3xl font-bold text-blue-600">{{ allPricing.annualPrice }} Bs</p>
                         <p class="text-sm text-gray-500 mt-1 flex-grow">Acceso por 1 año a todo el catálogo y a los nuevos programas generales publicados durante ese tiempo. No se renueva automáticamente.</p>
                         <button @click="requestSubscription('annual')" class="btn-primary w-full mt-4">Suscribirme</button>
                     </div>
@@ -2853,6 +2884,74 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{background:#fff;color:
                 'Comprueba la conexión y que la carpeta src, con app.js y sus módulos originales, esté junto a este index.html. El catálogo y el acceso necesitan Firebase.');
         }
     }
+    </script>
+    <script id="sy-offer-countdown">
+    (() => {
+        'use strict';
+        const STORAGE_KEY = 'symmetrica.offer-cycle.v1';
+        const ACTIVE_MS = 60 * 60 * 1000;
+        const PAUSE_MS = 7 * 24 * 60 * 60 * 1000;
+        let fallbackStart = null;
+        let lastState = '';
+        let observedBanner = null;
+
+        function cycleStart(now) {
+            try {
+                const saved = Number(localStorage.getItem(STORAGE_KEY));
+                if (Number.isFinite(saved) && saved > 0 && saved <= now) return saved;
+                localStorage.setItem(STORAGE_KEY, String(now));
+            } catch (_) {
+                if (fallbackStart === null) fallbackStart = now;
+            }
+            return fallbackStart === null ? now : fallbackStart;
+        }
+
+        function updateOffer() {
+            const banner = document.getElementById('sy-offer-banner');
+            if (!banner) return;
+            const now = Date.now();
+            const start = cycleStart(now);
+            const cycle = ACTIVE_MS + PAUSE_MS;
+            const elapsed = Math.max(0, now - start) % cycle;
+            const active = elapsed < ACTIVE_MS;
+            let remaining = active ? ACTIVE_MS - elapsed : 0;
+            const stateKey = active ? 'active' : 'paused';
+            const values = {
+                days: Math.floor(remaining / 86400000),
+                hours: Math.floor((remaining % 86400000) / 3600000),
+                minutes: Math.floor((remaining % 3600000) / 60000),
+                seconds: Math.floor((remaining % 60000) / 1000)
+            };
+            for (const [unit, value] of Object.entries(values)) {
+                const node = banner.querySelector(`[data-offer-${unit}]`);
+                if (node) node.textContent = String(value).padStart(2, '0');
+            }
+            const label = banner.querySelector('[data-offer-clock-label]');
+            const state = banner.querySelector('[data-offer-state]');
+            if (label) label.textContent = active ? 'La oferta termina en' : 'Próxima oferta';
+            if (state) state.textContent = active ? 'Promoción activa para el plan anual y el pack' : 'Oferta pausada · se reactiva automáticamente en una semana';
+            if (lastState !== stateKey) {
+                banner.dataset.offerState = stateKey;
+                lastState = stateKey;
+            }
+        }
+
+        updateOffer();
+        window.setInterval(updateOffer, 1000);
+        const app = document.getElementById('app');
+        if (app && 'MutationObserver' in window) {
+            new MutationObserver(() => {
+                const currentBanner = document.getElementById('sy-offer-banner');
+                if (currentBanner !== observedBanner) {
+                    observedBanner = currentBanner;
+                    updateOffer();
+                }
+            }).observe(app, { childList: true, subtree: true });
+        }
+        window.addEventListener('storage', event => {
+            if (event.key === STORAGE_KEY) updateOffer();
+        });
+    })();
     </script>
 </body>
 </html>
