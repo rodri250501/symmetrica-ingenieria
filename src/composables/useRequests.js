@@ -96,7 +96,7 @@ export function useRequests(userRef, programsRef, showLoginRef, buildSubscriptio
                 toolName: prog.name,
                 status: 'pending',
                 requestedAt: serverTimestamp(),
-                phone: '+591 69737901'
+                phone: '+591 64740156'
             });
             paymentModalProgram.value = { name: prog.name, price: prog.price };
             showPaymentModal.value = true;
