@@ -23,7 +23,7 @@ import {
 
 const { ref, computed } = Vue;
 
-const WHATSAPP_NUMBER = '59169737901';
+const WHATSAPP_NUMBER = '59164740156';
 
 export function useRequests(userRef, programsRef, showLoginRef, buildSubscriptionPayload) {
     const pendingRequests = ref([]);
