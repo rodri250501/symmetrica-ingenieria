@@ -22,7 +22,7 @@ import {
 
 const { ref, computed } = Vue;
 
-const WHATSAPP_NUMBER = '59169737901';
+const WHATSAPP_NUMBER = '59164740156';
 
 export function usePricing(userRef, showLoginRef, programsRef) {
     const pricing = ref({ packPrice: 0, licensePrice: 300 });
@@ -95,7 +95,7 @@ export function usePricing(userRef, showLoginRef, programsRef) {
                 type: 'pack',
                 status: 'pending',
                 requestedAt: serverTimestamp(),
-                phone: '+591 69737901'
+                phone: '+591 64740156'
             });
             return { type: 'pack', price: pricing.value.packPrice };
         } catch (e) {
@@ -117,7 +117,7 @@ export function usePricing(userRef, showLoginRef, programsRef) {
                 type: 'subscription_lifetime',
                 status: 'pending',
                 requestedAt: serverTimestamp(),
-                phone: '+591 69737901'
+                phone: '+591 64740156'
             });
             return { type: 'subscription_lifetime', price: pricing.value.licensePrice };
         } catch (e) {
