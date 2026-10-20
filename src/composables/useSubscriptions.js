@@ -19,7 +19,7 @@ import {
 
 const { ref, computed } = Vue;
 
-const WHATSAPP_NUMBER = '59169737901';
+const WHATSAPP_NUMBER = '59164740156';
 const MS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
 
 export function useSubscriptions(userRef, showLoginRef) {
@@ -106,7 +106,7 @@ export function useSubscriptions(userRef, showLoginRef) {
                 type: type === 'annual' ? 'subscription_annual' : 'subscription_lifetime',
                 status: 'pending',
                 requestedAt: serverTimestamp(),
-                phone: '+591 69737901'
+                phone: '+591 64740156'
             });
             showSubModal.value = false;
             subPaymentInfo.value = { type, price };
